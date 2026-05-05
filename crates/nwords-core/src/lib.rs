@@ -9,12 +9,19 @@ extern crate alloc;
 mod bitframe;
 mod error;
 mod permutation;
+#[cfg(feature = "stats")]
+pub mod stats;
+mod symbol;
 mod traits;
 mod wordmap;
 
 pub use bitframe::{BitFrame, BitView};
 pub use error::{Error, Result};
 pub use permutation::IdentityPermutation;
+#[cfg(all(feature = "alloc", feature = "stats"))]
+pub use symbol::BaseN;
+#[cfg(feature = "alloc")]
+pub use symbol::BigEndian11Bit;
 pub use traits::{Permutation, WordMap};
 pub use wordmap::{Linear, Sorted};
 
@@ -28,5 +35,10 @@ pub mod prelude {
     };
 
     #[cfg(feature = "alloc")]
-    pub use crate::{Formatter, SchemeFrame, SymbolCodec, TextNormalizer, WordParser};
+    pub use crate::{
+        BigEndian11Bit, Formatter, SchemeFrame, SymbolCodec, TextNormalizer, WordParser,
+    };
+
+    #[cfg(all(feature = "alloc", feature = "stats"))]
+    pub use crate::BaseN;
 }

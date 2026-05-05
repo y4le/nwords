@@ -14,7 +14,7 @@ std = ["nwords-core/std", "nwords-wordlists?/std"]
 alloc = ["nwords-core/alloc"]
 bip39-english = ["alloc", "dep:nwords-wordlists", "nwords-wordlists/bip39-english"]
 bip39-japanese = ["bip39-english", "nwords-wordlists/bip39-japanese"]
-positional = ["alloc"]
+positional = ["alloc", "nwords-core/stats"]
 
 [dependencies]
 nwords-core = { path = "../nwords-core", default-features = false }

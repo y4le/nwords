@@ -18,6 +18,39 @@ pub enum Error {
         /// Observed word count.
         got: usize,
     },
+    /// Bit length is not valid for the selected symbol codec.
+    InvalidBitLength {
+        /// Observed bit length.
+        got: usize,
+        /// Required bit-length multiple.
+        multiple: usize,
+    },
+    /// Dictionary size is not valid for the selected codec.
+    InvalidDictionarySize {
+        /// Observed dictionary size.
+        got: usize,
+    },
+    /// ID range is not valid for the selected codec.
+    InvalidRange {
+        /// Observed range.
+        got: u128,
+    },
+    /// Configured ID range exceeds exact representational capacity.
+    RangeExceedsCapacity {
+        /// Configured accepted ID range.
+        range: u128,
+        /// Exact representational capacity.
+        capacity: u128,
+    },
+    /// Positional dictionary sizes are not uniform.
+    InconsistentDictionarySize {
+        /// Position whose dictionary size differed.
+        position: usize,
+        /// Observed dictionary size at `position`.
+        got: usize,
+        /// Expected dictionary size.
+        expected: usize,
+    },
     /// A word was not found at the given phrase position.
     UnknownWord {
         /// Zero-based word position in the phrase.
@@ -57,6 +90,27 @@ impl fmt::Display for Error {
                 )
             }
             Self::InvalidWordCount { got } => write!(f, "invalid word count {got}"),
+            Self::InvalidBitLength { got, multiple } => {
+                write!(
+                    f,
+                    "invalid bit length {got}; expected multiple of {multiple}"
+                )
+            }
+            Self::InvalidDictionarySize { got } => {
+                write!(f, "invalid dictionary size {got}")
+            }
+            Self::InvalidRange { got } => write!(f, "invalid range {got}"),
+            Self::RangeExceedsCapacity { range, capacity } => {
+                write!(f, "range {range} exceeds capacity {capacity}")
+            }
+            Self::InconsistentDictionarySize {
+                position,
+                got,
+                expected,
+            } => write!(
+                f,
+                "dictionary size {got} at position {position} differs from expected size {expected}"
+            ),
             Self::UnknownWord { position } => {
                 write!(f, "unknown word at position {position}")
             }
