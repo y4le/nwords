@@ -146,6 +146,12 @@ The V1 architecture skill is `.agents/skills/nwords-architecture/SKILL.md` and
 should be updated whenever stats, BIP-39, positional-codec, or public API
 planning rules change.
 
+Post-V1 planning for spread positional ID presets and arbitrary byte/text word
+encoding is recorded in
+[`spread-and-byte-encoding-plan.md`](spread-and-byte-encoding-plan.md). That
+plan keeps spread behavior in the existing `Permutation` layer and treats text
+as a UTF-8 adapter over byte encoding.
+
 ## Error Model
 
 Use one `nwords::Error` enum with no string payloads:

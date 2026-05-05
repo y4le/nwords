@@ -20,6 +20,8 @@ Read these files first:
 - `docs/research/stats-helper-notes.md` for capacity and entropy planning.
 - `docs/research/test-plan.md` for required vector and property tests.
 - `docs/research/cli-plan.md` for ID-to-words CLI scope and presets.
+- `docs/research/spread-and-byte-encoding-plan.md` for spread permutations and
+  arbitrary byte/text word encoding.
 - `docs/code_standards.md` for implementation rules.
 
 If these files conflict, prefer `architecture-decisions.md` for API contracts
@@ -32,6 +34,10 @@ and `execution-plan.md` for sequencing.
      `nwords::stats::bip39` helpers when the umbrella `stats` and `bip39`
      features are enabled.
    - Positional N-word: use stats helper calculations.
+   - Spread positional IDs: use the `Permutation` layer over the accepted ID
+     range; do not rely on dictionary shuffling for diffusion.
+   - Arbitrary text: encode bytes first; text is a UTF-8 adapter over byte
+     encoding, with no default Unicode normalization.
    - Niceware, Proquint, PGP, SLIP-39: post-V1 unless the plan explicitly says
      otherwise.
 2. State which inputs are fixed:
@@ -107,6 +113,8 @@ of pretending there is one correct answer.
   permutations, `phf`, SLIP-39, Niceware, Proquint, and PGP word lists are
   post-V1 unless the user explicitly changes scope.
 - Keep the stats kernel small and dependency-light.
+- Do not use names such as "secure", "private", or "encrypted" for spread
+  presets unless a real keyed format-preserving encryption scheme exists.
 
 ## Before Finishing A Change
 
