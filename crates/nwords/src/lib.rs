@@ -14,3 +14,7 @@ pub use nwords_schemes as schemes;
 /// Built-in wordlists.
 #[cfg(feature = "bip39-english")]
 pub use nwords_wordlists as wordlists;
+
+/// BIP-39 seed derivation.
+#[cfg(feature = "bip39-seed")]
+pub use nwords_bip39_seed as bip39_seed;
