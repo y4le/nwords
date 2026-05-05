@@ -1,15 +1,22 @@
 ---
 name: nwords-architecture
 description: >
-  Use when planning or modifying nwords APIs, codecs, wordlists, BIP-39
-  behavior, positional ID encodings, dictionary size choices, word-count
-  choices, or stats/helper calculations for capacity and entropy.
+  Use when planning or modifying nwords internals, public APIs, codecs,
+  wordlists, BIP-39 behavior, positional ID encodings, spread permutations,
+  byte/text framing, dictionary-size choices, word-count choices, or
+  stats/helper calculations. For consumer CLI usage, Rust crate integration,
+  preset selection, or use-case estimates without code changes, use
+  nwords-usage instead.
 ---
 
 # nwords Architecture Skill
 
-Use this skill before making architecture decisions for the `nwords` library or
-before recommending a dictionary size, phrase length, or ID range.
+Use this skill before making architecture decisions for the `nwords` library,
+including API, codec, wordlist, permutation, framing, or stats-helper changes.
+
+For consumer-facing CLI commands, Rust crate integration, preset selection, or
+stats estimates that do not require changing nwords internals, use the
+`nwords-usage` skill instead.
 
 ## Start Here
 
