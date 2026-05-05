@@ -10,6 +10,78 @@ use crate::AsciiSpace;
 
 const VALID_ENTROPY_BYTES: &[usize] = &[16, 20, 24, 28, 32];
 
+/// BIP-39 word-count and entropy planning helpers.
+pub mod stats {
+    use nwords_core::{Error, Result};
+
+    /// BIP-39 dictionary size.
+    pub const DICTIONARY_SIZE: usize = 2048;
+
+    /// Legal BIP-39 word counts.
+    pub const LEGAL_WORD_COUNTS: [usize; 5] = [12, 15, 18, 21, 24];
+
+    /// Legal BIP-39 entropy sizes in bits.
+    pub const LEGAL_ENTROPY_BITS: [usize; 5] = [128, 160, 192, 224, 256];
+
+    /// BIP-39 planning report for one legal mnemonic length.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Bip39Report {
+        /// Fixed BIP-39 dictionary size.
+        pub dictionary_size: usize,
+        /// Mnemonic word count.
+        pub word_count: usize,
+        /// Entropy bits before checksum expansion.
+        pub entropy_bits: usize,
+        /// Checksum bits appended to entropy.
+        pub checksum_bits: usize,
+        /// Total framed bits split into 11-bit word indexes.
+        pub total_bits: usize,
+    }
+
+    /// Full BIP-39 word-count table.
+    pub const WORD_COUNT_REPORTS: [Bip39Report; 5] = [
+        report(12, 128),
+        report(15, 160),
+        report(18, 192),
+        report(21, 224),
+        report(24, 256),
+    ];
+
+    /// Returns the BIP-39 report for a legal word count.
+    pub fn for_word_count(word_count: usize) -> Result<Bip39Report> {
+        for report in WORD_COUNT_REPORTS {
+            if report.word_count == word_count {
+                return Ok(report);
+            }
+        }
+        Err(Error::InvalidWordCount { got: word_count })
+    }
+
+    /// Returns the smallest legal BIP-39 word count for target entropy bits.
+    pub fn minimum_word_count_for_entropy_bits(entropy_bits: usize) -> Result<Bip39Report> {
+        for report in WORD_COUNT_REPORTS {
+            if report.entropy_bits >= entropy_bits {
+                return Ok(report);
+            }
+        }
+        Err(Error::InvalidEntropyLength {
+            got: entropy_bits,
+            expected: &LEGAL_ENTROPY_BITS,
+        })
+    }
+
+    const fn report(word_count: usize, entropy_bits: usize) -> Bip39Report {
+        let checksum_bits = entropy_bits / 32;
+        Bip39Report {
+            dictionary_size: DICTIONARY_SIZE,
+            word_count,
+            entropy_bits,
+            checksum_bits,
+            total_bits: entropy_bits + checksum_bits,
+        }
+    }
+}
+
 /// BIP-39 entropy/checksum frame.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Bip39Frame;
@@ -256,6 +328,95 @@ fn normalize_phrase(phrase: &str) -> Cow<'_, str> {
 mod tests {
     use super::{Bip39Frame, English};
     use nwords_core::{BitFrame, Error, SchemeFrame};
+
+    #[test]
+    fn stats_table_matches_bip39_word_counts() {
+        use super::stats::{self, Bip39Report};
+
+        assert_eq!(
+            stats::WORD_COUNT_REPORTS,
+            [
+                Bip39Report {
+                    dictionary_size: 2048,
+                    word_count: 12,
+                    entropy_bits: 128,
+                    checksum_bits: 4,
+                    total_bits: 132,
+                },
+                Bip39Report {
+                    dictionary_size: 2048,
+                    word_count: 15,
+                    entropy_bits: 160,
+                    checksum_bits: 5,
+                    total_bits: 165,
+                },
+                Bip39Report {
+                    dictionary_size: 2048,
+                    word_count: 18,
+                    entropy_bits: 192,
+                    checksum_bits: 6,
+                    total_bits: 198,
+                },
+                Bip39Report {
+                    dictionary_size: 2048,
+                    word_count: 21,
+                    entropy_bits: 224,
+                    checksum_bits: 7,
+                    total_bits: 231,
+                },
+                Bip39Report {
+                    dictionary_size: 2048,
+                    word_count: 24,
+                    entropy_bits: 256,
+                    checksum_bits: 8,
+                    total_bits: 264,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn stats_reject_non_spec_word_counts() {
+        use super::stats;
+
+        assert_eq!(
+            stats::for_word_count(13),
+            Err(Error::InvalidWordCount { got: 13 })
+        );
+        assert_eq!(
+            stats::for_word_count(14),
+            Err(Error::InvalidWordCount { got: 14 })
+        );
+        assert_eq!(
+            stats::for_word_count(25),
+            Err(Error::InvalidWordCount { got: 25 })
+        );
+    }
+
+    #[test]
+    fn stats_finds_minimum_word_count_for_entropy_bits() {
+        use super::stats;
+
+        assert_eq!(
+            stats::minimum_word_count_for_entropy_bits(128),
+            stats::for_word_count(12)
+        );
+        assert_eq!(
+            stats::minimum_word_count_for_entropy_bits(129),
+            stats::for_word_count(15)
+        );
+        assert_eq!(
+            stats::minimum_word_count_for_entropy_bits(256),
+            stats::for_word_count(24)
+        );
+        assert_eq!(
+            stats::minimum_word_count_for_entropy_bits(257),
+            Err(Error::InvalidEntropyLength {
+                got: 257,
+                expected: &stats::LEGAL_ENTROPY_BITS
+            })
+        );
+    }
 
     #[test]
     fn english_known_vector_round_trips() {

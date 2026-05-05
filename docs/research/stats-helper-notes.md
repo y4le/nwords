@@ -49,6 +49,9 @@ length includes checksum bits, so BIP-39 entropy is not `word_count * 11`.
 The BIP-39 helper should refuse non-spec word counts rather than rounding them.
 It can offer "minimum legal BIP-39 word count for desired entropy bits" by
 choosing from the table above.
+The V1 API exposes this as `nwords::stats::bip39::for_word_count` and
+`nwords::stats::bip39::minimum_word_count_for_entropy_bits` through the
+umbrella crate when both `stats` and `bip39` are enabled.
 
 ## Placement
 

@@ -8,6 +8,10 @@ extern crate alloc;
 
 pub use nwords_core as core;
 
+/// Capacity and phrase-shape planning helpers.
+#[cfg(feature = "stats")]
+pub mod stats;
+
 /// Ready-made scheme adapters.
 pub use nwords_schemes as schemes;
 

@@ -27,7 +27,9 @@ and `execution-plan.md` for sequencing.
 ## Decision Flow
 
 1. Identify the scheme.
-   - BIP-39: use BIP-39 spec-fixed word counts.
+   - BIP-39: use BIP-39 spec-fixed word counts. Use
+     `nwords::stats::bip39` helpers when the umbrella `stats` and `bip39`
+     features are enabled.
    - Positional N-word: use stats helper calculations.
    - Niceware, Proquint, PGP, SLIP-39: post-V1 unless the plan explicitly says
      otherwise.
@@ -71,6 +73,9 @@ BIP-39 does not use free-form dictionary-size planning.
 
 Reject non-spec BIP-39 word counts such as 13, 14, or 25. Japanese display uses
 U+3000 by default; ASCII-space display is a separate rust-bitcoin parity mode.
+Use `for_word_count` to inspect a legal word count and
+`minimum_word_count_for_entropy_bits` to select the smallest legal BIP-39
+mnemonic length for a target entropy bit count.
 
 ## Positional Planning Rules
 
