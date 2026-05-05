@@ -10,7 +10,7 @@ homepage.workspace = true
 readme.workspace = true
 
 [features]
-default = ["std", "alloc", "bip39", "positional", "stats"]
+default = ["std", "alloc", "bip39", "positional", "stats", "word-bytes"]
 std = [
     "alloc",
     "nwords-core/std",
@@ -38,6 +38,7 @@ bip39-japanese = [
 ]
 bip39-seed = ["alloc", "dep:nwords-bip39-seed"]
 positional = ["alloc", "nwords-schemes/positional"]
+word-bytes = ["alloc", "nwords-schemes/word-bytes"]
 
 [dependencies]
 nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false }

@@ -19,3 +19,7 @@ pub mod bip39;
 /// Positional N-word scheme adapters.
 #[cfg(feature = "positional")]
 pub mod positional;
+
+/// Arbitrary byte phrase adapters.
+#[cfg(feature = "word-bytes")]
+pub mod word_bytes;

@@ -26,6 +26,12 @@ pub mod positional {
     pub use nwords_schemes::positional::*;
 }
 
+/// Arbitrary byte phrase codecs.
+#[cfg(feature = "word-bytes")]
+pub mod word_bytes {
+    pub use nwords_schemes::word_bytes::*;
+}
+
 /// Capacity and phrase-shape planning helpers.
 #[cfg(feature = "stats")]
 pub mod stats;
@@ -53,4 +59,7 @@ pub mod prelude {
 
     #[cfg(feature = "positional")]
     pub use crate::positional::Positional;
+
+    #[cfg(feature = "word-bytes")]
+    pub use crate::word_bytes::WordBytes;
 }

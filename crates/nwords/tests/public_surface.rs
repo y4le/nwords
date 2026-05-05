@@ -32,3 +32,18 @@ fn top_level_positional_reexport_works() {
 
     assert_eq!(codec.encode(8).as_deref(), Ok("two two"));
 }
+
+#[cfg(all(feature = "word-bytes", feature = "bip39"))]
+#[test]
+fn top_level_word_bytes_reexport_works() {
+    let codec = nwords::word_bytes::WordBytes::new(nwords::wordlists::bip39::English);
+    let phrase = codec.encode_text("hello").expect("encode");
+
+    assert_eq!(phrase, "abandon abandon access speak fine curtain rose");
+    assert_eq!(
+        codec
+            .decode_text(&phrase.split_whitespace().collect::<Vec<_>>())
+            .as_deref(),
+        Ok("hello")
+    );
+}

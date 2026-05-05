@@ -219,3 +219,54 @@ fn whitespace_is_tolerated_but_case_is_exact() {
     assert_eq!(uppercase.status.code(), Some(1));
     assert!(stderr(&uppercase).contains("unknown word at position 0"));
 }
+
+#[test]
+fn text_commands_round_trip_utf8_without_normalization() {
+    let encoded = nwords(&["text", "encode", "hello, 世界"]);
+    assert!(encoded.status.success());
+    assert_eq!(stdout(&encoded).split_whitespace().count(), 13);
+
+    let decoded = nwords(&["text", "decode", stdout(&encoded).trim()]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "hello, 世界\n");
+
+    let precomposed = nwords(&["text", "encode", "é"]);
+    let decomposed = nwords(&["text", "encode", "é"]);
+    assert!(precomposed.status.success());
+    assert!(decomposed.status.success());
+    assert_ne!(stdout(&precomposed), stdout(&decomposed));
+}
+
+#[test]
+fn bytes_commands_round_trip_hex_and_text() {
+    let hex = nwords(&["bytes", "encode", "--hex", "deadbeef"]);
+    assert!(hex.status.success());
+    assert_eq!(stdout(&hex), "abandon abandon abuse run swim jealous\n");
+
+    let decoded_hex = nwords(&["bytes", "decode", "--hex", stdout(&hex).trim()]);
+    assert!(decoded_hex.status.success());
+    assert_eq!(stdout(&decoded_hex), "deadbeef\n");
+
+    let text = nwords(&["bytes", "encode", "--text", "hello"]);
+    assert!(text.status.success());
+    assert_eq!(
+        stdout(&text),
+        "abandon abandon access speak fine curtain rose\n"
+    );
+
+    let decoded_text = nwords(&["bytes", "decode", "--text", stdout(&text).trim()]);
+    assert!(decoded_text.status.success());
+    assert_eq!(stdout(&decoded_text), "hello\n");
+}
+
+#[test]
+fn bytes_usage_and_decode_errors_are_sanitized() {
+    let invalid_hex = nwords(&["bytes", "encode", "--hex", "abc"]);
+    assert_eq!(invalid_hex.status.code(), Some(2));
+    assert!(stderr(&invalid_hex).contains("even length"));
+
+    let invalid_word = nwords(&["bytes", "decode", "--hex", "abandon zzzzz abandon"]);
+    assert_eq!(invalid_word.status.code(), Some(1));
+    assert!(stderr(&invalid_word).contains("unknown word at position 1"));
+    assert!(!stderr(&invalid_word).contains("zzzzz"));
+}

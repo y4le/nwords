@@ -9,7 +9,7 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["std", "bip39-english", "positional"]
+default = ["std", "bip39-english", "positional", "word-bytes"]
 std = ["nwords-core/std", "nwords-wordlists?/std"]
 alloc = ["nwords-core/alloc"]
 bip39-english = [
@@ -24,6 +24,7 @@ bip39-japanese = [
     "nwords-wordlists/bip39-japanese",
 ]
 positional = ["alloc", "nwords-core/stats"]
+word-bytes = ["alloc"]
 
 [dependencies]
 nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false }

@@ -16,6 +16,8 @@ The workspace includes a small `nwords` binary for positional ID phrases:
 cargo run -p nwords-cli -- encode 42 --preset u32
 cargo run -p nwords-cli -- decode "<phrase>" --preset u32
 cargo run -p nwords-cli -- encode 42 --preset dec6-spread
+cargo run -p nwords-cli -- text encode "hello"
+cargo run -p nwords-cli -- bytes encode --hex deadbeef
 cargo run -p nwords-cli -- presets
 cargo run -p nwords-cli -- plan --preset u32
 cargo run -p nwords-cli -- plan --range 1000000
@@ -24,6 +26,10 @@ cargo run -p nwords-cli -- plan --range 1000000
 `*-spread` presets apply a deterministic reversible permutation before
 positional encoding, so nearby assigned IDs usually produce less visually
 similar phrases. They are not encryption and do not add entropy.
+
+`text` and `bytes` commands use `word-bytes-v1`: a 32-bit big-endian byte
+length, payload bytes, and zero padding to an 11-bit word boundary. Text is
+encoded as byte-exact UTF-8 with no default Unicode normalization.
 
 The CLI uses the BIP-39 English wordlist as a positional dictionary. It does
 not produce BIP-39 wallet mnemonics:
@@ -112,6 +118,7 @@ assert_eq!(bip39.word_count, 18);
 | `bip39-japanese` | no | Japanese wordlist, U+3000 display, and Unicode parsing. |
 | `bip39-seed` | no | PBKDF2-HMAC-SHA512 seed derivation. |
 | `positional` | yes | Positional N-word ID codec. |
+| `word-bytes` | yes | `word-bytes-v1` arbitrary byte and UTF-8 text codec. |
 
 ## `no_std + alloc`
 
@@ -130,12 +137,13 @@ also requires `alloc` for Unicode normalization.
 V1 ships:
 
 - A `nwords` CLI for positional ID phrase encoding and decoding.
+- `word-bytes-v1` CLI/library support for arbitrary bytes and UTF-8 text.
 - BIP-39 English and Japanese entropy, mnemonic, checksum, and seed-vector
   compatibility.
 - Positional N-word codecs over user-provided dictionaries.
 - Exact `u128` capacity/range math plus log-domain estimates beyond `u128`.
 - `Linear` and `Sorted` word maps.
-- Identity permutation only.
+- Identity and affine spread permutations.
 
 V1 intentionally defers SLIP-39, Niceware, Proquint, PGP word lists,
 non-identity permutations, BIP-32/xprv derivation, and BigInt-backed exact

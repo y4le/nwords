@@ -7,6 +7,7 @@ use nwords::{
     positional::Positional,
     schemes::AsciiSpace,
     stats::{self, CapacityClass, PlanSolution, PlanTarget},
+    word_bytes::WordBytes,
     wordlists::bip39::English,
 };
 
@@ -147,6 +148,8 @@ fn execute(args: &[String]) -> Result<String, CliError> {
         "decode" => decode(&args[1..]),
         "presets" => presets(&args[1..]),
         "plan" => plan(&args[1..]),
+        "bytes" => bytes_command(&args[1..]),
+        "text" => text_command(&args[1..]),
         _ => Err(CliError::usage(format!(
             "unknown command `{command}`\n\n{HELP}"
         ))),
@@ -157,6 +160,9 @@ fn encode(args: &[String]) -> Result<String, CliError> {
     let parsed = ParsedArgs::parse(args)?;
     if parsed.help {
         return Ok(ENCODE_HELP.to_owned());
+    }
+    if parsed.byte_mode.is_some() {
+        return Err(CliError::usage(ENCODE_HELP));
     }
     if parsed.positionals.len() != 1 {
         return Err(CliError::usage(ENCODE_HELP));
@@ -180,6 +186,9 @@ fn decode(args: &[String]) -> Result<String, CliError> {
     let parsed = ParsedArgs::parse(args)?;
     if parsed.help {
         return Ok(DECODE_HELP.to_owned());
+    }
+    if parsed.byte_mode.is_some() {
+        return Err(CliError::usage(DECODE_HELP));
     }
 
     let words = split_words(&parsed.positionals);
@@ -206,7 +215,11 @@ fn presets(args: &[String]) -> Result<String, CliError> {
     if parsed.help {
         return Ok(PRESETS_HELP.to_owned());
     }
-    if !parsed.positionals.is_empty() || parsed.has_shape_options() || parsed.explain {
+    if !parsed.positionals.is_empty()
+        || parsed.has_shape_options()
+        || parsed.byte_mode.is_some()
+        || parsed.explain
+    {
         return Err(CliError::usage(PRESETS_HELP));
     }
 
@@ -243,7 +256,7 @@ fn plan(args: &[String]) -> Result<String, CliError> {
     if parsed.help {
         return Ok(PLAN_HELP.to_owned());
     }
-    if !parsed.positionals.is_empty() || parsed.explain {
+    if !parsed.positionals.is_empty() || parsed.byte_mode.is_some() || parsed.explain {
         return Err(CliError::usage(PLAN_HELP));
     }
 
@@ -289,6 +302,131 @@ fn plan(args: &[String]) -> Result<String, CliError> {
 
     let report = Report::new(dictionary, IDENTITY_PERMUTATION, words, range)?;
     Ok(format_report_fields("plan", &report, None, None))
+}
+
+fn bytes_command(args: &[String]) -> Result<String, CliError> {
+    let Some(command) = args.first().map(String::as_str) else {
+        return Err(CliError::usage(BYTES_HELP));
+    };
+
+    match command {
+        "-h" | "--help" | "help" => Ok(BYTES_HELP.to_owned()),
+        "encode" => bytes_encode(&args[1..]),
+        "decode" => bytes_decode(&args[1..]),
+        _ => Err(CliError::usage(BYTES_HELP)),
+    }
+}
+
+fn bytes_encode(args: &[String]) -> Result<String, CliError> {
+    let parsed = ParsedArgs::parse(args)?;
+    if parsed.help {
+        return Ok(BYTES_ENCODE_HELP.to_owned());
+    }
+    reject_shape_options(&parsed, BYTES_ENCODE_HELP)?;
+    if parsed.positionals.is_empty() {
+        return Err(CliError::usage(BYTES_ENCODE_HELP));
+    }
+
+    let mode = parsed
+        .byte_mode
+        .ok_or_else(|| CliError::usage("bytes encode requires --text or --hex"))?;
+    let bytes = match mode {
+        ByteMode::Text => join_positionals(&parsed.positionals).into_bytes(),
+        ByteMode::Hex => {
+            if parsed.positionals.len() != 1 {
+                return Err(CliError::usage("bytes encode --hex requires one hex value"));
+            }
+            parse_hex(&parsed.positionals[0])?
+        }
+    };
+    let phrase = word_bytes_codec()
+        .encode_bytes(&bytes)
+        .map_err(runtime_error)?;
+    Ok(format!("{phrase}\n"))
+}
+
+fn bytes_decode(args: &[String]) -> Result<String, CliError> {
+    let parsed = ParsedArgs::parse(args)?;
+    if parsed.help {
+        return Ok(BYTES_DECODE_HELP.to_owned());
+    }
+    reject_shape_options(&parsed, BYTES_DECODE_HELP)?;
+
+    let words = split_words(&parsed.positionals);
+    if words.is_empty() {
+        return Err(CliError::usage(BYTES_DECODE_HELP));
+    }
+
+    let mode = parsed
+        .byte_mode
+        .ok_or_else(|| CliError::usage("bytes decode requires --text or --hex"))?;
+    let refs = words.iter().map(String::as_str).collect::<Vec<_>>();
+    match mode {
+        ByteMode::Text => {
+            let text = word_bytes_codec()
+                .decode_text(&refs)
+                .map_err(runtime_error)?;
+            Ok(format!("{text}\n"))
+        }
+        ByteMode::Hex => {
+            let bytes = word_bytes_codec()
+                .decode_words(&refs)
+                .map_err(runtime_error)?;
+            Ok(format!("{}\n", format_hex(&bytes)))
+        }
+    }
+}
+
+fn text_command(args: &[String]) -> Result<String, CliError> {
+    let Some(command) = args.first().map(String::as_str) else {
+        return Err(CliError::usage(TEXT_HELP));
+    };
+
+    match command {
+        "-h" | "--help" | "help" => Ok(TEXT_HELP.to_owned()),
+        "encode" => text_encode(&args[1..]),
+        "decode" => text_decode(&args[1..]),
+        _ => Err(CliError::usage(TEXT_HELP)),
+    }
+}
+
+fn text_encode(args: &[String]) -> Result<String, CliError> {
+    let parsed = ParsedArgs::parse(args)?;
+    if parsed.help {
+        return Ok(TEXT_ENCODE_HELP.to_owned());
+    }
+    reject_shape_options(&parsed, TEXT_ENCODE_HELP)?;
+    if parsed.byte_mode.is_some() || parsed.positionals.is_empty() {
+        return Err(CliError::usage(TEXT_ENCODE_HELP));
+    }
+
+    let text = join_positionals(&parsed.positionals);
+    let phrase = word_bytes_codec()
+        .encode_text(&text)
+        .map_err(runtime_error)?;
+    Ok(format!("{phrase}\n"))
+}
+
+fn text_decode(args: &[String]) -> Result<String, CliError> {
+    let parsed = ParsedArgs::parse(args)?;
+    if parsed.help {
+        return Ok(TEXT_DECODE_HELP.to_owned());
+    }
+    reject_shape_options(&parsed, TEXT_DECODE_HELP)?;
+    if parsed.byte_mode.is_some() {
+        return Err(CliError::usage(TEXT_DECODE_HELP));
+    }
+
+    let words = split_words(&parsed.positionals);
+    if words.is_empty() {
+        return Err(CliError::usage(TEXT_DECODE_HELP));
+    }
+
+    let refs = words.iter().map(String::as_str).collect::<Vec<_>>();
+    let text = word_bytes_codec()
+        .decode_text(&refs)
+        .map_err(runtime_error)?;
+    Ok(format!("{text}\n"))
 }
 
 fn explain_encode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliError> {
@@ -413,6 +551,12 @@ impl PermutationKind {
             }
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ByteMode {
+    Text,
+    Hex,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -560,6 +704,7 @@ struct ParsedArgs {
     range: Option<u128>,
     words: Option<usize>,
     dictionary: Option<String>,
+    byte_mode: Option<ByteMode>,
     explain: bool,
     help: bool,
 }
@@ -582,6 +727,8 @@ impl ParsedArgs {
                 match arg.as_str() {
                     "--help" => parsed.help = true,
                     "--explain" => parsed.explain = true,
+                    "--text" => set_once(&mut parsed.byte_mode, "--text/--hex", ByteMode::Text)?,
+                    "--hex" => set_once(&mut parsed.byte_mode, "--text/--hex", ByteMode::Hex)?,
                     "--preset" => {
                         index += 1;
                         let value = args
@@ -668,6 +815,14 @@ fn runtime_error(error: nwords::core::Error) -> CliError {
     CliError::runtime(format!("conversion failed: {error}"))
 }
 
+fn reject_shape_options(parsed: &ParsedArgs, help: &'static str) -> Result<(), CliError> {
+    if parsed.has_shape_options() || parsed.explain {
+        Err(CliError::usage(help))
+    } else {
+        Ok(())
+    }
+}
+
 fn set_once<T>(slot: &mut Option<T>, name: &str, value: T) -> Result<(), CliError> {
     if slot.is_some() {
         return Err(CliError::usage(format!("duplicate {name}")));
@@ -693,6 +848,49 @@ fn split_words(positionals: &[String]) -> Vec<String> {
         .flat_map(|arg| arg.split_whitespace())
         .map(str::to_owned)
         .collect()
+}
+
+fn join_positionals(positionals: &[String]) -> String {
+    positionals.join(" ")
+}
+
+fn word_bytes_codec() -> WordBytes<English> {
+    WordBytes::new(English)
+}
+
+fn parse_hex(value: &str) -> Result<Vec<u8>, CliError> {
+    if value.len() % 2 != 0 {
+        return Err(CliError::usage("hex input must have an even length"));
+    }
+
+    value
+        .as_bytes()
+        .chunks_exact(2)
+        .map(|chunk| {
+            let high = hex_value(chunk[0])?;
+            let low = hex_value(chunk[1])?;
+            Ok((high << 4) | low)
+        })
+        .collect()
+}
+
+fn hex_value(byte: u8) -> Result<u8, CliError> {
+    match byte {
+        b'0'..=b'9' => Ok(byte - b'0'),
+        b'a'..=b'f' => Ok(byte - b'a' + 10),
+        b'A'..=b'F' => Ok(byte - b'A' + 10),
+        _ => Err(CliError::usage("hex input contains a non-hex digit")),
+    }
+}
+
+fn format_hex(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut output = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        output.push(char::from(HEX[(byte >> 4) as usize]));
+        output.push(char::from(HEX[(byte & 0x0f) as usize]));
+    }
+    output
 }
 
 fn find_preset(name: &str) -> Option<&'static Preset> {
@@ -721,6 +919,10 @@ USAGE:
     nwords decode <words...> (--preset <name> | --range <R> --words <N> [--dict <name>]) [--explain]
     nwords presets
     nwords plan (--preset <name> | --range <R> [--words <N>] [--dict <name>])
+    nwords bytes encode (--text <text> | --hex <hex>)
+    nwords bytes decode (--text | --hex) <words...>
+    nwords text encode <text>
+    nwords text decode <words...>
 
 BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
 ";
@@ -743,6 +945,42 @@ USAGE:
 const PLAN_HELP: &str = "\
 USAGE:
     nwords plan (--preset <name> | --range <R> [--words <N>] [--dict <name>])
+";
+
+const BYTES_HELP: &str = "\
+USAGE:
+    nwords bytes encode (--text <text> | --hex <hex>)
+    nwords bytes decode (--text | --hex) <words...>
+
+BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
+";
+
+const BYTES_ENCODE_HELP: &str = "\
+USAGE:
+    nwords bytes encode (--text <text> | --hex <hex>)
+";
+
+const BYTES_DECODE_HELP: &str = "\
+USAGE:
+    nwords bytes decode (--text | --hex) <words...>
+";
+
+const TEXT_HELP: &str = "\
+USAGE:
+    nwords text encode <text>
+    nwords text decode <words...>
+
+BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
+";
+
+const TEXT_ENCODE_HELP: &str = "\
+USAGE:
+    nwords text encode <text>
+";
+
+const TEXT_DECODE_HELP: &str = "\
+USAGE:
+    nwords text decode <words...>
 ";
 
 #[cfg(test)]

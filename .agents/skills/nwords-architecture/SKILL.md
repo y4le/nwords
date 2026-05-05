@@ -37,7 +37,8 @@ and `execution-plan.md` for sequencing.
    - Spread positional IDs: use the `Permutation` layer over the accepted ID
      range; do not rely on dictionary shuffling for diffusion.
    - Arbitrary text: encode bytes first; text is a UTF-8 adapter over byte
-     encoding, with no default Unicode normalization.
+     encoding, with no default Unicode normalization. `word-bytes-v1` uses a
+     fixed 32-bit big-endian byte length prefix.
    - Niceware, Proquint, PGP, SLIP-39: post-V1 unless the plan explicitly says
      otherwise.
 2. State which inputs are fixed:

@@ -55,7 +55,7 @@ existing `Permutation` trait.
    length prefix + payload bytes + zero pad bits to an 11-bit boundary
    ```
 
-   The exact length-prefix wire format is intentionally not locked yet.
+   The v1 length prefix is a fixed 32-bit big-endian unsigned byte length.
 
 ## Spread ID Presets
 
@@ -201,13 +201,11 @@ Decode must:
 - reject length mismatches;
 - reject unknown words without echoing the unknown word text.
 
-The exact prefix format remains open. Options:
-
-- fixed-width length prefix, simpler and bounded;
-- varint length prefix, better for short inputs but needs canonical varint
-  rejection rules.
-
-Do not lock this until the first byte-codec implementation starts.
+The v1 prefix is a fixed 32-bit big-endian unsigned byte length. This gives one
+canonical prefix encoding per length, supports payloads up to `2^32 - 1` bytes,
+and intentionally spends three words of overhead for empty or very short
+payloads. A future `word-bytes-v2` may use a varint prefix if that overhead
+becomes a real problem.
 
 ### Dictionary
 
@@ -322,6 +320,7 @@ Stop condition:
 - byte encode/decode round trips;
 - canonical padding and length checks are enforced;
 - deterministic vectors are committed;
+- length prefix is fixed 32-bit big-endian;
 - CLI exposes bytes encode/decode or the library API is complete enough for the
   CLI to be a narrow follow-up.
 

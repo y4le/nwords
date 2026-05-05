@@ -67,6 +67,22 @@ Required checks:
 5. CLI spread presets round-trip and report `spread-affine-v1` separately from
    `identity`.
 
+### word-bytes-v1
+
+The byte-word codec uses a fixed 32-bit big-endian byte length, payload bytes,
+and zero pad bits to the next 11-bit boundary.
+
+Required checks:
+
+1. Deterministic vectors cover `""`, `"f"`, `"fo"`, `"foo"`, `"hello"`, `00`,
+   `ff`, and `deadbeef`.
+2. Empty and short payload word counts match the expected 11-bit framing.
+3. Non-zero pad bits are rejected.
+4. Appended all-zero padding words are rejected as non-canonical.
+5. Declared length shorter or longer than available payload bits is rejected.
+6. Unknown words are rejected without leaking the raw word text.
+7. Text adapters validate UTF-8 and perform no default Unicode normalization.
+
 ### Stats helper
 
 The stats helper is a V1 planning contract. It must distinguish

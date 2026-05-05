@@ -90,6 +90,19 @@ pub enum Error {
     },
     /// Bit frame construction or mutation would exceed supported bounds.
     BitFrameOverflow,
+    /// Byte-word frame structure is invalid.
+    InvalidFrame {
+        /// Observed frame bit length.
+        bit_len: usize,
+    },
+    /// Byte-word frame has non-canonical padding.
+    NonCanonicalPadding,
+    /// Byte-word frame length prefix does not match the frame payload.
+    LengthMismatch,
+    /// Byte-word payload length exceeds supported bounds.
+    LengthOverflow,
+    /// Decoded text bytes are not valid UTF-8.
+    InvalidUtf8,
     /// Requested text normalization is unavailable in the current build.
     NormalizationUnavailable,
 }
@@ -149,6 +162,13 @@ impl fmt::Display for Error {
                 "symbol index {index} at position {position} is outside length {len}"
             ),
             Self::BitFrameOverflow => f.write_str("bit frame overflow"),
+            Self::InvalidFrame { bit_len } => {
+                write!(f, "invalid frame with bit length {bit_len}")
+            }
+            Self::NonCanonicalPadding => f.write_str("non-canonical padding"),
+            Self::LengthMismatch => f.write_str("length prefix does not match payload"),
+            Self::LengthOverflow => f.write_str("length exceeds supported bounds"),
+            Self::InvalidUtf8 => f.write_str("invalid UTF-8 text"),
             Self::NormalizationUnavailable => f.write_str("normalization unavailable"),
         }
     }
