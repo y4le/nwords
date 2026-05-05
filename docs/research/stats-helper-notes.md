@@ -183,7 +183,8 @@ Property tests:
 Post-V1 items:
 
 - Big-integer exact capacity math beyond `u128`.
-- CLI/report generator.
+- CLI/report generator. Current CLI planning lives in
+  [`cli-plan.md`](cli-plan.md).
 - Security recommendation policy.
 - Pretty table formatting beyond small rustdoc examples.
 - Non-uniform sampling entropy.

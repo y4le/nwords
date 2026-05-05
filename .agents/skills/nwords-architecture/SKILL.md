@@ -19,6 +19,7 @@ Read these files first:
 - `docs/research/execution-plan.md` for phase boundaries.
 - `docs/research/stats-helper-notes.md` for capacity and entropy planning.
 - `docs/research/test-plan.md` for required vector and property tests.
+- `docs/research/cli-plan.md` for ID-to-words CLI scope and presets.
 - `docs/code_standards.md` for implementation rules.
 
 If these files conflict, prefer `architecture-decisions.md` for API contracts

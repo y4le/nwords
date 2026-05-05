@@ -264,6 +264,11 @@ Finish:
 - CI matrix.
 - `cargo publish --dry-run` in dependency order.
 
+Post-V1 CLI planning is tracked separately in
+[`cli-plan.md`](cli-plan.md). The CLI should start with positional ID
+encode/decode over a `u32` preset and should clearly label BIP-39 wordlists
+used positionally as not being BIP-39 mnemonics.
+
 CI gates:
 
 ```sh
@@ -311,3 +316,7 @@ Documentation cleanup:
   Collaborator: Claude.
   Result: consensus.
   Transcript: `/tmp/parley/682705f93766/runs/workflow-architecture-plan-3e159b91/transcript.md`.
+- Workflow: architecture-plan for ID-to-words CLI.
+  Collaborator: Claude.
+  Result: consensus.
+  Transcript: `/tmp/parley/682705f93766/runs/workflow-architecture-plan-753f44d3/transcript.md`.
