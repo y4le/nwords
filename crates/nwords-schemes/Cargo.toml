@@ -26,7 +26,7 @@ bip39-japanese = [
 positional = ["alloc", "nwords-core/stats"]
 
 [dependencies]
-nwords-core = { path = "../nwords-core", default-features = false }
-nwords-wordlists = { path = "../nwords-wordlists", default-features = false, optional = true }
+nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false }
+nwords-wordlists = { version = "0.1.0", path = "../nwords-wordlists", default-features = false, optional = true }
 sha2 = { version = "0.10.9", default-features = false, optional = true }
 unicode-normalization = { version = "0.1.25", default-features = false, optional = true }

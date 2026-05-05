@@ -1,16 +1,117 @@
 # nwords
 
-`nwords` is a planned Rust library for bidirectional encoding between structured
-payloads or integer IDs and symbolic phrases.
+`nwords` is a small Rust workspace for bidirectional word and phrase codecs.
+V1 focuses on BIP-39 compatibility, positional N-word IDs, and exact planning
+helpers for dictionary size, word count, capacity, and accepted ID range.
 
-V1 is scoped to:
+The implementation is dependency-light and forbids unsafe code in every crate.
 
-- BIP-39 English and Japanese compatibility.
-- Positional N-word codecs.
-- Capacity, dictionary-size, word-count, and ID-range planning helpers.
-- Minimal dependencies and no unsafe code.
+## Examples
 
-The current repository contains architecture, standards, execution planning, and
-vendored test vectors. Implementation starts from
-[`docs/research/execution-plan.md`](docs/research/execution-plan.md).
+### BIP-39 English
 
+```rust
+use nwords::bip39::English;
+
+let codec = English::default();
+let entropy = [0u8; 16];
+let phrase = codec.encode_entropy(&entropy).expect("valid entropy");
+
+assert_eq!(
+    phrase,
+    "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+);
+assert_eq!(codec.decode_phrase(&phrase).expect("valid phrase"), entropy);
+```
+
+### BIP-39 Seed Derivation
+
+Enable the `bip39-seed` feature:
+
+```rust
+use nwords::bip39::English;
+
+let codec = English::default();
+let phrase = codec.encode_entropy(&[0u8; 16]).expect("valid entropy");
+let seed = nwords::bip39::seed::derive_seed(&phrase, "TREZOR");
+
+assert_eq!(seed.len(), nwords::bip39::seed::SEED_BYTES);
+```
+
+### Positional IDs
+
+```rust
+use nwords::{core::Linear, positional::Positional};
+
+const WORDS: &[&str] = &[
+    "zero", "one", "two", "three", "four",
+    "five", "six", "seven", "eight", "nine",
+];
+
+let codec = Positional::new(Linear::new(WORDS), 3, 1_000).expect("valid shape");
+
+assert_eq!(codec.encode(42).expect("in range"), "zero four two");
+assert_eq!(
+    codec.decode_words(&["zero", "four", "two"]).expect("valid phrase"),
+    42
+);
+```
+
+### Stats Planning
+
+```rust
+use nwords::stats::{self, PlanSolution, PlanTarget};
+
+let solution = stats::required_words(PlanTarget::Range(1_000_000), 10)
+    .expect("valid target");
+assert_eq!(
+    solution,
+    PlanSolution::RequiredWords {
+        word_count: 6,
+        capacity: stats::CapacityClass::Exact(1_000_000),
+    }
+);
+
+let bip39 = stats::bip39::minimum_word_count_for_entropy_bits(192)
+    .expect("valid BIP-39 target");
+assert_eq!(bip39.word_count, 18);
+```
+
+## Feature Matrix
+
+| Feature | Default | Adds |
+|---|---:|---|
+| `std` | yes | Standard-library support; enables `alloc`. |
+| `alloc` | yes | `String`, `Vec`, and phrase-facing APIs in `no_std` builds. |
+| `stats` | yes | Exact capacity and planning helpers under `nwords::stats`. |
+| `bip39` | yes | BIP-39 English phrase codec. |
+| `bip39-japanese` | no | Japanese wordlist, U+3000 display, and Unicode parsing. |
+| `bip39-seed` | no | PBKDF2-HMAC-SHA512 seed derivation. |
+| `positional` | yes | Positional N-word ID codec. |
+
+## `no_std + alloc`
+
+Default builds use `std`. For `no_std + alloc`, disable default features and
+select the capabilities you need:
+
+```toml
+nwords = { version = "0.1", default-features = false, features = ["alloc", "bip39", "stats"] }
+```
+
+V1 does not support phrase-facing APIs without `alloc`. BIP-39 seed derivation
+also requires `alloc` for Unicode normalization.
+
+## Compatibility Scope
+
+V1 ships:
+
+- BIP-39 English and Japanese entropy, mnemonic, checksum, and seed-vector
+  compatibility.
+- Positional N-word codecs over user-provided dictionaries.
+- Exact `u128` capacity/range math plus log-domain estimates beyond `u128`.
+- `Linear` and `Sorted` word maps.
+- Identity permutation only.
+
+V1 intentionally defers SLIP-39, Niceware, Proquint, PGP word lists,
+non-identity permutations, BIP-32/xprv derivation, and BigInt-backed exact
+capacity math.

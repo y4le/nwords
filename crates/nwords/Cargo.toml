@@ -40,7 +40,7 @@ bip39-seed = ["alloc", "dep:nwords-bip39-seed"]
 positional = ["alloc", "nwords-schemes/positional"]
 
 [dependencies]
-nwords-core = { path = "../nwords-core", default-features = false }
-nwords-schemes = { path = "../nwords-schemes", default-features = false }
-nwords-wordlists = { path = "../nwords-wordlists", default-features = false, optional = true }
-nwords-bip39-seed = { path = "../nwords-bip39-seed", default-features = false, optional = true }
+nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false }
+nwords-schemes = { version = "0.1.0", path = "../nwords-schemes", default-features = false }
+nwords-wordlists = { version = "0.1.0", path = "../nwords-wordlists", default-features = false, optional = true }
+nwords-bip39-seed = { version = "0.1.0", path = "../nwords-bip39-seed", default-features = false, optional = true }

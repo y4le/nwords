@@ -15,4 +15,4 @@ bip39-english = []
 bip39-japanese = ["bip39-english"]
 
 [dependencies]
-nwords-core = { path = "../nwords-core", default-features = false, features = ["alloc"] }
+nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false, features = ["alloc"] }
