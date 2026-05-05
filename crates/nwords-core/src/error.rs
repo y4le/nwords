@@ -42,6 +42,20 @@ pub enum Error {
         /// Exact representational capacity.
         capacity: u128,
     },
+    /// Permutation multiplier is not invertible over the configured range.
+    InvalidPermutation {
+        /// Observed multiplier.
+        multiplier: u128,
+        /// Permutation domain.
+        range: u128,
+    },
+    /// Permutation domain differs from the positional codec range.
+    InvalidPermutationDomain {
+        /// Observed permutation domain.
+        got: u128,
+        /// Expected positional codec range.
+        expected: u128,
+    },
     /// Positional dictionary sizes are not uniform.
     InconsistentDictionarySize {
         /// Position whose dictionary size differed.
@@ -103,6 +117,14 @@ impl fmt::Display for Error {
             Self::RangeExceedsCapacity { range, capacity } => {
                 write!(f, "range {range} exceeds capacity {capacity}")
             }
+            Self::InvalidPermutation { multiplier, range } => write!(
+                f,
+                "permutation multiplier {multiplier} is not invertible over range {range}"
+            ),
+            Self::InvalidPermutationDomain { got, expected } => write!(
+                f,
+                "permutation domain {got} differs from expected range {expected}"
+            ),
             Self::InconsistentDictionarySize {
                 position,
                 got,

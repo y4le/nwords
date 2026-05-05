@@ -99,12 +99,44 @@ fn presets_lists_stable_rows_and_caveat() {
     assert!(output.status.success());
     let text = stdout(&output);
     assert!(text.contains("BIP-39 wordlist used as a positional dictionary"));
-    assert!(text.contains("name\tdictionary\twords\trange\tcapacity\tslack\tacceptance_ratio"));
-    assert!(text.contains("dec6\tbip39-en-positional\t2\t1000000\t4194304\t3194304"));
-    assert!(text.contains("u32\tbip39-en-positional\t3\t4294967296\t8589934592\t4294967296"));
+    assert!(text.contains(
+        "name\tdictionary\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio"
+    ));
+    assert!(text.contains("dec6\tbip39-en-positional\tidentity\t2\t1000000\t4194304\t3194304"));
+    assert!(text.contains(
+        "dec6-spread\tbip39-en-positional\tspread-affine-v1\t2\t1000000\t4194304\t3194304"
+    ));
     assert!(
-        text.contains("u64\tbip39-en-positional\t6\t18446744073709551616\t73786976294838206464")
+        text.contains("u32\tbip39-en-positional\tidentity\t3\t4294967296\t8589934592\t4294967296")
     );
+    assert!(text.contains(
+        "u64\tbip39-en-positional\tidentity\t6\t18446744073709551616\t73786976294838206464"
+    ));
+}
+
+#[test]
+fn spread_presets_round_trip_and_report_permutation() {
+    let identity = nwords(&["encode", "42", "--preset", "dec6"]);
+    assert!(identity.status.success());
+
+    let spread = nwords(&["encode", "42", "--preset", "dec6-spread"]);
+    assert!(spread.status.success());
+    assert_eq!(stdout(&spread).split_whitespace().count(), 2);
+    assert_ne!(stdout(&spread), stdout(&identity));
+
+    let decoded = nwords(&["decode", stdout(&spread).trim(), "--preset", "dec6-spread"]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "42\n");
+
+    let explained = nwords(&["encode", "42", "--preset", "dec6-spread", "--explain"]);
+    assert!(explained.status.success());
+    let explained_text = stdout(&explained);
+    assert!(explained_text.contains("preset: dec6-spread\n"));
+    assert!(explained_text.contains("permutation: spread-affine-v1\n"));
+
+    let plan = nwords(&["plan", "--preset", "dec6-spread"]);
+    assert!(plan.status.success());
+    assert!(stdout(&plan).contains("permutation: spread-affine-v1\n"));
 }
 
 #[test]
@@ -127,6 +159,7 @@ fn plan_reports_capacity_and_unrepresentable_shapes() {
     let preset_text = stdout(&preset);
     assert!(preset_text.contains("mode: plan\n"));
     assert!(preset_text.contains("preset: u32\n"));
+    assert!(preset_text.contains("permutation: identity\n"));
     assert!(preset_text.contains("range: 4294967296\n"));
     assert!(preset_text.contains("acceptance_ratio: 4294967296/8589934592\n"));
 

@@ -40,6 +40,12 @@ where
     ) -> Result<Self> {
         let base = word_map.len(0);
         let codec = BaseN::new(base, word_count, range)?;
+        if permutation.domain() != range {
+            return Err(Error::InvalidPermutationDomain {
+                got: permutation.domain(),
+                expected: range,
+            });
+        }
         for position in 0..word_count {
             let len = word_map.len(position);
             if len != base {
@@ -119,7 +125,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Positional;
-    use nwords_core::{Error, Linear, WordMap};
+    use nwords_core::{AffinePermutation, Error, Linear, WordMap};
 
     const WORDS: &[&str] = &[
         "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
@@ -186,6 +192,26 @@ mod tests {
                 position: 1,
                 got: 9,
                 expected: 10
+            })
+        );
+    }
+
+    #[test]
+    fn positional_codec_rejects_mismatched_permutation_domain() {
+        let permutation = AffinePermutation::new(1, 0, 999).expect("permutation");
+
+        assert_eq!(
+            Positional::with_formatter_and_permutation(
+                Linear::new(WORDS),
+                crate::AsciiSpace,
+                permutation,
+                3,
+                1000
+            )
+            .map(|_| ()),
+            Err(Error::InvalidPermutationDomain {
+                got: 999,
+                expected: 1000
             })
         );
     }

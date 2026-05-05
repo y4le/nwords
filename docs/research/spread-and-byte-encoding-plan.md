@@ -17,8 +17,8 @@ shuffled dictionary as the main solution.
 Use a byte-first scheme for arbitrary data. Text support is a UTF-8 adapter on
 top of byte encoding, not a direct character or Unicode-code-point codec.
 
-No implementation is part of this planning step. The next implementation phase
-is an affine spread permutation behind the existing `Permutation` trait.
+Phase A was planning only. Phase B adds an affine spread permutation behind the
+existing `Permutation` trait.
 
 ## Decision Lock
 

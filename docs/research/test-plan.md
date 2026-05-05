@@ -52,6 +52,21 @@ surface. Use property tests:
 5. The encoder never emits a symbol index outside the wordlist length for the
    current position.
 
+### Affine spread permutations
+
+Spread presets use the positional permutation layer. They are not security or
+entropy features.
+
+Required checks:
+
+1. Construction rejects zero ranges.
+2. Construction rejects affine multipliers where `gcd(multiplier, range) != 1`.
+3. Exhaustive small-domain tests prove each output appears exactly once.
+4. Boundary tests cover large preset ranges, including `0`, `range - 1`, and
+   middle values.
+5. CLI spread presets round-trip and report `spread-affine-v1` separately from
+   `identity`.
+
 ### Stats helper
 
 The stats helper is a V1 planning contract. It must distinguish

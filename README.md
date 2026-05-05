@@ -15,10 +15,15 @@ The workspace includes a small `nwords` binary for positional ID phrases:
 ```sh
 cargo run -p nwords-cli -- encode 42 --preset u32
 cargo run -p nwords-cli -- decode "<phrase>" --preset u32
+cargo run -p nwords-cli -- encode 42 --preset dec6-spread
 cargo run -p nwords-cli -- presets
 cargo run -p nwords-cli -- plan --preset u32
 cargo run -p nwords-cli -- plan --range 1000000
 ```
+
+`*-spread` presets apply a deterministic reversible permutation before
+positional encoding, so nearby assigned IDs usually produce less visually
+similar phrases. They are not encryption and do not add entropy.
 
 The CLI uses the BIP-39 English wordlist as a positional dictionary. It does
 not produce BIP-39 wallet mnemonics:

@@ -17,7 +17,7 @@ mod wordmap;
 
 pub use bitframe::{BitFrame, BitView};
 pub use error::{Error, Result};
-pub use permutation::IdentityPermutation;
+pub use permutation::{AffinePermutation, IdentityPermutation};
 #[cfg(all(feature = "alloc", feature = "stats"))]
 pub use symbol::BaseN;
 #[cfg(feature = "alloc")]
@@ -31,7 +31,8 @@ pub use traits::{Formatter, SchemeFrame, SymbolCodec, TextNormalizer, WordParser
 /// Common imports for users implementing or composing codecs.
 pub mod prelude {
     pub use crate::{
-        BitFrame, BitView, Error, IdentityPermutation, Linear, Permutation, Result, Sorted, WordMap,
+        AffinePermutation, BitFrame, BitView, Error, IdentityPermutation, Linear, Permutation,
+        Result, Sorted, WordMap,
     };
 
     #[cfg(feature = "alloc")]

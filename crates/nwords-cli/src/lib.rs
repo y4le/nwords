@@ -3,8 +3,9 @@
 use std::fmt;
 
 use nwords::{
-    core::WordMap,
+    core::{AffinePermutation, WordMap},
     positional::Positional,
+    schemes::AsciiSpace,
     stats::{self, CapacityClass, PlanSolution, PlanTarget},
     wordlists::bip39::English,
 };
@@ -12,6 +13,23 @@ use nwords::{
 const DEFAULT_DICTIONARY: &str = "bip39-en-positional";
 const POSITIONAL_CAVEAT: &str =
     "BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.";
+const IDENTITY_PERMUTATION: PermutationKind = PermutationKind::Identity;
+const DECIMAL_SPREAD: PermutationKind = PermutationKind::SpreadAffine {
+    multiplier: 65_537,
+    offset: 314_159,
+};
+const U32_SPREAD: PermutationKind = PermutationKind::SpreadAffine {
+    multiplier: 2_654_435_761,
+    offset: 1_013_904_223,
+};
+const U64_SPREAD: PermutationKind = PermutationKind::SpreadAffine {
+    multiplier: 6_364_136_223_846_793_005,
+    offset: 1_442_695_040_888_963_407,
+};
+const DEC18_SPREAD: PermutationKind = PermutationKind::SpreadAffine {
+    multiplier: 6_364_136_223_846_793_007,
+    offset: 1_442_695_040_888_963_407,
+};
 
 const PRESETS: &[Preset] = &[
     Preset {
@@ -19,30 +37,70 @@ const PRESETS: &[Preset] = &[
         range: 1_000_000,
         words: 2,
         dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "dec6-spread",
+        range: 1_000_000,
+        words: 2,
+        dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: DECIMAL_SPREAD,
     },
     Preset {
         name: "dec9",
         range: 1_000_000_000,
         words: 3,
         dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "dec9-spread",
+        range: 1_000_000_000,
+        words: 3,
+        dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: DECIMAL_SPREAD,
     },
     Preset {
         name: "u32",
         range: 1u128 << 32,
         words: 3,
         dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "u32-spread",
+        range: 1u128 << 32,
+        words: 3,
+        dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: U32_SPREAD,
     },
     Preset {
         name: "u64",
         range: 1u128 << 64,
         words: 6,
         dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "u64-spread",
+        range: 1u128 << 64,
+        words: 6,
+        dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: U64_SPREAD,
     },
     Preset {
         name: "dec18",
         range: 1_000_000_000_000_000_000,
         words: 6,
         dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "dec18-spread",
+        range: 1_000_000_000_000_000_000,
+        words: 6,
+        dictionary: Dictionary::Bip39EnglishPositional,
+        permutation: DEC18_SPREAD,
     },
 ];
 
@@ -155,13 +213,21 @@ fn presets(args: &[String]) -> Result<String, CliError> {
     let mut output = String::new();
     output.push_str(POSITIONAL_CAVEAT);
     output.push('\n');
-    output.push_str("name\tdictionary\twords\trange\tcapacity\tslack\tacceptance_ratio\n");
+    output.push_str(
+        "name\tdictionary\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio\n",
+    );
     for preset in PRESETS {
-        let report = Report::new(preset.dictionary, preset.words, preset.range)?;
+        let report = Report::new(
+            preset.dictionary,
+            preset.permutation,
+            preset.words,
+            preset.range,
+        )?;
         output.push_str(&format!(
-            "{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
             preset.name,
             preset.dictionary.name(),
+            preset.permutation.name(),
             preset.words,
             preset.range,
             report.capacity,
@@ -189,7 +255,12 @@ fn plan(args: &[String]) -> Result<String, CliError> {
         }
         let preset =
             find_preset(name).ok_or_else(|| CliError::usage(format!("unknown preset `{name}`")))?;
-        let report = Report::new(preset.dictionary, preset.words, preset.range)?;
+        let report = Report::new(
+            preset.dictionary,
+            preset.permutation,
+            preset.words,
+            preset.range,
+        )?;
         return Ok(format_report_fields("plan", &report, None, None));
     }
 
@@ -216,12 +287,17 @@ fn plan(args: &[String]) -> Result<String, CliError> {
         }
     };
 
-    let report = Report::new(dictionary, words, range)?;
+    let report = Report::new(dictionary, IDENTITY_PERMUTATION, words, range)?;
     Ok(format_report_fields("plan", &report, None, None))
 }
 
 fn explain_encode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliError> {
-    let report = Report::new(shape.dictionary, shape.words, shape.range)?;
+    let report = Report::new(
+        shape.dictionary,
+        shape.permutation,
+        shape.words,
+        shape.range,
+    )?;
     Ok(format_report_fields(
         "encode",
         &report,
@@ -231,7 +307,12 @@ fn explain_encode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliEr
 }
 
 fn explain_decode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliError> {
-    let report = Report::new(shape.dictionary, shape.words, shape.range)?;
+    let report = Report::new(
+        shape.dictionary,
+        shape.permutation,
+        shape.words,
+        shape.range,
+    )?;
     Ok(format_report_fields(
         "decode",
         &report,
@@ -256,6 +337,7 @@ fn format_report_fields(
         output.push_str("preset: custom\n");
     }
     output.push_str(&format!("dictionary: {}\n", report.dictionary.name()));
+    output.push_str(&format!("permutation: {}\n", report.permutation.name()));
     output.push_str(&format!("words: {}\n", report.words));
     output.push_str(&format!("range: {}\n", report.range));
     output.push_str(&format!("capacity: {}\n", report.capacity));
@@ -280,6 +362,7 @@ struct Preset {
     range: u128,
     words: usize,
     dictionary: Dictionary,
+    permutation: PermutationKind,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -309,10 +392,35 @@ impl Dictionary {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PermutationKind {
+    Identity,
+    SpreadAffine { multiplier: u128, offset: u128 },
+}
+
+impl PermutationKind {
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Identity => "identity",
+            Self::SpreadAffine { .. } => "spread-affine-v1",
+        }
+    }
+
+    fn permutation(self, range: u128) -> Result<AffinePermutation, nwords::core::Error> {
+        match self {
+            Self::Identity => AffinePermutation::new(1, 0, range),
+            Self::SpreadAffine { multiplier, offset } => {
+                AffinePermutation::new(multiplier, offset, range)
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Shape {
     range: u128,
     words: usize,
     dictionary: Dictionary,
+    permutation: PermutationKind,
     preset_name: Option<&'static str>,
 }
 
@@ -330,6 +438,7 @@ impl Shape {
                 range: preset.range,
                 words: preset.words,
                 dictionary: preset.dictionary,
+                permutation: preset.permutation,
                 preset_name: Some(preset.name),
             });
         }
@@ -351,13 +460,23 @@ impl Shape {
             range,
             words,
             dictionary,
+            permutation: IDENTITY_PERMUTATION,
             preset_name: None,
         })
     }
 
-    fn codec(self) -> Result<Positional<English>, nwords::core::Error> {
+    fn codec(
+        self,
+    ) -> Result<Positional<English, AsciiSpace, AffinePermutation>, nwords::core::Error> {
+        let permutation = self.permutation.permutation(self.range)?;
         match self.dictionary {
-            Dictionary::Bip39EnglishPositional => Positional::new(English, self.words, self.range),
+            Dictionary::Bip39EnglishPositional => Positional::with_formatter_and_permutation(
+                English,
+                AsciiSpace,
+                permutation,
+                self.words,
+                self.range,
+            ),
         }
     }
 }
@@ -365,6 +484,7 @@ impl Shape {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Report {
     dictionary: Dictionary,
+    permutation: PermutationKind,
     words: usize,
     range: u128,
     capacity: CapacityDisplay,
@@ -372,7 +492,12 @@ struct Report {
 }
 
 impl Report {
-    fn new(dictionary: Dictionary, words: usize, range: u128) -> Result<Self, CliError> {
+    fn new(
+        dictionary: Dictionary,
+        permutation: PermutationKind,
+        words: usize,
+        range: u128,
+    ) -> Result<Self, CliError> {
         if words == 0 {
             return Err(CliError::usage("words must be greater than zero"));
         }
@@ -382,10 +507,12 @@ impl Report {
         let capacity = stats::capacity_uniform(dictionary.len(), words).map_err(runtime_error)?;
         Ok(Self {
             dictionary,
+            permutation,
             words,
             range,
             capacity: CapacityDisplay(capacity),
-            preset_name: find_preset_by_shape(dictionary, words, range).map(|preset| preset.name),
+            preset_name: find_preset_by_shape(dictionary, permutation, words, range)
+                .map(|preset| preset.name),
         })
     }
 
@@ -574,11 +701,15 @@ fn find_preset(name: &str) -> Option<&'static Preset> {
 
 fn find_preset_by_shape(
     dictionary: Dictionary,
+    permutation: PermutationKind,
     words: usize,
     range: u128,
 ) -> Option<&'static Preset> {
     PRESETS.iter().find(|preset| {
-        preset.dictionary == dictionary && preset.words == words && preset.range == range
+        preset.dictionary == dictionary
+            && preset.permutation == permutation
+            && preset.words == words
+            && preset.range == range
     })
 }
 
