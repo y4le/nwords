@@ -8,6 +8,25 @@ The implementation is dependency-light and forbids unsafe code in every crate.
 
 ## Examples
 
+### CLI ID Phrases
+
+The workspace includes a small `nwords` binary for positional ID phrases:
+
+```sh
+cargo run -p nwords-cli -- encode 42 --preset u32
+cargo run -p nwords-cli -- decode "<phrase>" --preset u32
+cargo run -p nwords-cli -- presets
+cargo run -p nwords-cli -- plan --preset u32
+cargo run -p nwords-cli -- plan --range 1000000
+```
+
+The CLI uses the BIP-39 English wordlist as a positional dictionary. It does
+not produce BIP-39 wallet mnemonics:
+
+```text
+BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
+```
+
 ### BIP-39 English
 
 ```rust
@@ -105,6 +124,7 @@ also requires `alloc` for Unicode normalization.
 
 V1 ships:
 
+- A `nwords` CLI for positional ID phrase encoding and decoding.
 - BIP-39 English and Japanese entropy, mnemonic, checksum, and seed-vector
   compatibility.
 - Positional N-word codecs over user-provided dictionaries.

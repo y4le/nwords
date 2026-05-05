@@ -147,6 +147,7 @@ Add:
 
 ```sh
 nwords presets
+nwords plan --preset u32
 nwords plan --range <range>
 ```
 
@@ -170,6 +171,7 @@ Recommended presets, all using `bip39-en-positional`:
 - slack;
 - acceptance ratio.
 
+`plan --preset <name>` should report the same precise terms for one preset.
 `plan --range <range>` should use `nwords::stats` to choose the required word
 count for the default dictionary size. If `--words <N>` is supplied, it should
 report whether that word count can represent the range. It should use precise

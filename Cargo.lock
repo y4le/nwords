@@ -92,6 +92,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "nwords-cli"
+version = "0.1.0"
+dependencies = [
+ "nwords",
+]
+
+[[package]]
 name = "nwords-core"
 version = "0.1.0"
 
