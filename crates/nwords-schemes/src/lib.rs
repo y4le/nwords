@@ -14,7 +14,7 @@ pub use format::AsciiSpace;
 
 /// BIP-39 scheme adapters.
 #[cfg(feature = "bip39-english")]
-pub mod bip39 {}
+pub mod bip39;
 
 /// Positional N-word scheme adapters.
 #[cfg(feature = "positional")]

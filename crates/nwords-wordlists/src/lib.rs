@@ -4,4 +4,4 @@
 //! Built-in wordlists for `nwords`.
 
 /// BIP-39 wordlists.
-pub mod bip39 {}
+pub mod bip39;

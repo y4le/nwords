@@ -12,10 +12,21 @@ homepage.workspace = true
 default = ["std", "bip39-english", "positional"]
 std = ["nwords-core/std", "nwords-wordlists?/std"]
 alloc = ["nwords-core/alloc"]
-bip39-english = ["alloc", "dep:nwords-wordlists", "nwords-wordlists/bip39-english"]
-bip39-japanese = ["bip39-english", "nwords-wordlists/bip39-japanese"]
+bip39-english = [
+    "alloc",
+    "dep:nwords-wordlists",
+    "dep:sha2",
+    "nwords-wordlists/bip39-english",
+]
+bip39-japanese = [
+    "bip39-english",
+    "dep:unicode-normalization",
+    "nwords-wordlists/bip39-japanese",
+]
 positional = ["alloc", "nwords-core/stats"]
 
 [dependencies]
 nwords-core = { path = "../nwords-core", default-features = false }
 nwords-wordlists = { path = "../nwords-wordlists", default-features = false, optional = true }
+sha2 = { version = "0.10.9", default-features = false, optional = true }
+unicode-normalization = { version = "0.1.25", default-features = false, optional = true }
