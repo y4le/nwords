@@ -1,0 +1,17 @@
+[package]
+name = "nwords-web"
+description = "WebAssembly bindings for the nwords static demo."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+nwords = { version = "0.1.0", path = "../nwords", default-features = false, features = ["alloc", "bip39", "positional", "stats", "word-bytes"] }
+wasm-bindgen = "0.2.120"

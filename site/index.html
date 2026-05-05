@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>nwords demo</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">nwords</p>
+          <h1>Turn IDs and text into reversible word phrases.</h1>
+        </div>
+        <a class="repo-link" href="https://github.com/y4le/nwords">GitHub</a>
+      </header>
+
+      <section class="notice-grid" aria-label="Important caveats">
+        <p id="positional-caveat">BIP-39 words are used as a positional dictionary, not wallet mnemonics.</p>
+        <p id="spread-caveat">Spread presets reduce visual adjacency only; they are not encryption.</p>
+        <p id="text-caveat">Text uses byte-exact UTF-8 with no Unicode normalization.</p>
+      </section>
+
+      <section class="workspace" aria-label="nwords demo tools">
+        <div class="tool-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Numeric IDs</p>
+              <h2>Encode and decode</h2>
+            </div>
+            <select id="preset-select" aria-label="Preset"></select>
+          </div>
+
+          <div class="control-grid">
+            <label>
+              <span>ID</span>
+              <input id="id-input" inputmode="numeric" autocomplete="off" value="42">
+            </label>
+            <button id="encode-button" type="button">Encode</button>
+          </div>
+
+          <label>
+            <span>Phrase</span>
+            <textarea id="phrase-input" rows="3" spellcheck="false"></textarea>
+          </label>
+
+          <div class="button-row">
+            <button id="decode-button" type="button">Decode</button>
+            <button id="compare-button" type="button">Compare nearby IDs</button>
+          </div>
+
+          <output id="id-output" class="result" aria-live="polite"></output>
+        </div>
+
+        <aside class="stats-panel" aria-label="Preset report">
+          <p class="eyebrow">Shape</p>
+          <dl id="stats-list" class="stats-list"></dl>
+        </aside>
+      </section>
+
+      <section class="workspace two-column" aria-label="planning and text tools">
+        <div class="tool-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Plan</p>
+              <h2>Pick a word count</h2>
+            </div>
+          </div>
+
+          <div class="control-grid">
+            <label>
+              <span>Accepted range</span>
+              <input id="range-input" inputmode="numeric" autocomplete="off" value="1000000">
+            </label>
+            <label>
+              <span>Words</span>
+              <input id="words-input" inputmode="numeric" autocomplete="off" placeholder="auto">
+            </label>
+          </div>
+
+          <button id="plan-button" type="button">Plan shape</button>
+          <output id="plan-output" class="result" aria-live="polite"></output>
+        </div>
+
+        <div class="tool-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Text</p>
+              <h2>word-bytes-v1</h2>
+            </div>
+          </div>
+
+          <label>
+            <span>Text</span>
+            <textarea id="text-input" rows="3">hello</textarea>
+          </label>
+          <button id="text-encode-button" type="button">Encode text</button>
+
+          <label>
+            <span>Words</span>
+            <textarea id="text-phrase-input" rows="3" spellcheck="false"></textarea>
+          </label>
+          <button id="text-decode-button" type="button">Decode text</button>
+          <output id="text-output" class="result" aria-live="polite"></output>
+        </div>
+      </section>
+
+      <section class="compare-panel" aria-label="Nearby ID comparison">
+        <div class="panel-title">
+          <div>
+            <p class="eyebrow">Spread</p>
+            <h2>Nearby assigned IDs</h2>
+          </div>
+        </div>
+        <div id="compare-grid" class="compare-grid"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

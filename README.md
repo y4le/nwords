@@ -120,6 +120,32 @@ assert_eq!(bip39.word_count, 18);
 | `positional` | yes | Positional N-word ID codec. |
 | `word-bytes` | yes | `word-bytes-v1` arbitrary byte and UTF-8 text codec. |
 
+## Static Web Demo
+
+The repository includes a small browser demo under `site/` backed by the Rust
+implementation compiled to WebAssembly from `crates/nwords-web`.
+
+Build the static demo:
+
+```sh
+wasm-pack build crates/nwords-web --target web --out-dir ../../site/pkg --no-pack
+```
+
+Then serve `site/` with any static file server:
+
+```sh
+python3 -m http.server 8787 --bind 127.0.0.1 --directory site
+```
+
+The demo exposes numeric ID encode/decode, preset planning reports, spread
+comparison, and `word-bytes-v1` text encode/decode. GitHub Pages deployment is
+handled by `.github/workflows/pages.yml`, which builds the WASM package and
+uploads `site/` as the Pages artifact.
+
+`wasm-bindgen` is the only web-demo runtime bridge dependency; it is used to
+call the Rust library from the static browser app without reimplementing the
+codec in JavaScript.
+
 ## `no_std + alloc`
 
 Default builds use `std`. For `no_std + alloc`, disable default features and

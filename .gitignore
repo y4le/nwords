@@ -1,5 +1,6 @@
 # Rust build output
 /target/
+/site/pkg/
 
 # Local editor and OS files
 /.idea/
@@ -12,4 +13,3 @@
 
 # Local agent/runtime state
 /.parley/
-

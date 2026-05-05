@@ -187,6 +187,23 @@ non-spec BIP-39 word counts.
 When the goal is a short assigned ID phrase, use positional presets instead of
 BIP-39 mnemonic APIs.
 
+## Static Web Demo
+
+The static demo lives in `site/` and uses the Rust implementation through
+`crates/nwords-web` WebAssembly bindings. It is not a JavaScript reimplementation
+of the codec.
+
+Build it before serving locally:
+
+```sh
+wasm-pack build crates/nwords-web --target web --out-dir ../../site/pkg --no-pack
+python3 -m http.server 8787 --bind 127.0.0.1 --directory site
+```
+
+The GitHub Pages workflow builds the WASM package and uploads `site/`. Keep the
+same caveats in web-demo copy: BIP-39 words are positional dictionary entries,
+spread is not encryption or entropy, and text is byte-exact UTF-8.
+
 ## Response Checklist
 
 When answering a use-case question:
