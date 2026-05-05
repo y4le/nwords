@@ -1,0 +1,46 @@
+[package]
+name = "nwords"
+description = "Bidirectional word and phrase codecs for entropy and IDs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+
+[features]
+default = ["std", "alloc", "bip39", "positional", "stats"]
+std = [
+    "alloc",
+    "nwords-core/std",
+    "nwords-schemes/std",
+    "nwords-wordlists?/std",
+    "nwords-bip39-seed?/std",
+]
+alloc = [
+    "nwords-core/alloc",
+    "nwords-schemes/alloc",
+    "nwords-bip39-seed?/alloc",
+]
+stats = ["nwords-core/stats"]
+bip39 = ["bip39-english"]
+bip39-english = [
+    "alloc",
+    "dep:nwords-wordlists",
+    "nwords-schemes/bip39-english",
+    "nwords-wordlists/bip39-english",
+]
+bip39-japanese = [
+    "bip39-english",
+    "nwords-schemes/bip39-japanese",
+    "nwords-wordlists/bip39-japanese",
+]
+bip39-seed = ["alloc", "dep:nwords-bip39-seed"]
+positional = ["alloc", "nwords-schemes/positional"]
+
+[dependencies]
+nwords-core = { path = "../nwords-core", default-features = false }
+nwords-schemes = { path = "../nwords-schemes", default-features = false }
+nwords-wordlists = { path = "../nwords-wordlists", default-features = false, optional = true }
+nwords-bip39-seed = { path = "../nwords-bip39-seed", default-features = false, optional = true }

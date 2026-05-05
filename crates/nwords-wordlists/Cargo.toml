@@ -1,0 +1,18 @@
+[package]
+name = "nwords-wordlists"
+description = "Built-in wordlists for nwords."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[features]
+default = ["std", "bip39-english"]
+std = ["nwords-core/std"]
+bip39-english = []
+bip39-japanese = ["bip39-english"]
+
+[dependencies]
+nwords-core = { path = "../nwords-core", default-features = false, features = ["alloc"] }

@@ -1,0 +1,18 @@
+[package]
+name = "nwords-core"
+description = "Core traits and primitives for nwords."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[features]
+default = ["std", "stats"]
+std = ["alloc"]
+alloc = []
+stats = []
+
+[dependencies]
+

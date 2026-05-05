@@ -1,0 +1,21 @@
+[package]
+name = "nwords-schemes"
+description = "Ready-made schemes for nwords."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[features]
+default = ["std", "bip39-english", "positional"]
+std = ["nwords-core/std", "nwords-wordlists?/std"]
+alloc = ["nwords-core/alloc"]
+bip39-english = ["alloc", "dep:nwords-wordlists", "nwords-wordlists/bip39-english"]
+bip39-japanese = ["bip39-english", "nwords-wordlists/bip39-japanese"]
+positional = ["alloc"]
+
+[dependencies]
+nwords-core = { path = "../nwords-core", default-features = false }
+nwords-wordlists = { path = "../nwords-wordlists", default-features = false, optional = true }
