@@ -6,5 +6,27 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-/// Placeholder module for the Phase 1 core API.
-pub mod prelude {}
+mod bitframe;
+mod error;
+mod permutation;
+mod traits;
+mod wordmap;
+
+pub use bitframe::{BitFrame, BitView};
+pub use error::{Error, Result};
+pub use permutation::IdentityPermutation;
+pub use traits::{Permutation, WordMap};
+pub use wordmap::{Linear, Sorted};
+
+#[cfg(feature = "alloc")]
+pub use traits::{Formatter, SchemeFrame, SymbolCodec, TextNormalizer, WordParser};
+
+/// Common imports for users implementing or composing codecs.
+pub mod prelude {
+    pub use crate::{
+        BitFrame, BitView, Error, IdentityPermutation, Linear, Permutation, Result, Sorted, WordMap,
+    };
+
+    #[cfg(feature = "alloc")]
+    pub use crate::{Formatter, SchemeFrame, SymbolCodec, TextNormalizer, WordParser};
+}

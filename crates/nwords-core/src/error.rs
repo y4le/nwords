@@ -1,0 +1,81 @@
+use core::fmt;
+
+/// Result type used by `nwords-core`.
+pub type Result<T> = core::result::Result<T, Error>;
+
+/// Error type for core codec operations.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Error {
+    /// Entropy length is not supported by the selected scheme.
+    InvalidEntropyLength {
+        /// Observed entropy length.
+        got: usize,
+        /// Supported entropy lengths.
+        expected: &'static [usize],
+    },
+    /// Word count is not supported by the selected scheme.
+    InvalidWordCount {
+        /// Observed word count.
+        got: usize,
+    },
+    /// A word was not found at the given phrase position.
+    UnknownWord {
+        /// Zero-based word position in the phrase.
+        position: usize,
+    },
+    /// Checksum validation failed.
+    InvalidChecksum,
+    /// Integer ID is outside the configured range.
+    IndexOutOfRange {
+        /// Observed value.
+        value: u128,
+        /// Exclusive upper bound.
+        range: u128,
+    },
+    /// Symbol index is outside the word map at the given position.
+    SymbolOutOfRange {
+        /// Observed symbol index.
+        index: u32,
+        /// Zero-based symbol position.
+        position: usize,
+        /// Word map length at that position.
+        len: usize,
+    },
+    /// Bit frame construction or mutation would exceed supported bounds.
+    BitFrameOverflow,
+    /// Requested text normalization is unavailable in the current build.
+    NormalizationUnavailable,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidEntropyLength { got, expected } => {
+                write!(
+                    f,
+                    "invalid entropy length {got}; expected one of {expected:?}"
+                )
+            }
+            Self::InvalidWordCount { got } => write!(f, "invalid word count {got}"),
+            Self::UnknownWord { position } => {
+                write!(f, "unknown word at position {position}")
+            }
+            Self::InvalidChecksum => f.write_str("invalid checksum"),
+            Self::IndexOutOfRange { value, range } => {
+                write!(f, "index {value} is outside range 0..{range}")
+            }
+            Self::SymbolOutOfRange {
+                index,
+                position,
+                len,
+            } => write!(
+                f,
+                "symbol index {index} at position {position} is outside length {len}"
+            ),
+            Self::BitFrameOverflow => f.write_str("bit frame overflow"),
+            Self::NormalizationUnavailable => f.write_str("normalization unavailable"),
+        }
+    }
+}
+
+impl core::error::Error for Error {}
