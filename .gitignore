@@ -1,0 +1,15 @@
+# Rust build output
+/target/
+
+# Local editor and OS files
+/.idea/
+/.vscode/
+.DS_Store
+
+# Local environment and secret files
+.env
+.env.*
+
+# Local agent/runtime state
+/.parley/
+

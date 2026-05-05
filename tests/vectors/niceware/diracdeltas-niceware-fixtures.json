@@ -1,0 +1,79 @@
+{
+  "schema": "nwords.niceware.fixtures.v1",
+  "source": {
+    "name": "diracdeltas/niceware test/mainTest.js",
+    "url": "https://github.com/diracdeltas/niceware/blob/84b054010a56231b0e0da0318d15346dc4487562/test/mainTest.js",
+    "commit": "84b054010a56231b0e0da0318d15346dc4487562",
+    "license": "MIT",
+    "license_file": "../licenses/niceware-MIT.LICENSE"
+  },
+  "encode": [
+    {
+      "bytes_hex": "",
+      "words": []
+    },
+    {
+      "bytes_hex": "0000",
+      "words": ["a"]
+    },
+    {
+      "bytes_hex": "ffff",
+      "words": ["zyzzyva"]
+    },
+    {
+      "bytes_hex": "000011d40c8c5af72e53fe3c36a9ffff",
+      "words": [
+        "a",
+        "billet",
+        "baiting",
+        "glum",
+        "crawl",
+        "writhing",
+        "deplane",
+        "zyzzyva"
+      ]
+    }
+  ],
+  "decode": [
+    {
+      "words": ["A"],
+      "bytes_hex": "0000"
+    },
+    {
+      "words": ["zyzzyva"],
+      "bytes_hex": "ffff"
+    },
+    {
+      "words": [
+        "A",
+        "billet",
+        "baiting",
+        "glum",
+        "Crawl",
+        "writhing",
+        "dePlanE",
+        "zyzzYvA"
+      ],
+      "bytes_hex": "000011d40c8c5af72e53fe3c36a9ffff",
+      "note": "Upstream decoder lowercases words before lookup."
+    }
+  ],
+  "negative": [
+    {
+      "case": "odd_byte_length",
+      "bytes_hex": "00"
+    },
+    {
+      "case": "unknown_word",
+      "words": ["You", "love", "ninetales"]
+    },
+    {
+      "case": "non_string_word"
+    }
+  ],
+  "wordlist_invariants": {
+    "len": 65536,
+    "unique": true,
+    "sorted": true
+  }
+}

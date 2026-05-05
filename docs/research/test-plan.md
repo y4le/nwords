@@ -1,0 +1,132 @@
+# `nwords` test-vector plan
+
+This plan separates V1 conformance tests from post-V1 adapter tests. The
+vectors live under `tests/vectors/`.
+
+## V1 required suites
+
+### BIP-39 official/reference vectors
+
+Use `tests/vectors/bip39/trezor-python-mnemonic-vectors.json`.
+
+Required checks for each enabled BIP-39 language:
+
+1. `entropy_hex -> mnemonic` matches the vector's mnemonic.
+2. `mnemonic -> entropy_hex` round-trips.
+3. `mnemonic + "TREZOR" -> seed_hex` matches the vector.
+4. Invalid checksum cases are rejected by targeted local tests.
+
+The Trezor file now includes 12 languages. The architecture currently targets
+the 10 languages exposed by `rust-bitcoin/bip39`; Russian and Turkish should
+remain skipped unless we deliberately ship those wordlists.
+
+### BIP-39 Japanese stress vectors
+
+Use `tests/vectors/bip39/bip32jp-test_JP_BIP39.json`.
+
+Required checks:
+
+1. Parse generated Japanese phrases with U+3000 separators.
+2. Accept NFKD-heavy passphrases such as compatibility symbols and voiced
+   kana combinations.
+3. Derive the expected seed and xprv-compatible seed bytes.
+4. Decide output mode explicitly:
+   - `SpecJapanese` emits U+3000 between words.
+   - `AsciiDisplay` can match `rust-bitcoin/bip39` display behavior.
+
+Important correction from the earlier architecture note: NFKD does normalize
+U+3000 to ASCII space. The Japanese compatibility hazard is still real, but it
+is about generation/parsing separators and Unicode normalization order, not
+because U+3000 survives NFKD.
+
+### Positional N-word codec
+
+There is no external canonical vector suite because this is the new generic
+surface. Use property tests:
+
+1. For arbitrary `range`, `base`, and word count, every accepted ID round-trips.
+2. IDs outside `[0, range)` are rejected.
+3. Boundary IDs `0`, `range - 1`, and the first rejected representation are
+   tested directly.
+4. If a permutation is configured, `invert(permute(id)) == id` over the domain.
+5. The encoder never emits a symbol index outside the wordlist length for the
+   current position.
+
+### Stats helper
+
+The stats helper is a V1 planning contract. It must distinguish
+representational capacity from uniform-sample entropy.
+
+Required deterministic tests:
+
+1. Uniform positional capacity:
+   - `2^8 == 256`.
+   - `10^6 == 1_000_000`.
+   - `256^4 == 4_294_967_296`.
+   - `2048^11 == 2^121` and fits in `u128`.
+   - `2048^12 == 2^132` and returns `BeyondU128`.
+2. Mixed positional capacity:
+   - `[2, 3, 5]` gives 30 states.
+   - A mixed shape that overflows `u128` returns a log-domain estimate.
+3. Inverse planning:
+   - Fixed range + dictionary size returns the smallest valid word count.
+   - Fixed range + word count returns the smallest valid dictionary size.
+   - Exact-power and one-over-exact-power cases are both covered.
+4. Positional rejection metrics:
+   - Capacity equal to range has zero slack.
+   - Range below capacity reports `capacity - range` slack.
+   - Range above capacity is rejected.
+5. BIP-39 stats table:
+   - 12, 15, 18, 21, and 24 words map to 128, 160, 192, 224, and 256 entropy
+     bits.
+   - Checksum bits are 4, 5, 6, 7, and 8 respectively.
+   - Non-spec counts such as 13, 14, and 25 are rejected.
+
+Property tests:
+
+1. For exact `u128` ranges, `ceil_log_base(range, base)` is the smallest `k`
+   such that `base^k >= range`.
+2. For exact `u128` ranges, `ceil_root(range, words)` is the smallest base such
+   that `base^words >= range`.
+3. If `range <= capacity`, then `slack + range == capacity`.
+4. Tradeoff candidates are sorted by word count first and dictionary size
+   second, or by another documented stable ordering.
+
+## Post-V1 suites
+
+### SLIP-39
+
+Use `tests/vectors/slip39/trezor-python-shamir-mnemonic-vectors.json`.
+
+Keep this post-V1 unless we expose or own the full SLIP-39 index/share layer.
+The vectors cover both successful recovery and expected failures. They should
+be run only under a `slip39` feature that depends on an adapter or audited
+implementation.
+
+### Niceware
+
+Use `tests/vectors/niceware/diracdeltas-niceware-fixtures.json`.
+
+These fixtures come from the canonical JS package tests. They verify 16-bit
+big-endian word indexes, case-insensitive decoding, odd-byte rejection, and
+wordlist invariants.
+
+### Proquint
+
+Use `tests/vectors/proquint/proquint-draft-rayner-02.json`.
+
+These fixtures verify the normative CVCVC bit layout, big-endian 16-bit word
+order, hyphen-insensitive decoding, case-insensitive decoding, and padding for
+odd byte strings where the application chooses to pad.
+
+## Cross-checks
+
+When an implementation crate exists, optional dev-dependency cross-checks can be
+added behind an explicit feature or ignored by default:
+
+- `bip39`: compare English and Japanese entropy/mnemonic/seed behavior.
+- `niceware`: compare fixture outputs if Niceware is in scope.
+- `proqnt` or `proquint`: compare Proquint fixture outputs if in scope.
+
+Do not use cross-check crates as the only test oracle. Vendored vectors remain
+the stable oracle; cross-checks are a drift detector.

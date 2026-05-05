@@ -1,0 +1,52 @@
+{
+  "schema": "nwords.proquint.fixtures.v1",
+  "source": {
+    "name": "draft-rayner-proquint-02 Section 6.6",
+    "url": "https://datatracker.ietf.org/doc/html/draft-rayner-proquint-02#section-6.6",
+    "version": "02"
+  },
+  "single_word_values": [
+    {
+      "u16_hex": "0000",
+      "proquint": "babab"
+    },
+    {
+      "u16_hex": "ffff",
+      "proquint": "zvzuz"
+    },
+    {
+      "u16_hex": "1234",
+      "proquint": "damuh"
+    },
+    {
+      "u16_hex": "f00d",
+      "proquint": "zabat"
+    },
+    {
+      "u16_hex": "beef",
+      "proquint": "ruroz"
+    }
+  ],
+  "byte_strings": [
+    {
+      "bytes_hex": "1234f00d",
+      "words_hex": ["1234", "f00d"],
+      "proquint_hyphenated": "damuh-zabat",
+      "proquint_compact": "damuhzabat"
+    },
+    {
+      "ascii": "F3r41OutL4w",
+      "bytes_hex": "46337234314f75744c3477",
+      "padded_bytes_hex": "46337234314f75744c347700",
+      "words_hex": ["4633", "7234", "314f", "7574", "4c34", "7700"],
+      "proquint_hyphenated": "himug-lamud-kudaz-lijuh-hubuh-lisab",
+      "padding_note": "The source string has odd byte length; this vector includes one trailing zero byte."
+    }
+  ],
+  "decode_rules": {
+    "case_insensitive": true,
+    "ignore_ascii_hyphen": true,
+    "reject_non_cvcvc": true,
+    "reject_length_not_multiple_of_5_after_hyphen_removal": true
+  }
+}
