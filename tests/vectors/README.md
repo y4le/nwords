@@ -21,6 +21,16 @@ Vendored and normalized vector files for `nwords` conformance tests.
   - Contents: 24 Japanese vectors with per-vector passphrase, seed, and xprv.
   - Use: Japanese U+3000 separator acceptance plus NFKD passphrase stress.
 
+## Adjective-Animal
+
+- `adjective-animal/`
+  - Source: `andreasonny83/unique-names-generator`
+    `10ff70b131c8a080e88c315a55e45a0f5caadd24`
+  - License: MIT, see `licenses/unique-names-generator-MIT.LICENSE`
+  - Contents: upstream adjective and animal snapshots, local blocklists, and
+    curated `nwords` adjective and animal lists.
+  - Use: built-in English adjective-animal positional word map.
+
 ## SLIP-39
 
 - `slip39/trezor-python-shamir-mnemonic-vectors.json`
