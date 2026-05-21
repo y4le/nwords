@@ -73,6 +73,8 @@ Ship:
 
 - BIP-39 English and Japanese.
 - Positional N-word codec.
+- Mixed-radix positional codec for per-position dictionary sizes.
+- Curated English adjective-animal word map and additive CLI presets.
 - Stats helpers for capacity, ID range, word count, and dictionary-size
   planning.
 - `Linear` and `Sorted` word maps.
@@ -96,6 +98,7 @@ Initial feature set:
 
 - `std` default; disabling it gives `no_std + alloc`.
 - `bip39` default.
+- `adjective-animal` default.
 - `bip39-japanese`, using Unicode normalization in the owning crate.
 - `positional` default.
 - `stats` included by default as pure core math; any advisory formatting is
@@ -138,6 +141,19 @@ from the exact kernel and may be `std`-gated.
 BIP-39 planning is not a free dictionary-size/word-count problem. BIP-39 word
 counts are spec-fixed at 12, 15, 18, 21, and 24 words, corresponding to
 128, 160, 192, 224, and 256 entropy bits before checksum expansion.
+
+## Adjective-Animal Wordlists
+
+The built-in English adjective-animal word map is an additive default feature,
+not a replacement for BIP-39 English positional presets. Position 0 is the
+adjective list and position 1 is the animal list; that order is part of the
+encoding contract.
+
+The V1 list is curated from `andreasonny83/unique-names-generator` commit
+`10ff70b131c8a080e88c315a55e45a0f5caadd24`, with source snapshots,
+blocklists, and license files under `tests/vectors/adjective-animal/`.
+Regenerating from a newer upstream source or reordering retained words is a new
+wordlist version, not an in-place compatibility edit.
 
 ## Agent Guidance
 

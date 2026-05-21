@@ -15,6 +15,7 @@ The workspace includes a small `nwords` binary for positional ID phrases:
 ```sh
 cargo run -p nwords-cli -- encode 42 --preset u32
 cargo run -p nwords-cli -- decode "<phrase>" --preset u32
+cargo run -p nwords-cli -- encode 42 --preset aa
 cargo run -p nwords-cli -- encode 42 --preset dec6-spread
 cargo run -p nwords-cli -- text encode "hello"
 cargo run -p nwords-cli -- bytes encode --hex deadbeef
@@ -31,11 +32,23 @@ similar phrases. They are not encryption and do not add entropy.
 length, payload bytes, and zero padding to an 11-bit word boundary. Text is
 encoded as byte-exact UTF-8 with no default Unicode normalization.
 
-The CLI uses the BIP-39 English wordlist as a positional dictionary. It does
-not produce BIP-39 wallet mnemonics:
+The CLI includes BIP-39 English positional presets and adjective-animal
+positional presets. BIP-39 positional presets do not produce BIP-39 wallet
+mnemonics:
 
 ```text
 BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
+```
+
+Adjective-animal presets use a curated two-position word map derived from the
+MIT-licensed `unique-names-generator` adjective and animal lists. They are
+deterministic ID encodings, not random names:
+
+```sh
+cargo run -p nwords-cli -- encode 0 --preset aa
+# able aardvark
+cargo run -p nwords-cli -- encode 249416 --preset aa
+# zippy zebra
 ```
 
 ### BIP-39 English
@@ -87,6 +100,24 @@ assert_eq!(
 );
 ```
 
+### Adjective-Animal IDs
+
+```rust
+use nwords::{
+    positional::MixedPositional,
+    wordlists::adjective_animal::{AdjectiveAnimal, CAPACITY, WORD_COUNT},
+};
+
+let codec = MixedPositional::new(AdjectiveAnimal, WORD_COUNT, CAPACITY)
+    .expect("valid adjective-animal shape");
+
+assert_eq!(codec.encode(0).expect("in range"), "able aardvark");
+assert_eq!(
+    codec.decode_words(&["zippy", "zebra"]).expect("valid phrase"),
+    CAPACITY - 1
+);
+```
+
 ### Stats Planning
 
 ```rust
@@ -114,6 +145,7 @@ assert_eq!(bip39.word_count, 18);
 | `std` | yes | Standard-library support; enables `alloc`. |
 | `alloc` | yes | `String`, `Vec`, and phrase-facing APIs in `no_std` builds. |
 | `stats` | yes | Exact capacity and planning helpers under `nwords::stats`. |
+| `adjective-animal` | yes | Curated English adjective-animal word map. |
 | `bip39` | yes | BIP-39 English phrase codec. |
 | `bip39-japanese` | no | Japanese wordlist, U+3000 display, and Unicode parsing. |
 | `bip39-seed` | no | PBKDF2-HMAC-SHA512 seed derivation. |
@@ -166,7 +198,9 @@ V1 ships:
 - `word-bytes-v1` CLI/library support for arbitrary bytes and UTF-8 text.
 - BIP-39 English and Japanese entropy, mnemonic, checksum, and seed-vector
   compatibility.
-- Positional N-word codecs over user-provided dictionaries.
+- Uniform and mixed-radix positional N-word codecs over user-provided and
+  built-in dictionaries.
+- Curated English adjective-animal wordlists and CLI presets.
 - Exact `u128` capacity/range math plus log-domain estimates beyond `u128`.
 - `Linear` and `Sorted` word maps.
 - Identity and affine spread permutations.

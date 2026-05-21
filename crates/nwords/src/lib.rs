@@ -40,7 +40,7 @@ pub mod stats;
 pub use nwords_schemes as schemes;
 
 /// Built-in wordlists.
-#[cfg(feature = "bip39-english")]
+#[cfg(any(feature = "adjective-animal", feature = "bip39-english"))]
 pub use nwords_wordlists as wordlists;
 
 /// BIP-39 seed derivation.
@@ -56,6 +56,9 @@ pub mod prelude {
 
     #[cfg(feature = "bip39-japanese")]
     pub use crate::bip39::{Japanese, RustBitcoinDisplay, SpecJapanese};
+
+    #[cfg(feature = "adjective-animal")]
+    pub use crate::wordlists::adjective_animal::AdjectiveAnimal;
 
     #[cfg(feature = "positional")]
     pub use crate::positional::{MixedPositional, Positional};

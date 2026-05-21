@@ -4,16 +4,24 @@ use std::fmt;
 
 use nwords::{
     core::{AffinePermutation, WordMap},
-    positional::Positional,
+    positional::{MixedPositional, Positional},
     schemes::AsciiSpace,
     stats::{self, CapacityClass, PlanSolution, PlanTarget},
     word_bytes::WordBytes,
-    wordlists::bip39::English,
+    wordlists::{
+        adjective_animal::{self, AdjectiveAnimal},
+        bip39::English,
+    },
 };
 
 const DEFAULT_DICTIONARY: &str = "bip39-en-positional";
-const POSITIONAL_CAVEAT: &str =
+const ADJECTIVE_ANIMAL_DICTIONARY: &str = "adjective-animal";
+const BIP39_POSITIONAL_CAVEAT: &str =
     "BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.";
+const ADJECTIVE_ANIMAL_CAVEAT: &str =
+    "Adjective-animal phrases are deterministic positional IDs, not random names.";
+const PRESETS_CAVEAT: &str =
+    "Presets encode deterministic positional ID phrases; BIP-39 positional presets are not wallet mnemonics.";
 const IDENTITY_PERMUTATION: PermutationKind = PermutationKind::Identity;
 const DECIMAL_SPREAD: PermutationKind = PermutationKind::SpreadAffine {
     multiplier: 65_537,
@@ -102,6 +110,20 @@ const PRESETS: &[Preset] = &[
         words: 6,
         dictionary: Dictionary::Bip39EnglishPositional,
         permutation: DEC18_SPREAD,
+    },
+    Preset {
+        name: "aa",
+        range: adjective_animal::CAPACITY,
+        words: adjective_animal::WORD_COUNT,
+        dictionary: Dictionary::AdjectiveAnimal,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "dec5-aa",
+        range: 100_000,
+        words: adjective_animal::WORD_COUNT,
+        dictionary: Dictionary::AdjectiveAnimal,
+        permutation: IDENTITY_PERMUTATION,
     },
 ];
 
@@ -224,7 +246,7 @@ fn presets(args: &[String]) -> Result<String, CliError> {
     }
 
     let mut output = String::new();
-    output.push_str(POSITIONAL_CAVEAT);
+    output.push_str(PRESETS_CAVEAT);
     output.push('\n');
     output.push_str(
         "name\tdictionary\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio\n",
@@ -290,10 +312,21 @@ fn plan(args: &[String]) -> Result<String, CliError> {
         return Err(CliError::usage("range must be greater than zero"));
     }
 
-    let words = if let Some(words) = parsed.words {
+    let words = if let Some(fixed_words) = dictionary.fixed_word_count() {
+        if parsed.words.is_some() {
+            return Err(CliError::usage(format!(
+                "dictionary `{}` has an intrinsic word count; omit --words",
+                dictionary.name()
+            )));
+        }
+        fixed_words
+    } else if let Some(words) = parsed.words {
         words
     } else {
-        match stats::required_words(PlanTarget::Range(range), dictionary.len()) {
+        let dictionary_size = dictionary
+            .uniform_len()
+            .ok_or_else(|| CliError::runtime("unexpected mixed dictionary planner path"))?;
+        match stats::required_words(PlanTarget::Range(range), dictionary_size) {
             Ok(PlanSolution::RequiredWords { word_count, .. }) => word_count,
             Ok(_) => return Err(CliError::runtime("unexpected stats planner result")),
             Err(error) => return Err(runtime_error(error)),
@@ -466,7 +499,7 @@ fn format_report_fields(
     phrase: Option<&str>,
 ) -> String {
     let mut output = String::new();
-    output.push_str(POSITIONAL_CAVEAT);
+    output.push_str(report.dictionary.caveat());
     output.push('\n');
     output.push_str(&format!("mode: {mode}\n"));
     if let Some(preset) = report.preset_name {
@@ -506,12 +539,14 @@ struct Preset {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Dictionary {
     Bip39EnglishPositional,
+    AdjectiveAnimal,
 }
 
 impl Dictionary {
     fn parse(name: &str) -> Result<Self, CliError> {
         match name {
             DEFAULT_DICTIONARY => Ok(Self::Bip39EnglishPositional),
+            ADJECTIVE_ANIMAL_DICTIONARY => Ok(Self::AdjectiveAnimal),
             _ => Err(CliError::usage(format!("unknown dictionary `{name}`"))),
         }
     }
@@ -519,12 +554,38 @@ impl Dictionary {
     const fn name(self) -> &'static str {
         match self {
             Self::Bip39EnglishPositional => DEFAULT_DICTIONARY,
+            Self::AdjectiveAnimal => ADJECTIVE_ANIMAL_DICTIONARY,
         }
     }
 
-    fn len(self) -> usize {
+    fn uniform_len(self) -> Option<usize> {
         match self {
-            Self::Bip39EnglishPositional => English.len(0),
+            Self::Bip39EnglishPositional => Some(English.len(0)),
+            Self::AdjectiveAnimal => None,
+        }
+    }
+
+    const fn caveat(self) -> &'static str {
+        match self {
+            Self::Bip39EnglishPositional => BIP39_POSITIONAL_CAVEAT,
+            Self::AdjectiveAnimal => ADJECTIVE_ANIMAL_CAVEAT,
+        }
+    }
+
+    const fn fixed_word_count(self) -> Option<usize> {
+        match self {
+            Self::Bip39EnglishPositional => None,
+            Self::AdjectiveAnimal => Some(adjective_animal::WORD_COUNT),
+        }
+    }
+
+    fn capacity(self, words: usize) -> Result<CapacityClass, nwords::core::Error> {
+        match self {
+            Self::Bip39EnglishPositional => stats::capacity_uniform(English.len(0), words),
+            Self::AdjectiveAnimal => stats::capacity_mixed(&[
+                adjective_animal::ADJECTIVE_COUNT,
+                adjective_animal::ANIMAL_COUNT,
+            ]),
         }
     }
 }
@@ -587,18 +648,18 @@ impl Shape {
             });
         }
 
-        let range = parsed.range.ok_or_else(|| {
-            CliError::usage("use --preset <name> or provide --range <R> --words <N>")
-        })?;
-        let words = parsed.words.ok_or_else(|| {
-            CliError::usage("use --preset <name> or provide --range <R> --words <N>")
-        })?;
         let dictionary = parsed
             .dictionary
             .as_deref()
             .map(Dictionary::parse)
             .transpose()?
             .unwrap_or(Dictionary::Bip39EnglishPositional);
+        let range = parsed.range.ok_or_else(|| {
+            CliError::usage(
+                "use --preset <name> or provide --range <R> [--words <N>] [--dict <name>]",
+            )
+        })?;
+        let words = resolve_shape_words(dictionary, parsed.words)?;
 
         Ok(Self {
             range,
@@ -609,9 +670,7 @@ impl Shape {
         })
     }
 
-    fn codec(
-        self,
-    ) -> Result<Positional<English, AsciiSpace, AffinePermutation>, nwords::core::Error> {
+    fn codec(self) -> Result<ShapeCodec, nwords::core::Error> {
         let permutation = self.permutation.permutation(self.range)?;
         match self.dictionary {
             Dictionary::Bip39EnglishPositional => Positional::with_formatter_and_permutation(
@@ -620,7 +679,53 @@ impl Shape {
                 permutation,
                 self.words,
                 self.range,
-            ),
+            )
+            .map(ShapeCodec::Bip39EnglishPositional),
+            Dictionary::AdjectiveAnimal => MixedPositional::with_formatter_and_permutation(
+                AdjectiveAnimal,
+                AsciiSpace,
+                permutation,
+                self.words,
+                self.range,
+            )
+            .map(ShapeCodec::AdjectiveAnimal),
+        }
+    }
+}
+
+fn resolve_shape_words(dictionary: Dictionary, words: Option<usize>) -> Result<usize, CliError> {
+    if let Some(fixed_words) = dictionary.fixed_word_count() {
+        if words.is_some() {
+            return Err(CliError::usage(format!(
+                "dictionary `{}` has an intrinsic word count; omit --words",
+                dictionary.name()
+            )));
+        }
+        Ok(fixed_words)
+    } else {
+        words.ok_or_else(|| {
+            CliError::usage("use --preset <name> or provide --range <R> --words <N>")
+        })
+    }
+}
+
+enum ShapeCodec {
+    Bip39EnglishPositional(Positional<English, AsciiSpace, AffinePermutation>),
+    AdjectiveAnimal(MixedPositional<AdjectiveAnimal, AsciiSpace, AffinePermutation>),
+}
+
+impl ShapeCodec {
+    fn encode(&self, id: u128) -> Result<String, nwords::core::Error> {
+        match self {
+            Self::Bip39EnglishPositional(codec) => codec.encode(id),
+            Self::AdjectiveAnimal(codec) => codec.encode(id),
+        }
+    }
+
+    fn decode_words(&self, words: &[&str]) -> Result<u128, nwords::core::Error> {
+        match self {
+            Self::Bip39EnglishPositional(codec) => codec.decode_words(words),
+            Self::AdjectiveAnimal(codec) => codec.decode_words(words),
         }
     }
 }
@@ -645,10 +750,18 @@ impl Report {
         if words == 0 {
             return Err(CliError::usage("words must be greater than zero"));
         }
+        if let Some(fixed_words) = dictionary.fixed_word_count() {
+            if words != fixed_words {
+                return Err(CliError::usage(format!(
+                    "dictionary `{}` uses exactly {fixed_words} words",
+                    dictionary.name()
+                )));
+            }
+        }
         if range == 0 {
             return Err(CliError::usage("range must be greater than zero"));
         }
-        let capacity = stats::capacity_uniform(dictionary.len(), words).map_err(runtime_error)?;
+        let capacity = dictionary.capacity(words).map_err(runtime_error)?;
         Ok(Self {
             dictionary,
             permutation,
@@ -915,8 +1028,8 @@ const HELP: &str = "\
 nwords: positional ID phrase converter
 
 USAGE:
-    nwords encode <id> (--preset <name> | --range <R> --words <N> [--dict <name>]) [--explain]
-    nwords decode <words...> (--preset <name> | --range <R> --words <N> [--dict <name>]) [--explain]
+    nwords encode <id> (--preset <name> | --range <R> [--words <N>] [--dict <name>]) [--explain]
+    nwords decode <words...> (--preset <name> | --range <R> [--words <N>] [--dict <name>]) [--explain]
     nwords presets
     nwords plan (--preset <name> | --range <R> [--words <N>] [--dict <name>])
     nwords bytes encode (--text <text> | --hex <hex>)
@@ -924,17 +1037,17 @@ USAGE:
     nwords text encode <text>
     nwords text decode <words...>
 
-BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
+Presets encode deterministic positional ID phrases; BIP-39 positional presets are not wallet mnemonics.
 ";
 
 const ENCODE_HELP: &str = "\
 USAGE:
-    nwords encode <id> (--preset <name> | --range <R> --words <N> [--dict <name>]) [--explain]
+    nwords encode <id> (--preset <name> | --range <R> [--words <N>] [--dict <name>]) [--explain]
 ";
 
 const DECODE_HELP: &str = "\
 USAGE:
-    nwords decode <words...> (--preset <name> | --range <R> --words <N> [--dict <name>]) [--explain]
+    nwords decode <words...> (--preset <name> | --range <R> [--words <N>] [--dict <name>]) [--explain]
 ";
 
 const PRESETS_HELP: &str = "\
@@ -985,7 +1098,7 @@ USAGE:
 
 #[cfg(test)]
 mod tests {
-    use super::{run, POSITIONAL_CAVEAT};
+    use super::{run, BIP39_POSITIONAL_CAVEAT};
 
     #[test]
     fn encode_and_decode_round_trip_u32() {
@@ -1023,7 +1136,7 @@ mod tests {
         let output = run(["encode", "42", "--preset", "u32", "--explain"]);
 
         assert_eq!(output.exit_code, 0);
-        assert!(output.stdout.contains(POSITIONAL_CAVEAT));
+        assert!(output.stdout.contains(BIP39_POSITIONAL_CAVEAT));
         assert!(output.stdout.contains("mode: encode\n"));
         assert!(output.stdout.contains("preset: u32\n"));
         assert!(output.stdout.contains("id: 42\n"));

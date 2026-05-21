@@ -33,6 +33,19 @@ fn top_level_positional_reexport_works() {
     assert_eq!(codec.encode(8).as_deref(), Ok("two two"));
 }
 
+#[cfg(all(feature = "adjective-animal", feature = "positional"))]
+#[test]
+fn adjective_animal_wordlist_reexport_works() {
+    let codec = nwords::positional::MixedPositional::new(
+        nwords::wordlists::adjective_animal::AdjectiveAnimal,
+        nwords::wordlists::adjective_animal::WORD_COUNT,
+        nwords::wordlists::adjective_animal::CAPACITY,
+    )
+    .expect("codec");
+
+    assert_eq!(codec.encode(0).as_deref(), Ok("able aardvark"));
+}
+
 #[cfg(all(feature = "word-bytes", feature = "bip39"))]
 #[test]
 fn top_level_word_bytes_reexport_works() {

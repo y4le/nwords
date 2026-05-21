@@ -51,6 +51,25 @@ surface. Use property tests:
 4. If a permutation is configured, `invert(permute(id)) == id` over the domain.
 5. The encoder never emits a symbol index outside the wordlist length for the
    current position.
+6. Mixed-radix codecs round-trip boundary IDs over non-uniform per-position
+   dictionary sizes and reject the first slack representation.
+
+### Adjective-animal word map
+
+The adjective-animal word map is a curated built-in positional dictionary, not
+a random-name generator.
+
+Required checks:
+
+1. Position 0 is adjectives and position 1 is animals.
+2. Counts and capacity are stable: 749 adjectives, 333 animals, and 249,417
+   phrase states.
+3. Boundary words are stable (`able`/`zippy`, `aardvark`/`zebra`) because word
+   order is an encoding contract.
+4. CLI `aa` preset maps `0` to the first adjective-animal pair and
+   `capacity - 1` to the last pair.
+5. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots, and
+   the upstream MIT license.
 
 ### Affine spread permutations
 

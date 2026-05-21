@@ -98,7 +98,7 @@ fn presets_lists_stable_rows_and_caveat() {
 
     assert!(output.status.success());
     let text = stdout(&output);
-    assert!(text.contains("BIP-39 wordlist used as a positional dictionary"));
+    assert!(text.contains("Presets encode deterministic positional ID phrases"));
     assert!(text.contains(
         "name\tdictionary\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio"
     ));
@@ -112,6 +112,8 @@ fn presets_lists_stable_rows_and_caveat() {
     assert!(text.contains(
         "u64\tbip39-en-positional\tidentity\t6\t18446744073709551616\t73786976294838206464"
     ));
+    assert!(text.contains("aa\tadjective-animal\tidentity\t2\t249417\t249417\t0\t"));
+    assert!(text.contains("dec5-aa\tadjective-animal\tidentity\t2\t100000\t249417\t149417\t"));
 }
 
 #[test]
@@ -169,6 +171,15 @@ fn plan_reports_capacity_and_unrepresentable_shapes() {
     assert!(text.contains("words: 1\n"));
     assert!(text.contains("representable: no\n"));
     assert!(text.contains("slack: n/a\n"));
+
+    let adjective_animal = nwords(&["plan", "--range", "100000", "--dict", "adjective-animal"]);
+    assert!(adjective_animal.status.success());
+    let text = stdout(&adjective_animal);
+    assert!(text.contains("Adjective-animal phrases are deterministic positional IDs"));
+    assert!(text.contains("dictionary: adjective-animal\n"));
+    assert!(text.contains("words: 2\n"));
+    assert!(text.contains("capacity: 249417\n"));
+    assert!(text.contains("slack: 149417\n"));
 }
 
 #[test]
@@ -187,6 +198,60 @@ fn custom_range_and_words_round_trip() {
     ]);
     assert!(decoded.status.success());
     assert_eq!(stdout(&decoded), "123\n");
+}
+
+#[test]
+fn adjective_animal_presets_and_custom_dictionary_round_trip() {
+    let zero = nwords(&["encode", "0", "--preset", "aa"]);
+    assert!(zero.status.success());
+    assert_eq!(stdout(&zero), "able aardvark\n");
+
+    let max = nwords(&["encode", "249416", "--preset", "aa"]);
+    assert!(max.status.success());
+    assert_eq!(stdout(&max), "zippy zebra\n");
+
+    let decoded = nwords(&["decode", "zippy zebra", "--preset", "aa"]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "249416\n");
+
+    let out_of_range = nwords(&["encode", "249417", "--preset", "aa"]);
+    assert_eq!(out_of_range.status.code(), Some(1));
+    assert!(stderr(&out_of_range).contains("outside range"));
+
+    let custom = nwords(&[
+        "encode",
+        "42",
+        "--range",
+        "100000",
+        "--dict",
+        "adjective-animal",
+    ]);
+    assert!(custom.status.success());
+    assert_eq!(stdout(&custom).split_whitespace().count(), 2);
+
+    let custom_decoded = nwords(&[
+        "decode",
+        stdout(&custom).trim(),
+        "--range",
+        "100000",
+        "--dict",
+        "adjective-animal",
+    ]);
+    assert!(custom_decoded.status.success());
+    assert_eq!(stdout(&custom_decoded), "42\n");
+
+    let conflicting_words = nwords(&[
+        "encode",
+        "42",
+        "--range",
+        "100000",
+        "--dict",
+        "adjective-animal",
+        "--words",
+        "2",
+    ]);
+    assert_eq!(conflicting_words.status.code(), Some(2));
+    assert!(stderr(&conflicting_words).contains("intrinsic word count"));
 }
 
 #[test]

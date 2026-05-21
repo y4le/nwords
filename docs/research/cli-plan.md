@@ -79,6 +79,10 @@ Exact CLI planning remains bounded by the existing `u128` range model. Do not
 ship a `u128` preset for now because a full `[0, 2^128)` domain cannot be
 represented as an exclusive `u128` upper bound.
 
+For mixed dictionaries such as `adjective-animal`, the CLI wraps
+`nwords::positional::MixedPositional`. These dictionaries have intrinsic
+position counts; users provide `--range` and `--dict`, and omit `--words`.
+
 Do not describe preset capacity as security entropy unless the input IDs are
 uniformly sampled from the stated range.
 
@@ -204,11 +208,19 @@ Initial dictionary choices:
 | Name | Meaning |
 |---|---|
 | `bip39-en-positional` | BIP-39 English wordlist used as a positional dictionary |
+| `adjective-animal` | Curated two-position adjective-animal word map |
 
 Potential later dictionary choices:
 
 - `bip39-ja-positional`, only after separator/display behavior is settled;
 - user-provided dictionary files, only after the built-in CLI surface is stable.
+
+Additive adjective-animal presets:
+
+| Preset | Range | Dictionary | Words | Capacity | Slack |
+|---|---:|---|---:|---:|---:|
+| `aa` | `249_417` | `adjective-animal` | 2 | `249_417` | 0 |
+| `dec5-aa` | `100_000` | `adjective-animal` | 2 | `249_417` | `149_417` |
 
 Parser dependency decision:
 
