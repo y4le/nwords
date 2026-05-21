@@ -58,7 +58,7 @@ pub mod prelude {
     pub use crate::bip39::{Japanese, RustBitcoinDisplay, SpecJapanese};
 
     #[cfg(feature = "positional")]
-    pub use crate::positional::Positional;
+    pub use crate::positional::{MixedPositional, Positional};
 
     #[cfg(feature = "word-bytes")]
     pub use crate::word_bytes::WordBytes;
