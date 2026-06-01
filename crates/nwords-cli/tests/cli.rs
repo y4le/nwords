@@ -93,27 +93,84 @@ fn usage_errors_exit_two() {
 }
 
 #[test]
+fn help_supports_command_topics_and_examples() {
+    let encode = nwords(&["help", "encode"]);
+    assert!(encode.status.success());
+    let text = stdout(&encode);
+    assert!(text.contains("nwords encode:"));
+    assert!(text.contains("EXAMPLES:"));
+    assert!(text.contains("nwords encode 1337 --range 1e6 --shape color,adjective,animal"));
+    assert_eq!(stderr(&encode), "");
+
+    let bytes_encode = nwords(&["help", "bytes", "encode"]);
+    assert!(bytes_encode.status.success());
+    let text = stdout(&bytes_encode);
+    assert!(text.contains("nwords bytes encode:"));
+    assert!(text.contains("nwords bytes encode --hex deadbeef"));
+
+    let unknown = nwords(&["help", "missing"]);
+    assert_eq!(unknown.status.code(), Some(2));
+    assert!(stderr(&unknown).contains("unknown help topic `missing`"));
+}
+
+#[test]
+fn help_flags_use_custom_detailed_help() {
+    let top = nwords(&["--help"]);
+    assert!(top.status.success());
+    assert!(stdout(&top).contains("Run `nwords help <command>`"));
+    assert_eq!(stderr(&top), "");
+
+    let encode = nwords(&["encode", "--help"]);
+    assert!(encode.status.success());
+    assert!(stdout(&encode).contains("nwords encode:"));
+    assert_eq!(stderr(&encode), "");
+
+    let bytes_encode = nwords(&["bytes", "encode", "--help"]);
+    assert!(bytes_encode.status.success());
+    assert!(stdout(&bytes_encode).contains("nwords bytes encode:"));
+    assert_eq!(stderr(&bytes_encode), "");
+}
+
+#[test]
+fn help_flags_after_separator_are_literal_text() {
+    let encoded = nwords(&["text", "encode", "--", "--help"]);
+    assert!(encoded.status.success());
+    assert!(!stdout(&encoded).contains("nwords text encode:"));
+
+    let decoded = nwords(&["text", "decode", stdout(&encoded).trim()]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "--help\n");
+
+    let bytes = nwords(&["bytes", "encode", "--text", "--", "-h"]);
+    assert!(bytes.status.success());
+    let decoded_bytes = nwords(&["bytes", "decode", "--text", stdout(&bytes).trim()]);
+    assert!(decoded_bytes.status.success());
+    assert_eq!(stdout(&decoded_bytes), "-h\n");
+}
+
+#[test]
 fn presets_lists_stable_rows_and_caveat() {
     let output = nwords(&["presets"]);
 
     assert!(output.status.success());
     let text = stdout(&output);
     assert!(text.contains("Presets encode deterministic positional ID phrases"));
-    assert!(text.contains(
-        "name\tdictionary\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio"
-    ));
-    assert!(text.contains("dec6\tbip39-en-positional\tidentity\t2\t1000000\t4194304\t3194304"));
-    assert!(text.contains(
-        "dec6-spread\tbip39-en-positional\tspread-affine-v1\t2\t1000000\t4194304\t3194304"
-    ));
     assert!(
-        text.contains("u32\tbip39-en-positional\tidentity\t3\t4294967296\t8589934592\t4294967296")
+        text.contains("name\tshape\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio")
     );
+    assert!(text.contains("dec6\tbip39-en,bip39-en\tidentity\t2\t1000000\t4194304\t3194304"));
     assert!(text.contains(
-        "u64\tbip39-en-positional\tidentity\t6\t18446744073709551616\t73786976294838206464"
+        "dec6-spread\tbip39-en,bip39-en\tspread-affine-v1\t2\t1000000\t4194304\t3194304"
     ));
-    assert!(text.contains("aa\tadjective-animal\tidentity\t2\t249417\t249417\t0\t"));
-    assert!(text.contains("dec5-aa\tadjective-animal\tidentity\t2\t100000\t249417\t149417\t"));
+    assert!(text.contains(
+        "u32\tbip39-en,bip39-en,bip39-en\tidentity\t3\t4294967296\t8589934592\t4294967296"
+    ));
+    assert!(text.contains(
+        "u64\tbip39-en,bip39-en,bip39-en,bip39-en,bip39-en,bip39-en\tidentity\t6\t18446744073709551616\t73786976294838206464"
+    ));
+    assert!(text.contains("aa\tadjective,animal\tidentity\t2\t249417\t249417\t0\t"));
+    assert!(text.contains("dec5-aa\tadjective,animal\tidentity\t2\t100000\t249417\t149417\t"));
+    assert!(text.contains("color-aa\tcolor,adjective,animal\tidentity\t3\t12969684\t12969684\t0\t"));
 }
 
 #[test]
@@ -175,11 +232,33 @@ fn plan_reports_capacity_and_unrepresentable_shapes() {
     let adjective_animal = nwords(&["plan", "--range", "100000", "--dict", "adjective-animal"]);
     assert!(adjective_animal.status.success());
     let text = stdout(&adjective_animal);
-    assert!(text.contains("Adjective-animal phrases are deterministic positional IDs"));
-    assert!(text.contains("dictionary: adjective-animal\n"));
+    assert!(text.contains("Named word-list phrases are deterministic positional IDs"));
+    assert!(text.contains("shape: adjective,animal\n"));
     assert!(text.contains("words: 2\n"));
     assert!(text.contains("capacity: 249417\n"));
     assert!(text.contains("slack: 149417\n"));
+}
+
+#[test]
+fn plan_shape_reports_position_counts_without_range() {
+    let output = nwords(&["plan", "--shape", "color,adjective,animal"]);
+
+    assert!(output.status.success());
+    let text = stdout(&output);
+    assert!(text.contains("Named word-list phrases are deterministic positional IDs"));
+    assert!(text.contains("mode: plan\n"));
+    assert!(text.contains("preset: custom\n"));
+    assert!(text.contains("shape: color,adjective,animal\n"));
+    assert!(text.contains("words: 3\n"));
+    assert!(text.contains("position_0_list: color\n"));
+    assert!(text.contains("position_0_words: 52\n"));
+    assert!(text.contains("position_1_list: adjective\n"));
+    assert!(text.contains("position_1_words: 749\n"));
+    assert!(text.contains("position_2_list: animal\n"));
+    assert!(text.contains("position_2_words: 333\n"));
+    assert!(text.contains("capacity: 12969684\n"));
+    assert!(!text.contains("range:"));
+    assert!(!text.contains("slack:"));
 }
 
 #[test]
@@ -198,6 +277,74 @@ fn custom_range_and_words_round_trip() {
     ]);
     assert!(decoded.status.success());
     assert_eq!(stdout(&decoded), "123\n");
+}
+
+#[test]
+fn custom_named_shape_round_trips_and_rejects_word_alias() {
+    let encoded = nwords(&[
+        "encode",
+        "42",
+        "--range",
+        "100000",
+        "--shape",
+        "color,adjective,animal",
+    ]);
+    assert!(encoded.status.success());
+    assert_eq!(stdout(&encoded).split_whitespace().count(), 3);
+
+    let decoded = nwords(&[
+        "decode",
+        stdout(&encoded).trim(),
+        "--range",
+        "100000",
+        "--shape",
+        "color,adjective,animal",
+    ]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "42\n");
+
+    let word_alias = nwords(&["plan", "--range", "100", "--shape", "color,word"]);
+    assert_eq!(word_alias.status.code(), Some(2));
+    assert!(stderr(&word_alias).contains("use `bip39-en`"));
+}
+
+#[test]
+fn range_accepts_exact_scientific_shorthand() {
+    let encoded = nwords(&[
+        "encode",
+        "1337",
+        "--range",
+        "1e6",
+        "--shape",
+        "color,adjective,animal",
+    ]);
+    assert!(encoded.status.success());
+    assert_eq!(stdout(&encoded).split_whitespace().count(), 3);
+
+    let decoded = nwords(&[
+        "decode",
+        stdout(&encoded).trim(),
+        "--range",
+        "1E6",
+        "--shape",
+        "color,adjective,animal",
+    ]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "1337\n");
+
+    let planned = nwords(&[
+        "plan",
+        "--range",
+        "1.5e6",
+        "--shape",
+        "color,adjective,animal",
+    ]);
+    assert!(planned.status.success());
+    assert!(stdout(&planned).contains("range: 1500000\n"));
+
+    let fractional = nwords(&["plan", "--range", "1.5e0", "--shape", "adjective,animal"]);
+    assert_eq!(fractional.status.code(), Some(2));
+    assert!(stderr(&fractional).contains("must expand to an integer"));
 }
 
 #[test]
@@ -262,7 +409,7 @@ fn explain_output_is_key_value_only() {
     let text = stdout(&output);
     assert!(text.contains("mode: encode\n"));
     assert!(text.contains("preset: u32\n"));
-    assert!(text.contains("dictionary: bip39-en-positional\n"));
+    assert!(text.contains("shape: bip39-en,bip39-en,bip39-en\n"));
     assert!(text.contains("range: 4294967296\n"));
     assert!(text.contains("capacity: 8589934592\n"));
     assert!(text.contains("id: 42\n"));

@@ -1,7 +1,7 @@
-# Adjective-Animal Wordlists
+# Unique Names Generator Wordlists
 
 These fixtures pin the source and local filtering policy for the built-in
-English adjective-animal word map.
+English named word lists derived from `unique-names-generator`.
 
 Source:
 
@@ -18,11 +18,14 @@ Files:
   `src/dictionaries/adjectives.ts` list extracted to one word per line.
 - `unique-names-generator-animals.txt` is the upstream
   `src/dictionaries/animals.ts` list extracted to one word per line.
+- `unique-names-generator-colors.txt` is the upstream
+  `src/dictionaries/colors.ts` list extracted to one word per line.
 - `adjective-blocklist.txt` and `animal-blocklist.txt` are the local removals.
 - `nwords-adjectives.txt` and `nwords-animals.txt` are the curated lists used
   to generate the Rust arrays. The adjective list applies the length policy
   below before applying `adjective-blocklist.txt`; the animal list applies
   `animal-blocklist.txt`.
+- The color list is used without local filtering.
 
 Policy:
 

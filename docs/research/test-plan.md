@@ -54,21 +54,30 @@ surface. Use property tests:
 6. Mixed-radix codecs round-trip boundary IDs over non-uniform per-position
    dictionary sizes and reject the first slack representation.
 
-### Adjective-animal word map
+### Named word-list shapes
 
-The adjective-animal word map is a curated built-in positional dictionary, not
-a random-name generator.
+Named word-list shapes are curated built-in positional dictionaries, not random
+name generators.
 
 Required checks:
 
-1. Position 0 is adjectives and position 1 is animals.
-2. Counts and capacity are stable: 749 adjectives, 333 animals, and 249,417
+1. `WordListSequence` dispatches position `i` to the named list at `shape[i]`.
+2. Position 0 is adjectives and position 1 is animals for the compatibility
+   adjective-animal shape.
+3. Counts and capacity are stable: 749 adjectives, 333 animals, 52 colors,
+   249,417 adjective-animal phrase states, and 12,969,684 color-adjective-animal
    phrase states.
-3. Boundary words are stable (`able`/`zippy`, `aardvark`/`zebra`) because word
-   order is an encoding contract.
-4. CLI `aa` preset maps `0` to the first adjective-animal pair and
+4. Boundary words are stable (`able`/`zippy`, `aardvark`/`zebra`,
+   `amaranth`/`yellow`) because word order is an encoding contract.
+5. CLI `aa` preset maps `0` to the first adjective-animal pair and
    `capacity - 1` to the last pair.
-5. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots, and
+6. CLI `plan --shape color,adjective,animal` reports per-position list sizes
+   and total capacity without requiring a range.
+7. CLI `--shape color,adjective,animal` round-trips a custom range.
+8. CLI range parsing accepts exact shorthand such as `1e6` and rejects
+   non-integer shorthand expansions.
+9. CLI rejects the generic `word` list name and suggests `bip39-en`.
+10. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots, and
    the upstream MIT license.
 
 ### Affine spread permutations

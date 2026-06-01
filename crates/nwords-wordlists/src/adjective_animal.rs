@@ -6,12 +6,9 @@
 //! licensed; see
 //! `tests/vectors/licenses/unique-names-generator-MIT.LICENSE`.
 
-#[path = "adjective_animal_adjectives.rs"]
-mod adjective_animal_adjectives;
-#[path = "adjective_animal_animals.rs"]
-mod adjective_animal_animals;
-
 use nwords_core::WordMap;
+
+use crate::{adjective_animal_adjectives, adjective_animal_animals};
 
 /// Position for adjectives in [`AdjectiveAnimal`].
 pub const ADJECTIVE_POSITION: usize = 0;

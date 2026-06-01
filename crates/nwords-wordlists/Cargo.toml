@@ -9,9 +9,10 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["std", "bip39-english", "adjective-animal"]
+default = ["std", "bip39-english", "adjective-animal", "named"]
 std = ["nwords-core/std"]
-adjective-animal = []
+adjective-animal = ["named"]
+named = []
 bip39-english = []
 bip39-japanese = ["bip39-english"]
 

@@ -46,6 +46,25 @@ fn adjective_animal_wordlist_reexport_works() {
     assert_eq!(codec.encode(0).as_deref(), Ok("able aardvark"));
 }
 
+#[cfg(all(feature = "named", feature = "positional", feature = "bip39"))]
+#[test]
+fn named_wordlist_sequence_reexport_works() {
+    let lists = [
+        nwords::wordlists::named::NamedWordList::Color,
+        nwords::wordlists::named::NamedWordList::Adjective,
+        nwords::wordlists::named::NamedWordList::Animal,
+    ];
+    let shape = nwords::wordlists::named::WordListSequence::new(&lists);
+    let codec = nwords::positional::MixedPositional::new(shape, shape.word_count(), 12_969_684)
+        .expect("codec");
+
+    assert_eq!(codec.encode(0).as_deref(), Ok("amaranth able aardvark"));
+    assert_eq!(
+        codec.decode_words(&["yellow", "zippy", "zebra"]),
+        Ok(12_969_683)
+    );
+}
+
 #[cfg(all(feature = "word-bytes", feature = "bip39"))]
 #[test]
 fn top_level_word_bytes_reexport_works() {

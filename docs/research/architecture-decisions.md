@@ -74,7 +74,8 @@ Ship:
 - BIP-39 English and Japanese.
 - Positional N-word codec.
 - Mixed-radix positional codec for per-position dictionary sizes.
-- Curated English adjective-animal word map and additive CLI presets.
+- Curated English named word lists, ordered phrase shapes, and additive CLI
+  presets.
 - Stats helpers for capacity, ID range, word count, and dictionary-size
   planning.
 - `Linear` and `Sorted` word maps.
@@ -99,6 +100,7 @@ Initial feature set:
 - `std` default; disabling it gives `no_std + alloc`.
 - `bip39` default.
 - `adjective-animal` default.
+- `named` default.
 - `bip39-japanese`, using Unicode normalization in the owning crate.
 - `positional` default.
 - `stats` included by default as pure core math; any advisory formatting is
@@ -142,18 +144,36 @@ BIP-39 planning is not a free dictionary-size/word-count problem. BIP-39 word
 counts are spec-fixed at 12, 15, 18, 21, and 24 words, corresponding to
 128, 160, 192, 224, and 256 entropy bits before checksum expansion.
 
-## Adjective-Animal Wordlists
+## Named Word Lists And Phrase Shapes
 
-The built-in English adjective-animal word map is an additive default feature,
-not a replacement for BIP-39 English positional presets. Position 0 is the
-adjective list and position 1 is the animal list; that order is part of the
-encoding contract.
+The built-in English named word lists are additive default features, not a
+replacement for BIP-39 English positional presets. A phrase shape is an ordered
+sequence of named single-position lists such as `adjective,animal` or
+`color,adjective,animal`. The ordered shape is part of the encoding contract.
 
-The V1 list is curated from `andreasonny83/unique-names-generator` commit
-`10ff70b131c8a080e88c315a55e45a0f5caadd24`, with source snapshots,
-blocklists, and license files under `tests/vectors/adjective-animal/`.
-Regenerating from a newer upstream source or reordering retained words is a new
-wordlist version, not an in-place compatibility edit.
+The `adjective` and `animal` lists are curated from
+`andreasonny83/unique-names-generator` commit
+`10ff70b131c8a080e88c315a55e45a0f5caadd24`; the `color` list is used from the
+same source without local filtering. Source snapshots, blocklists, and license
+files live under `tests/vectors/adjective-animal/`. Regenerating from a newer
+upstream source or reordering retained words is a new wordlist version, not an
+in-place compatibility edit.
+
+The public adapter is `named::WordListSequence`, which implements the existing
+position-aware `WordMap` trait by dispatching position `i` to `shape[i]`.
+No additional core trait is needed. The older `AdjectiveAnimal` word map remains
+as a compatibility surface for the two-position `adjective,animal` shape.
+
+The CLI exposes custom ordered shapes with `--shape adjective,animal`. Legacy
+`--dict adjective-animal` remains as a compatibility alias. Canonical BIP-39
+positional shape entries are named `bip39-en`; the generic name `word` is not
+accepted because it obscures the BIP-39 positional caveat.
+
+Preset definitions stay in Rust constants for V1. They are structured as
+`name + range + shape + permutation` so a later YAML/codegen layer would be
+mechanical, but a non-executable YAML copy is intentionally avoided because it
+would drift and a YAML parser dependency is not justified for the current
+preset table.
 
 ## Agent Guidance
 

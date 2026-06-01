@@ -9,7 +9,7 @@ V1 ships:
 
 - BIP-39 English and Japanese.
 - Uniform and mixed-radix positional N-word codecs.
-- Curated English adjective-animal wordlists and CLI presets.
+- Curated English named word lists, ordered phrase shapes, and CLI presets.
 - Stats helpers for capacity, word-count, dictionary-size, and ID-range
   planning.
 - `Linear` and `Sorted` word maps.
@@ -260,8 +260,8 @@ Finish:
 - Feature matrix.
 - `no_std + alloc` documentation.
 - `nwords::stats` re-exports.
-- Curated adjective-animal wordlist provenance, default feature wiring, and CLI
-  presets.
+- Curated named-list provenance, default feature wiring, ordered CLI `--shape`
+  support, and CLI presets.
 - `std`-gated advisory stats formatting if included.
 - Repo-local agent skill for architecture decisions:
   `.agents/skills/nwords-architecture/SKILL.md`.
