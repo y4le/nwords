@@ -12,6 +12,9 @@ recognizable phrase shapes. This plan covers:
 - `plant`
 - `food`
 
+The phase-by-phase implementation plan is recorded in
+[`semantic-wordlists-execution-plan.md`](semantic-wordlists-execution-plan.md).
+
 The goal is not to accumulate generic dictionary slices. The goal is to ship
 stable, license-clean, phrase-friendly slots that can be combined with
 `named::WordListSequence` into memorable ordered shapes.
@@ -284,7 +287,7 @@ Add grammatical role metadata for documentation, preset selection, and optional
 shape linting:
 
 ```rust
-pub enum NamedWordListRole {
+pub enum WordListRole {
     Modifier,
     Head,
     Either,
