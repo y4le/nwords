@@ -170,6 +170,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "nwords-tools"
+version = "0.1.0"
+
+[[package]]
 name = "nwords-web"
 version = "0.1.0"
 dependencies = [
