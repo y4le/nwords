@@ -65,7 +65,12 @@ pub mod prelude {
     pub use crate::wordlists::adjective_animal::AdjectiveAnimal;
 
     #[cfg(feature = "named")]
-    pub use crate::wordlists::named::{NamedWordList, WordListSequence};
+    pub use crate::wordlists::named::{NamedWordList, WordListRole, WordListSequence};
+
+    #[cfg(all(feature = "named", feature = "alloc"))]
+    pub use crate::wordlists::named::{
+        DynamicWordListSequence, DynamicWordListSlot, OwnedWordList, WordListError,
+    };
 
     #[cfg(feature = "positional")]
     pub use crate::positional::{MixedPositional, Positional};

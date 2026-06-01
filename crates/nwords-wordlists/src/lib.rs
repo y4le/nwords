@@ -3,6 +3,9 @@
 #![deny(missing_docs)]
 //! Built-in wordlists for `nwords`.
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 #[cfg(feature = "named")]
 #[path = "adjective_animal_adjectives.rs"]
 pub(crate) mod adjective_animal_adjectives;

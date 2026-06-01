@@ -65,6 +65,31 @@ fn named_wordlist_sequence_reexport_works() {
     );
 }
 
+#[cfg(all(feature = "named", feature = "positional", feature = "alloc"))]
+#[test]
+fn dynamic_wordlist_sequence_reexport_works() {
+    let owned = nwords::wordlists::named::OwnedWordList::new(
+        "project",
+        nwords::wordlists::named::WordListRole::Either,
+        vec!["alpha".to_owned(), "bravo".to_owned()],
+    )
+    .expect("owned list");
+    let sequence = nwords::wordlists::named::DynamicWordListSequence::new(
+        vec![owned],
+        vec![
+            nwords::wordlists::named::DynamicWordListSlot::Builtin(
+                nwords::wordlists::named::NamedWordList::Color,
+            ),
+            nwords::wordlists::named::DynamicWordListSlot::Owned(0),
+        ],
+    )
+    .expect("sequence");
+    let codec = nwords::positional::MixedPositional::new(sequence, 2, 104).expect("codec");
+
+    assert_eq!(codec.encode(0).as_deref(), Ok("amaranth alpha"));
+    assert_eq!(codec.decode_words(&["amber", "bravo"]), Ok(3));
+}
+
 #[cfg(all(feature = "word-bytes", feature = "bip39"))]
 #[test]
 fn top_level_word_bytes_reexport_works() {

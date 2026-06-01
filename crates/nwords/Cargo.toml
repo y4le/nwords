@@ -30,6 +30,7 @@ std = [
 alloc = [
     "nwords-core/alloc",
     "nwords-schemes/alloc",
+    "nwords-wordlists?/alloc",
     "nwords-bip39-seed?/alloc",
 ]
 stats = ["nwords-core/stats"]
