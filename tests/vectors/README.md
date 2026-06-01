@@ -31,6 +31,17 @@ Vendored and normalized vector files for `nwords` conformance tests.
     curated `nwords` adjective and animal lists.
   - Use: built-in English adjective-animal positional word map.
 
+## Friendly Words
+
+- `friendly-words/`
+  - Source: `glitchdotcom/friendly-words`
+    `f94b4639c71c26875f7684fa86a214c7f30deaad`
+  - License: MIT, see `licenses/glitch-friendly-words-MIT.LICENSE`
+  - Contents: upstream object and predicate snapshots extracted from
+    `generated/words.json`, local blocklists, and curated `nwords` object and
+    descriptor lists.
+  - Use: built-in English `object` and `descriptor` positional word maps.
+
 ## SLIP-39
 
 - `slip39/trezor-python-shamir-mnemonic-vectors.json`
@@ -63,5 +74,5 @@ Vendored and normalized vector files for `nwords` conformance tests.
 directory. Regenerate it after intentional vector updates:
 
 ```sh
-sha256sum $(find tests/vectors -type f -maxdepth 3 ! -name SHA256SUMS | sort) > tests/vectors/SHA256SUMS
+find tests/vectors -maxdepth 3 -type f ! -name SHA256SUMS | sort | xargs sha256sum > tests/vectors/SHA256SUMS
 ```

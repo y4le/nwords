@@ -18,6 +18,14 @@ pub(crate) mod adjective_animal_animals;
 #[path = "unique_names_generator_colors.rs"]
 pub(crate) mod unique_names_generator_colors;
 
+#[cfg(feature = "named")]
+#[path = "friendly_words_objects.rs"]
+pub(crate) mod friendly_words_objects;
+
+#[cfg(feature = "named")]
+#[path = "friendly_words_descriptors.rs"]
+pub(crate) mod friendly_words_descriptors;
+
 /// Curated English adjective-animal wordlists.
 #[cfg(feature = "adjective-animal")]
 pub mod adjective_animal;

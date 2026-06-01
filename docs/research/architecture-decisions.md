@@ -148,8 +148,9 @@ counts are spec-fixed at 12, 15, 18, 21, and 24 words, corresponding to
 
 The built-in English named word lists are additive default features, not a
 replacement for BIP-39 English positional presets. A phrase shape is an ordered
-sequence of named single-position lists such as `adjective,animal` or
-`color,adjective,animal`. The ordered shape is part of the encoding contract.
+sequence of named single-position lists such as `adjective,animal`,
+`descriptor,object`, or `color,descriptor,object`. The ordered shape is part of
+the encoding contract.
 
 The `adjective` and `animal` lists are curated from
 `andreasonny83/unique-names-generator` commit
@@ -158,6 +159,16 @@ same source without local filtering. Source snapshots, blocklists, and license
 files live under `tests/vectors/adjective-animal/`. Regenerating from a newer
 upstream source or reordering retained words is a new wordlist version, not an
 in-place compatibility edit.
+
+The `object` and `descriptor` lists are curated from
+`glitchdotcom/friendly-words` commit
+`f94b4639c71c26875f7684fa86a214c7f30deaad`; the upstream `generated/words.json`
+`objects` and `predicates` arrays are committed as one-word-per-line source
+snapshots under `tests/vectors/friendly-words/`. Local blocklists remove poor
+user-facing defaults and entries that do not compose cleanly in
+`descriptor,object`. The built-in counts are 3,051 objects and 1,437
+descriptors, for 4,384,287 `descriptor,object` phrase states and 227,982,924
+`color,descriptor,object` phrase states.
 
 The public adapter is `named::WordListSequence`, which implements the existing
 position-aware `WordMap` trait by dispatching position `i` to `shape[i]`.

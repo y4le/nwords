@@ -171,6 +171,12 @@ fn presets_lists_stable_rows_and_caveat() {
     assert!(text.contains("aa\tadjective,animal\tidentity\t2\t249417\t249417\t0\t"));
     assert!(text.contains("dec5-aa\tadjective,animal\tidentity\t2\t100000\t249417\t149417\t"));
     assert!(text.contains("color-aa\tcolor,adjective,animal\tidentity\t3\t12969684\t12969684\t0\t"));
+    assert!(
+        text.contains("descriptor-object\tdescriptor,object\tidentity\t2\t4384287\t4384287\t0\t")
+    );
+    assert!(text.contains(
+        "color-descriptor-object\tcolor,descriptor,object\tidentity\t3\t227982924\t227982924\t0\t"
+    ));
 }
 
 #[test]
@@ -259,6 +265,16 @@ fn plan_shape_reports_position_counts_without_range() {
     assert!(text.contains("capacity: 12969684\n"));
     assert!(!text.contains("range:"));
     assert!(!text.contains("slack:"));
+
+    let descriptor_object = nwords(&["plan", "--shape", "descriptor,object"]);
+    assert!(descriptor_object.status.success());
+    let text = stdout(&descriptor_object);
+    assert!(text.contains("shape: descriptor,object\n"));
+    assert!(text.contains("position_0_list: descriptor\n"));
+    assert!(text.contains("position_0_words: 1437\n"));
+    assert!(text.contains("position_1_list: object\n"));
+    assert!(text.contains("position_1_words: 3051\n"));
+    assert!(text.contains("capacity: 4384287\n"));
 }
 
 #[test]
@@ -399,6 +415,47 @@ fn adjective_animal_presets_and_custom_dictionary_round_trip() {
     ]);
     assert_eq!(conflicting_words.status.code(), Some(2));
     assert!(stderr(&conflicting_words).contains("intrinsic word count"));
+}
+
+#[test]
+fn descriptor_object_presets_round_trip() {
+    let zero = nwords(&["encode", "0", "--preset", "descriptor-object"]);
+    assert!(zero.status.success());
+    assert_eq!(stdout(&zero), "abalone aardvark\n");
+
+    let max = nwords(&["encode", "4384286", "--preset", "descriptor-object"]);
+    assert!(max.status.success());
+    assert_eq!(stdout(&max), "zircon zydeco\n");
+
+    let decoded = nwords(&["decode", "zircon zydeco", "--preset", "descriptor-object"]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "4384286\n");
+
+    let color = nwords(&["encode", "0", "--preset", "color-descriptor-object"]);
+    assert!(color.status.success());
+    assert_eq!(stdout(&color), "amaranth abalone aardvark\n");
+
+    let custom = nwords(&[
+        "encode",
+        "42",
+        "--range",
+        "1000000",
+        "--shape",
+        "descriptor,object",
+    ]);
+    assert!(custom.status.success());
+    assert_eq!(stdout(&custom).split_whitespace().count(), 2);
+
+    let custom_decoded = nwords(&[
+        "decode",
+        stdout(&custom).trim(),
+        "--range",
+        "1000000",
+        "--shape",
+        "descriptor,object",
+    ]);
+    assert!(custom_decoded.status.success());
+    assert_eq!(stdout(&custom_decoded), "42\n");
 }
 
 #[test]

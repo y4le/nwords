@@ -62,6 +62,13 @@ const COLOR_ADJECTIVE_ANIMAL_SHAPE: &[NamedWordList] = &[
     NamedWordList::Adjective,
     NamedWordList::Animal,
 ];
+const DESCRIPTOR_OBJECT_SHAPE: &[NamedWordList] =
+    &[NamedWordList::Descriptor, NamedWordList::Object];
+const COLOR_DESCRIPTOR_OBJECT_SHAPE: &[NamedWordList] = &[
+    NamedWordList::Color,
+    NamedWordList::Descriptor,
+    NamedWordList::Object,
+];
 
 const PRESETS: &[Preset] = &[
     Preset {
@@ -140,6 +147,18 @@ const PRESETS: &[Preset] = &[
         name: "color-aa",
         range: 12_969_684,
         shape: COLOR_ADJECTIVE_ANIMAL_SHAPE,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "descriptor-object",
+        range: 4_384_287,
+        shape: DESCRIPTOR_OBJECT_SHAPE,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "color-descriptor-object",
+        range: 227_982_924,
+        shape: COLOR_DESCRIPTOR_OBJECT_SHAPE,
         permutation: IDENTITY_PERMUTATION,
     },
 ];
@@ -1227,7 +1246,7 @@ USAGE:
     nwords text encode <text>
     nwords text decode <words...>
 
-Shapes are comma-separated ordered word-list names such as adjective,animal or color,adjective,animal.
+Shapes are comma-separated ordered word-list names such as adjective,animal, descriptor,object, or color,descriptor,object.
 
 COMMANDS:
     encode      Encode an integer ID into a positional word phrase.
@@ -1243,6 +1262,9 @@ EXAMPLES:
 
     nwords encode 1337 --range 1e6 --shape color,adjective,animal
         Encode ID 1337 into a custom ordered named-list shape.
+
+    nwords encode 42 --preset descriptor-object
+        Encode ID 42 with the descriptor-object preset.
 
     nwords plan --shape color,adjective,animal
         Show per-position list sizes and total shape capacity.
@@ -1262,7 +1284,8 @@ DESCRIPTION:
     decoding contract.
 
 OPTIONS:
-    --preset <name>     Use a built-in preset such as u32, dec6, aa, or color-aa.
+    --preset <name>     Use a built-in preset such as u32, dec6, aa, color-aa,
+                        or descriptor-object.
     --range <R>         Accepted exclusive range [0, R). Accepts decimal digits
                         or exact scientific shorthand such as 1e6.
     --shape <lists>     Comma-separated named word lists, for example
@@ -1277,6 +1300,9 @@ EXAMPLES:
 
     nwords encode 1337 --range 1e6 --shape color,adjective,animal
         Encode ID 1337 with a custom color-adjective-animal shape.
+
+    nwords encode 42 --preset descriptor-object
+        Encode ID 42 with the descriptor-object preset.
 
     nwords encode 42 --range 100000 --shape adjective,animal --explain
         Encode and include capacity, slack, and acceptance ratio metadata.
@@ -1307,6 +1333,9 @@ EXAMPLES:
 
     nwords decode \"amaranth abundant amphibian\" --range 1e6 --shape color,adjective,animal
         Decode a phrase with a custom ordered named-list shape.
+
+    nwords decode \"abalone aardvark\" --preset descriptor-object
+        Decode a phrase with the descriptor-object preset.
 ";
 
 const PRESETS_HELP: &str = "\
@@ -1350,6 +1379,9 @@ OPTIONS:
 EXAMPLES:
     nwords plan --shape color,adjective,animal
         Show list sizes and total capacity for the ordered shape.
+
+    nwords plan --shape descriptor,object
+        Show list sizes and total capacity for the descriptor-object shape.
 
     nwords plan --range 1e6 --shape color,adjective,animal
         Show whether one million IDs fit in the custom shape.

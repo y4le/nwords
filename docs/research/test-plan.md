@@ -65,19 +65,26 @@ Required checks:
 2. Position 0 is adjectives and position 1 is animals for the compatibility
    adjective-animal shape.
 3. Counts and capacity are stable: 749 adjectives, 333 animals, 52 colors,
-   249,417 adjective-animal phrase states, and 12,969,684 color-adjective-animal
+   1,437 descriptors, 3,051 objects, 249,417 adjective-animal phrase states,
+   12,969,684 color-adjective-animal phrase states, 4,384,287
+   descriptor-object phrase states, and 227,982,924 color-descriptor-object
    phrase states.
 4. Boundary words are stable (`able`/`zippy`, `aardvark`/`zebra`,
-   `amaranth`/`yellow`) because word order is an encoding contract.
+   `amaranth`/`yellow`, `abalone`/`zircon`, `aardvark`/`zydeco`) because word
+   order is an encoding contract.
 5. CLI `aa` preset maps `0` to the first adjective-animal pair and
    `capacity - 1` to the last pair.
-6. CLI `plan --shape color,adjective,animal` reports per-position list sizes
-   and total capacity without requiring a range.
-7. CLI `--shape color,adjective,animal` round-trips a custom range.
-8. CLI range parsing accepts exact shorthand such as `1e6` and rejects
+6. CLI `descriptor-object` preset maps `0` to the first descriptor-object pair
+   and `capacity - 1` to the last pair.
+7. CLI `plan --shape color,adjective,animal` and
+   `plan --shape descriptor,object` report per-position list sizes and total
+   capacity without requiring a range.
+8. CLI `--shape color,adjective,animal` and `--shape descriptor,object`
+   round-trip custom ranges.
+9. CLI range parsing accepts exact shorthand such as `1e6` and rejects
    non-integer shorthand expansions.
-9. CLI rejects the generic `word` list name and suggests `bip39-en`.
-10. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots, and
+10. CLI rejects the generic `word` list name and suggests `bip39-en`.
+11. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots, and
    the upstream MIT license.
 
 ### Affine spread permutations

@@ -203,6 +203,12 @@ pub fn sample_shape(lists: &[Vec<String>], max_samples: usize) -> Result<Vec<Str
 }
 
 pub fn check_existing_vectors(root: &Path) -> Result<(), ToolError> {
+    check_unique_names_generator_vectors(root)?;
+    check_friendly_words_vectors(root)?;
+    Ok(())
+}
+
+fn check_unique_names_generator_vectors(root: &Path) -> Result<(), ToolError> {
     let base = root.join("tests/vectors/adjective-animal");
 
     let upstream_adjectives = read_word_file(&base.join("unique-names-generator-adjectives.txt"))?;
@@ -235,6 +241,35 @@ pub fn check_existing_vectors(root: &Path) -> Result<(), ToolError> {
     require_exact("rust adjectives", &expected_adjectives, &rust_adjectives)?;
     require_exact("rust animals", &expected_animals, &rust_animals)?;
     require_exact("rust colors", &upstream_colors, &rust_colors)?;
+    Ok(())
+}
+
+fn check_friendly_words_vectors(root: &Path) -> Result<(), ToolError> {
+    let base = root.join("tests/vectors/friendly-words");
+
+    let upstream_objects = read_word_file(&base.join("glitch-friendly-words-objects.txt"))?;
+    let upstream_descriptors = read_word_file(&base.join("glitch-friendly-words-predicates.txt"))?;
+    let object_blocklist = read_word_file(&base.join("object-blocklist.txt"))?;
+    let descriptor_blocklist = read_word_file(&base.join("descriptor-blocklist.txt"))?;
+    let expected_objects = read_word_file(&base.join("nwords-objects.txt"))?;
+    let expected_descriptors = read_word_file(&base.join("nwords-descriptors.txt"))?;
+    let rust_objects =
+        read_rust_array_words(&root.join("crates/nwords-wordlists/src/friendly_words_objects.rs"))?;
+    let rust_descriptors = read_rust_array_words(
+        &root.join("crates/nwords-wordlists/src/friendly_words_descriptors.rs"),
+    )?;
+
+    let objects = derive_curated_list(&upstream_objects, &object_blocklist, WordPolicy::any_len())?;
+    let descriptors = derive_curated_list(
+        &upstream_descriptors,
+        &descriptor_blocklist,
+        WordPolicy::any_len(),
+    )?;
+
+    require_exact("nwords-objects", &objects, &expected_objects)?;
+    require_exact("nwords-descriptors", &descriptors, &expected_descriptors)?;
+    require_exact("rust objects", &expected_objects, &rust_objects)?;
+    require_exact("rust descriptors", &expected_descriptors, &rust_descriptors)?;
     Ok(())
 }
 

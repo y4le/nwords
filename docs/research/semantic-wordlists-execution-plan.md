@@ -408,7 +408,7 @@ Purpose: add the high-confidence direct-derived semantic lists.
 Lists:
 
 - `object`
-- `descriptor`, or its approved replacement name.
+- `descriptor`
 
 Changes:
 

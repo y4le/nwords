@@ -16,6 +16,7 @@ The workspace includes a small `nwords` binary for positional ID phrases:
 cargo run -p nwords-cli -- encode 42 --preset u32
 cargo run -p nwords-cli -- decode "<phrase>" --preset u32
 cargo run -p nwords-cli -- encode 42 --preset aa
+cargo run -p nwords-cli -- encode 42 --preset descriptor-object
 cargo run -p nwords-cli -- encode 1337 --range 1e6 --shape color,adjective,animal
 cargo run -p nwords-cli -- encode 42 --preset dec6-spread
 cargo run -p nwords-cli -- text encode "hello"
@@ -23,6 +24,7 @@ cargo run -p nwords-cli -- bytes encode --hex deadbeef
 cargo run -p nwords-cli -- presets
 cargo run -p nwords-cli -- plan --preset u32
 cargo run -p nwords-cli -- plan --range 1e6
+cargo run -p nwords-cli -- plan --shape descriptor,object
 cargo run -p nwords-cli -- plan --shape color,adjective,animal
 cargo run -p nwords-cli -- help encode
 ```
@@ -36,16 +38,18 @@ length, payload bytes, and zero padding to an 11-bit word boundary. Text is
 encoded as byte-exact UTF-8 with no default Unicode normalization.
 
 The CLI includes BIP-39 English positional presets and named word-list shapes
-such as `adjective,animal` and `color,adjective,animal`. BIP-39 positional
-presets do not produce BIP-39 wallet mnemonics:
+such as `adjective,animal`, `descriptor,object`, and
+`color,adjective,animal`. BIP-39 positional presets do not produce BIP-39
+wallet mnemonics:
 
 ```text
 BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
 ```
 
-Named-list presets use ordered word maps derived from the MIT-licensed
-`unique-names-generator` adjective, animal, and color lists. They are
-deterministic ID encodings, not random names:
+Named-list presets use ordered word maps derived from MIT-licensed source
+lists: `unique-names-generator` for adjective, animal, and color, and
+`glitchdotcom/friendly-words` for descriptor and object. They are deterministic
+ID encodings, not random names:
 
 ```sh
 cargo run -p nwords-cli -- encode 0 --preset aa
@@ -54,6 +58,10 @@ cargo run -p nwords-cli -- encode 249416 --preset aa
 # zippy zebra
 cargo run -p nwords-cli -- encode 0 --preset color-aa
 # amaranth able aardvark
+cargo run -p nwords-cli -- encode 0 --preset descriptor-object
+# abalone aardvark
+cargo run -p nwords-cli -- encode 0 --preset color-descriptor-object
+# amaranth abalone aardvark
 ```
 
 ### BIP-39 English

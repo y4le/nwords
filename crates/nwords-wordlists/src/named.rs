@@ -8,7 +8,10 @@ use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
 use nwords_core::WordMap;
 
-use crate::{adjective_animal_adjectives, adjective_animal_animals, unique_names_generator_colors};
+use crate::{
+    adjective_animal_adjectives, adjective_animal_animals, friendly_words_descriptors,
+    friendly_words_objects, unique_names_generator_colors,
+};
 
 /// Advisory grammar role for a word list in phrase-shape planning.
 ///
@@ -34,6 +37,10 @@ pub enum NamedWordList {
     Animal,
     /// Color list from `unique-names-generator`.
     Color,
+    /// Broad friendly head-noun list from Glitch `friendly-words`.
+    Object,
+    /// Friendly modifier list from Glitch `friendly-words` predicates.
+    Descriptor,
     /// English BIP-39 wordlist used as a positional dictionary.
     #[cfg(feature = "bip39-english")]
     Bip39English,
@@ -46,6 +53,8 @@ impl NamedWordList {
             "adjective" | "adjectives" => Some(Self::Adjective),
             "animal" | "animals" => Some(Self::Animal),
             "color" | "colors" => Some(Self::Color),
+            "object" | "objects" => Some(Self::Object),
+            "descriptor" | "descriptors" => Some(Self::Descriptor),
             #[cfg(feature = "bip39-english")]
             "bip39-en" | "bip39-english" | "bip39-en-positional" => Some(Self::Bip39English),
             _ => None,
@@ -58,6 +67,8 @@ impl NamedWordList {
             Self::Adjective => "adjective",
             Self::Animal => "animal",
             Self::Color => "color",
+            Self::Object => "object",
+            Self::Descriptor => "descriptor",
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => "bip39-en",
         }
@@ -66,8 +77,8 @@ impl NamedWordList {
     /// Returns the advisory grammar role for this list.
     pub const fn role(self) -> WordListRole {
         match self {
-            Self::Adjective | Self::Color => WordListRole::Modifier,
-            Self::Animal => WordListRole::Head,
+            Self::Adjective | Self::Color | Self::Descriptor => WordListRole::Modifier,
+            Self::Animal | Self::Object => WordListRole::Head,
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => WordListRole::Either,
         }
@@ -79,6 +90,8 @@ impl NamedWordList {
             Self::Adjective => adjective_animal_adjectives::ADJECTIVES.len(),
             Self::Animal => adjective_animal_animals::ANIMALS.len(),
             Self::Color => unique_names_generator_colors::COLORS.len(),
+            Self::Object => friendly_words_objects::OBJECTS.len(),
+            Self::Descriptor => friendly_words_descriptors::DESCRIPTORS.len(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.len(0),
         }
@@ -95,6 +108,8 @@ impl NamedWordList {
             Self::Adjective => adjective_animal_adjectives::ADJECTIVES.get(index).copied(),
             Self::Animal => adjective_animal_animals::ANIMALS.get(index).copied(),
             Self::Color => unique_names_generator_colors::COLORS.get(index).copied(),
+            Self::Object => friendly_words_objects::OBJECTS.get(index).copied(),
+            Self::Descriptor => friendly_words_descriptors::DESCRIPTORS.get(index).copied(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.word(index, 0),
         }
@@ -110,6 +125,12 @@ impl NamedWordList {
                 .iter()
                 .position(|candidate| *candidate == word),
             Self::Color => unique_names_generator_colors::COLORS
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Object => friendly_words_objects::OBJECTS
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Descriptor => friendly_words_descriptors::DESCRIPTORS
                 .iter()
                 .position(|candidate| *candidate == word),
             #[cfg(feature = "bip39-english")]
@@ -476,6 +497,14 @@ mod tests {
         assert_eq!(NamedWordList::Color.len(), 52);
         assert_eq!(NamedWordList::Color.word(0), Some("amaranth"));
         assert_eq!(NamedWordList::Color.word(51), Some("yellow"));
+
+        assert_eq!(NamedWordList::Object.len(), 3051);
+        assert_eq!(NamedWordList::Object.word(0), Some("aardvark"));
+        assert_eq!(NamedWordList::Object.word(3050), Some("zydeco"));
+
+        assert_eq!(NamedWordList::Descriptor.len(), 1437);
+        assert_eq!(NamedWordList::Descriptor.word(0), Some("abalone"));
+        assert_eq!(NamedWordList::Descriptor.word(1436), Some("zircon"));
     }
 
     #[test]
@@ -483,9 +512,27 @@ mod tests {
         assert_eq!(NamedWordList::Adjective.role(), WordListRole::Modifier);
         assert_eq!(NamedWordList::Animal.role(), WordListRole::Head);
         assert_eq!(NamedWordList::Color.role(), WordListRole::Modifier);
+        assert_eq!(NamedWordList::Object.role(), WordListRole::Head);
+        assert_eq!(NamedWordList::Descriptor.role(), WordListRole::Modifier);
 
         #[cfg(feature = "bip39-english")]
         assert_eq!(NamedWordList::Bip39English.role(), WordListRole::Either);
+    }
+
+    #[test]
+    fn named_lists_round_trip_indexes_without_duplicates() {
+        for list in [
+            NamedWordList::Adjective,
+            NamedWordList::Animal,
+            NamedWordList::Color,
+            NamedWordList::Object,
+            NamedWordList::Descriptor,
+        ] {
+            for index in 0..list.len() {
+                let word = list.word(index).expect("word exists");
+                assert_eq!(list.index_of(word), Some(index), "{}[{index}]", list.name());
+            }
+        }
     }
 
     #[cfg(feature = "bip39-english")]
@@ -519,6 +566,21 @@ mod tests {
         assert_eq!(sequence.word(0, 2), Some("aardvark"));
         assert_eq!(sequence.index_of("yellow", 0), Some(51));
         assert_eq!(sequence.index_of("yellow", 1), None);
+    }
+
+    #[test]
+    fn descriptor_object_sequence_has_stable_capacity() {
+        let sequence = WordListSequence::new(&[NamedWordList::Descriptor, NamedWordList::Object]);
+
+        assert_eq!(sequence.word_count(), 2);
+        assert_eq!(sequence.capacity(), Some(4_384_287));
+        assert_eq!(sequence.len(0), 1437);
+        assert_eq!(sequence.len(1), 3051);
+        assert_eq!(sequence.word(0, 0), Some("abalone"));
+        assert_eq!(sequence.word(0, 1), Some("aardvark"));
+        assert_eq!(sequence.index_of("zircon", 0), Some(1436));
+        assert_eq!(sequence.index_of("zydeco", 1), Some(3050));
+        assert_eq!(sequence.index_of("zydeco", 0), None);
     }
 
     #[cfg(feature = "alloc")]

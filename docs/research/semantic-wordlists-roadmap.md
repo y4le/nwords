@@ -52,8 +52,8 @@ Current recommendations:
 
 | List | Source posture | Candidate sources | Target role | Initial size guidance |
 |---|---|---|---|---:|
-| `object` | Direct-derived | Glitch `friendly-words` `words/objects.txt` | Head | Full filtered source, currently about 3k raw words |
-| `descriptor` | Direct-derived | Glitch `friendly-words` `words/predicates.txt` | Modifier | Full filtered source, currently about 1.4k raw words |
+| `object` | Direct-derived | Glitch `friendly-words` `generated/words.json` `objects` array | Head | 3,051 retained words from 3,064 raw words |
+| `descriptor` | Direct-derived | Glitch `friendly-words` `generated/words.json` `predicates` array | Modifier | 1,437 retained words from 1,450 raw words |
 | `mood` | Authored with seed references | WordNet, Wikidata, manual review | Modifier | 48-64 |
 | `material` | Authored with seed references | WordNet, Wikidata, material vocabularies | Either | 48-64 |
 | `shape` | Authored with seed references | WordNet, Wikidata, geometry terms | Either | 24-40 |
@@ -78,19 +78,16 @@ Recommended source commit checked during planning:
 
 License: MIT.
 
-Useful files:
+Useful file:
 
-- `words/objects.txt`
-- `words/predicates.txt`
-- `words/teams.txt`
-- `words/collections.txt`
+- `generated/words.json`
 
-Planning-time raw counts from the recommended commit:
+Pinned source counts from the recommended commit:
 
-- `objects.txt`: 3062 words
-- `predicates.txt`: 1450 words
-- `teams.txt`: 130 words
-- `collections.txt`: 69 words
+- `objects`: 3064 words
+- `predicates`: 1450 words
+- `teams`: 130 words
+- `collections`: 69 words
 
 The README describes these as curated lists intended to be friendly, positive,
 memorable, easy to spell, and safe for children across cultures. It also states
@@ -326,8 +323,8 @@ Assumptions used in this table:
 - `color`: 52 current words
 - `adjective`: 749 current words
 - `animal`: 333 current words
-- `descriptor`: 1450 raw Glitch predicate words
-- `object`: 3062 raw Glitch object words
+- `descriptor`: 1437 curated Glitch predicate words
+- `object`: 3051 curated Glitch object words
 - `mood`: 64 target words
 - `material`: 64 target words
 - `shape`: 40 target words
@@ -337,13 +334,13 @@ Assumptions used in this table:
 
 | Preset shape | Illustrative capacity | Notes |
 |---|---:|---|
-| `descriptor,object` | 4,439,900 | Strong direct-derived two-word default. |
-| `color,descriptor,object` | 230,874,800 | High-capacity friendly phrase using current `color`. |
-| `mood,descriptor,object` | 284,153,600 | Expressive three-word phrase if `mood` is carefully positive/neutral. |
+| `descriptor,object` | 4,384,287 | Strong direct-derived two-word default. |
+| `color,descriptor,object` | 227,982,924 | High-capacity friendly phrase using current `color`. |
+| `mood,descriptor,object` | 280,594,368 | Expressive three-word phrase if `mood` is carefully positive/neutral. |
 | `material,shape,object` | 7,838,720 | Concrete visual phrase such as material + form + object. |
-| `weather,descriptor,plant` | 29,696,000 | Useful after `plant` ships; avoid over-severe weather terms. |
-| `descriptor,plant` | 742,400 | Readable but lower capacity. |
-| `mood,descriptor,food` | 47,513,600 | Better capacity than `mood,food`; depends on food curation quality. |
+| `weather,descriptor,plant` | 29,429,760 | Useful after `plant` ships; avoid over-severe weather terms. |
+| `descriptor,plant` | 735,744 | Readable but lower capacity. |
+| `mood,descriptor,food` | 47,087,616 | Better capacity than `mood,food`; depends on food curation quality. |
 | `material,shape,food` | 1,310,720 | Novel, but phrase quality should be sampled before shipping. |
 | `mood,adjective,animal` | 30,902,400 | Extends an existing phrase family with a new modifier slot. |
 
@@ -365,9 +362,9 @@ for them explicitly.
 ### Phase B: Direct-derived Glitch lists
 
 - Vendor Glitch source snapshots at a pinned commit.
-- Add `object` from `words/objects.txt`.
-- Add `descriptor` from `words/predicates.txt`, after resolving the naming
-  distinction from existing `adjective`.
+- Add `object` from the `generated/words.json` `objects` array.
+- Add `descriptor` from the `generated/words.json` `predicates` array; document
+  the naming distinction from existing `adjective`.
 - Preserve upstream order for retained words.
 - Add Rust arrays, `NamedWordList` variants, parse aliases, boundary tests, and
   `SHA256SUMS`.
