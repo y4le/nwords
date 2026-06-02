@@ -1557,14 +1557,14 @@ fn parse_user_list_words(name: &str, text: &str) -> Result<Vec<String>, CliError
     let mut seen = BTreeMap::<String, usize>::new();
     for (line_index, line) in text.lines().enumerate() {
         let line_number = line_index + 1;
-        let trimmed = line.trim();
-        if trimmed.is_empty() || trimmed.starts_with('#') {
-            continue;
-        }
-        if trimmed.len() > USER_LIST_MAX_LINE_BYTES {
+        if line.len() > USER_LIST_MAX_LINE_BYTES {
             return Err(CliError::usage(format!(
                 "list `{name}` line {line_number} exceeds {USER_LIST_MAX_LINE_BYTES} bytes"
             )));
+        }
+        let trimmed = line.trim_matches(|character: char| character.is_ascii_whitespace());
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
         }
         if !trimmed.bytes().all(|byte| byte.is_ascii_lowercase()) {
             return Err(CliError::usage(format!(

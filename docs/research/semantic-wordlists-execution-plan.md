@@ -8,7 +8,7 @@ architecture decisions for:
 - new built-in semantic word lists;
 - grammar-role metadata for phrase-shape presets;
 - curation tooling and provenance checks;
-- future user-defined wordlists in the CLI and library.
+- user-defined wordlists in the CLI and library.
 
 This is a planning document. Shipped wordlist contents, order, canonical names,
 aliases, and preset shapes remain compatibility contracts once released.
@@ -116,10 +116,10 @@ pub struct OwnedWordList {
 pub struct DynamicWordListSequence {
     // Internal representation, not necessarily public fields:
     owned: Vec<OwnedWordList>,
-    positions: Vec<WordSlot>,
+    positions: Vec<DynamicWordListSlot>,
 }
 
-enum WordSlot {
+pub enum DynamicWordListSlot {
     Builtin(NamedWordList),
     Owned(usize),
 }
@@ -176,6 +176,8 @@ Rules:
   implementation should use `NamedWordList::parse(name).is_some()` for this
   check.
 - Duplicate `--list` names in one invocation are rejected.
+- Every provided user-list name must be referenced by `--shape`; unreferenced
+  entries are rejected to catch typos.
 - Loaded user names can be used in `--shape` alongside built-ins.
 - Built-in names take precedence only by rejecting collisions; no shadowing.
 - User-defined files are runtime inputs, not vendored vectors, and are not
@@ -207,9 +209,9 @@ Validation guards:
 | Limit | Initial value |
 |---|---:|
 | Max `--list` flags per invocation | 32 |
-| Max file size | 16 MiB |
+| Max file size | 1 MiB |
 | Max line length | 128 bytes |
-| Max accepted entries per list | 1,048,576 |
+| Max accepted entries per list | 4,096 |
 | Min accepted entries per list | 2 |
 
 These limits are acceptance guards, not decode contracts. Loosening them later
@@ -217,9 +219,8 @@ is compatible. Tightening them may reject previously valid user files and should
 be treated carefully.
 
 User-list errors should include line numbers. Duplicate errors should include
-the duplicate token, current line, and first-seen line. Multi-error reporting is
-preferred; first-error reporting is acceptable for the first implementation if
-documented.
+the current line and first-seen line. Multi-error reporting is preferred;
+first-error reporting is acceptable for the first implementation if documented.
 
 ### User File Fingerprints
 
@@ -235,7 +236,7 @@ user_list_0_fingerprint: fnv1a64:0123456789abcdef
 Fingerprint rules:
 
 - compute over the accepted-token vector, not the raw file bytes;
-- join accepted tokens with `\n`;
+- feed each accepted token's bytes followed by a NUL separator;
 - comments and blank lines do not affect the fingerprint;
 - invalid files have no capacity and no fingerprint;
 - use a dependency-free FNV-1a 64-bit implementation;
@@ -651,7 +652,7 @@ Every user-defined wordlist feature requires:
 | Decision | Phase | Recommendation |
 |---|---:|---|
 | Is `descriptor` distinct enough from `adjective`? | 0 | Keep only if documented as Glitch-predicate-derived, possibly participial descriptors. |
-| Exact public constructor names for dynamic lists | 0 | Decide in docs before Phase 5 implementation. |
+| Exact public constructor names for dynamic lists | 0 | Implemented as `OwnedWordList`, `DynamicWordListSequence`, `DynamicWordListSlot`, and `WordListError`. |
 | Whether CLI role hints for user lists ship | 5 or later | Defer; default user lists to `Either`. |
 | Whether dynamic lookup gets an index map | 5 or later | Start linear; add per-list lookup map only if benchmarks justify it. |
 | Final `food` source mix | 4 | Prefer USDA CC0 as seed; keep FoodOn reference-only unless CC BY posture is accepted. |

@@ -82,9 +82,9 @@ cargo run -p nwords-cli -- encode 0 --preset mood-descriptor-food
 User-defined lists can be mixed with built-ins by passing repeatable
 `--list name=path` entries and referencing `name` inside `--shape`. Files use
 one lowercase ASCII word per line; blank lines and full-line `#` comments are
-ignored. Pin and share the same list files for reproducible decoding. The CLI
-reports an `fnv1a64:<hex>` drift fingerprint for user lists; it is not a
-security hash.
+ignored, with only outer ASCII whitespace trimmed. Pin and share the same list
+files for reproducible decoding. The CLI reports an `fnv1a64:<hex>` drift
+fingerprint for user lists; it is not a security hash.
 
 ### BIP-39 English
 
@@ -266,6 +266,10 @@ V1 ships:
 - Exact `u128` capacity/range math plus log-domain estimates beyond `u128`.
 - `Linear` and `Sorted` word maps.
 - Identity and affine spread permutations.
+
+Built-in word-list names, contents, and order are compatibility surfaces.
+Changing a shipped list requires a new list name or version rather than an
+in-place edit.
 
 V1 intentionally defers SLIP-39, Niceware, Proquint, PGP word lists,
 non-identity permutations, BIP-32/xprv derivation, and BigInt-backed exact

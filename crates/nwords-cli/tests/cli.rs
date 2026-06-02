@@ -540,6 +540,21 @@ fn user_defined_list_validation_errors_are_actionable() {
     assert_eq!(output.status.code(), Some(2));
     assert!(stderr(&output).contains("line 1 exceeds"));
 
+    let long_blank = temp_wordlist(
+        "long-blank",
+        format!("{}\nalpha\nbravo\n", " ".repeat(129)).as_bytes(),
+    );
+    let long_blank_spec = format!("project={}", long_blank.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &long_blank_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("line 1 exceeds"));
+
+    let unicode_space = temp_wordlist("unicode-space", "alpha\n\u{2003}bravo\n".as_bytes());
+    let unicode_space_spec = format!("project={}", unicode_space.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &unicode_space_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("invalid word in list `project` at line 2"));
+
     let oversized = temp_wordlist("oversized", &vec![b'a'; 1_048_577]);
     let oversized_spec = format!("project={}", oversized.display());
     let output = nwords(&["plan", "--shape", "project", "--list", &oversized_spec]);

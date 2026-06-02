@@ -200,12 +200,13 @@ preset table.
 User-defined wordlists are runtime-owned named lists, not new core traits.
 The CLI accepts repeatable `--list name=path` entries only with `--shape`;
 each provided user-list name must be referenced in the ordered shape. List
-files are UTF-8, one lowercase ASCII word per line; blank lines and full-line
-`#` comments are ignored. The accepted token order is the encoding order. The
-CLI rejects invalid names, built-in name collisions, duplicate list names,
-unreferenced user lists, duplicate words with line numbers, invalid tokens
-with line numbers, too-few words, invalid UTF-8, and bounded
-file/line/list-size overages.
+files are UTF-8, one lowercase ASCII word per accepted line; outer ASCII
+whitespace is ignored before blank-line and full-line `#` comment handling.
+The accepted token order is the encoding order. The CLI rejects invalid names,
+built-in name collisions, duplicate list names, unreferenced user lists,
+duplicate words with line numbers, invalid tokens with line numbers, too-few
+words, invalid UTF-8, more than 32 user lists, files over 1 MiB, raw lines over
+128 bytes, and lists over 4,096 accepted words.
 
 All CLI shapes resolve to `DynamicWordListSequence`, including pure built-in
 shapes. Reports retain per-position metadata so pure built-in shapes can still
