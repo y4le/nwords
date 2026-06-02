@@ -54,10 +54,10 @@ Current recommendations:
 |---|---|---|---|---:|
 | `object` | Direct-derived | Glitch `friendly-words` `generated/words.json` `objects` array | Head | 3,051 retained words from 3,064 raw words |
 | `descriptor` | Direct-derived | Glitch `friendly-words` `generated/words.json` `predicates` array | Modifier | 1,437 retained words from 1,450 raw words |
-| `mood` | Authored with seed references | WordNet, Wikidata, manual review | Modifier | 48-64 |
-| `material` | Authored with seed references | WordNet, Wikidata, material vocabularies | Either | 48-64 |
-| `shape` | Authored with seed references | WordNet, Wikidata, geometry terms | Either | 24-40 |
-| `weather` | Authored with seed references | NOAA public-domain weather glossaries | Modifier | 24-40 |
+| `mood` | Authored with seed references | WordNet, Wikidata, manual review | Modifier | 64 authored words |
+| `material` | Authored with seed references | WordNet, Wikidata, material vocabularies | Either | 64 authored words |
+| `shape` | Authored with seed references | WordNet, Wikidata, geometry terms | Either | 40 authored words |
+| `weather` | Authored with seed references | NOAA public-domain weather glossaries | Modifier | 40 authored words |
 | `plant` | Authored with seed references | OpenFarm CC0, USDA PLANTS, Wikidata, WFO as reference | Head | 256-512 |
 | `food` | Authored with seed references | USDA FoodData Central CC0, FoodOn as reference, Wikidata | Head | 256-512 |
 
@@ -325,10 +325,10 @@ Assumptions used in this table:
 - `animal`: 333 current words
 - `descriptor`: 1437 curated Glitch predicate words
 - `object`: 3051 curated Glitch object words
-- `mood`: 64 target words
-- `material`: 64 target words
-- `shape`: 40 target words
-- `weather`: 40 target words
+- `mood`: 64 authored words
+- `material`: 64 authored words
+- `shape`: 40 authored words
+- `weather`: 40 authored words
 - `plant`: 512 target words
 - `food`: 512 target words
 
@@ -337,12 +337,12 @@ Assumptions used in this table:
 | `descriptor,object` | 4,384,287 | Strong direct-derived two-word default. |
 | `color,descriptor,object` | 227,982,924 | High-capacity friendly phrase using current `color`. |
 | `mood,descriptor,object` | 280,594,368 | Expressive three-word phrase if `mood` is carefully positive/neutral. |
-| `material,shape,object` | 7,838,720 | Concrete visual phrase such as material + form + object. |
+| `material,shape,object` | 7,810,560 | Concrete visual phrase such as material + form + object. |
 | `weather,descriptor,plant` | 29,429,760 | Useful after `plant` ships; avoid over-severe weather terms. |
 | `descriptor,plant` | 735,744 | Readable but lower capacity. |
 | `mood,descriptor,food` | 47,087,616 | Better capacity than `mood,food`; depends on food curation quality. |
 | `material,shape,food` | 1,310,720 | Novel, but phrase quality should be sampled before shipping. |
-| `mood,adjective,animal` | 30,902,400 | Extends an existing phrase family with a new modifier slot. |
+| `mood,adjective,animal` | 15,962,688 | Extends an existing phrase family with a new modifier slot. |
 
 Avoid presets such as `weather,mood,object`; they are grammatically legal as
 slots but produce weak phrases. Custom shapes may still allow them if users ask

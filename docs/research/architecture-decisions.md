@@ -149,8 +149,8 @@ counts are spec-fixed at 12, 15, 18, 21, and 24 words, corresponding to
 The built-in English named word lists are additive default features, not a
 replacement for BIP-39 English positional presets. A phrase shape is an ordered
 sequence of named single-position lists such as `adjective,animal`,
-`descriptor,object`, or `color,descriptor,object`. The ordered shape is part of
-the encoding contract.
+`descriptor,object`, `mood,descriptor,object`, or
+`material,shape,object`. The ordered shape is part of the encoding contract.
 
 The `adjective` and `animal` lists are curated from
 `andreasonny83/unique-names-generator` commit
@@ -169,6 +169,16 @@ user-facing defaults and entries that do not compose cleanly in
 `descriptor,object`. The built-in counts are 3,051 objects and 1,437
 descriptors, for 4,384,287 `descriptor,object` phrase states and 227,982,924
 `color,descriptor,object` phrase states.
+
+The `mood`, `material`, `shape`, and `weather` lists are authored in-repo from
+permissive seed references rather than transformed from a single source list.
+Their seed references are Princeton WordNet, Wikidata structured data, and for
+weather terms the National Weather Service glossary and disclaimer. The frozen
+counts are 64 moods, 64 materials, 40 shapes, and 40 weather terms, all in
+alphabetical order. The CLI ships `mood,descriptor,object`,
+`material,shape,object`, and `mood,adjective,animal` presets after phrase
+review; weather is exposed as a custom shape slot but has no built-in preset
+until a compatible head-noun list such as `plant` ships.
 
 The public adapter is `named::WordListSequence`, which implements the existing
 position-aware `WordMap` trait by dispatching position `i` to `shape[i]`.

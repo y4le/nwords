@@ -177,6 +177,13 @@ fn presets_lists_stable_rows_and_caveat() {
     assert!(text.contains(
         "color-descriptor-object\tcolor,descriptor,object\tidentity\t3\t227982924\t227982924\t0\t"
     ));
+    assert!(text.contains(
+        "mood-descriptor-object\tmood,descriptor,object\tidentity\t3\t280594368\t280594368\t0\t"
+    ));
+    assert!(text.contains(
+        "material-shape-object\tmaterial,shape,object\tidentity\t3\t7810560\t7810560\t0\t"
+    ));
+    assert!(text.contains("mood-aa\tmood,adjective,animal\tidentity\t3\t15962688\t15962688\t0\t"));
 }
 
 #[test]
@@ -275,6 +282,18 @@ fn plan_shape_reports_position_counts_without_range() {
     assert!(text.contains("position_1_list: object\n"));
     assert!(text.contains("position_1_words: 3051\n"));
     assert!(text.contains("capacity: 4384287\n"));
+
+    let material_shape_object = nwords(&["plan", "--shape", "material,shape,object"]);
+    assert!(material_shape_object.status.success());
+    let text = stdout(&material_shape_object);
+    assert!(text.contains("shape: material,shape,object\n"));
+    assert!(text.contains("position_0_list: material\n"));
+    assert!(text.contains("position_0_words: 64\n"));
+    assert!(text.contains("position_1_list: shape\n"));
+    assert!(text.contains("position_1_words: 40\n"));
+    assert!(text.contains("position_2_list: object\n"));
+    assert!(text.contains("position_2_words: 3051\n"));
+    assert!(text.contains("capacity: 7810560\n"));
 }
 
 #[test]
@@ -456,6 +475,42 @@ fn descriptor_object_presets_round_trip() {
     ]);
     assert!(custom_decoded.status.success());
     assert_eq!(stdout(&custom_decoded), "42\n");
+}
+
+#[test]
+fn authored_semantic_presets_round_trip() {
+    let mood = nwords(&["encode", "0", "--preset", "mood-descriptor-object"]);
+    assert!(mood.status.success());
+    assert_eq!(stdout(&mood), "alert abalone aardvark\n");
+
+    let mood_max = nwords(&["encode", "280594367", "--preset", "mood-descriptor-object"]);
+    assert!(mood_max.status.success());
+    assert_eq!(stdout(&mood_max), "zestful zircon zydeco\n");
+
+    let mood_decoded = nwords(&[
+        "decode",
+        "zestful zircon zydeco",
+        "--preset",
+        "mood-descriptor-object",
+    ]);
+    assert!(mood_decoded.status.success());
+    assert_eq!(stdout(&mood_decoded), "280594367\n");
+
+    let material = nwords(&["encode", "0", "--preset", "material-shape-object"]);
+    assert!(material.status.success());
+    assert_eq!(stdout(&material), "acrylic angular aardvark\n");
+
+    let material_max = nwords(&["encode", "7810559", "--preset", "material-shape-object"]);
+    assert!(material_max.status.success());
+    assert_eq!(stdout(&material_max), "zinc zigzag zydeco\n");
+
+    let mood_aa = nwords(&["encode", "0", "--preset", "mood-aa"]);
+    assert!(mood_aa.status.success());
+    assert_eq!(stdout(&mood_aa), "alert able aardvark\n");
+
+    let mood_aa_max = nwords(&["encode", "15962687", "--preset", "mood-aa"]);
+    assert!(mood_aa_max.status.success());
+    assert_eq!(stdout(&mood_aa_max), "zestful zippy zebra\n");
 }
 
 #[test]

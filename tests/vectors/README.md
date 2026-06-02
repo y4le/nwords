@@ -42,6 +42,14 @@ Vendored and normalized vector files for `nwords` conformance tests.
     descriptor lists.
   - Use: built-in English `object` and `descriptor` positional word maps.
 
+## Authored Semantic Wordlists
+
+- `semantic-wordlists/`
+  - Source: authored in-repo with permissive seed references documented in each
+    list README.
+  - Contents: curated `mood`, `material`, `shape`, and `weather` snapshots.
+  - Use: built-in English semantic modifier and visual phrase-shape word maps.
+
 ## SLIP-39
 
 - `slip39/trezor-python-shamir-mnemonic-vectors.json`

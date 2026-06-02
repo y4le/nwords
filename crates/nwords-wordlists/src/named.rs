@@ -10,7 +10,8 @@ use nwords_core::WordMap;
 
 use crate::{
     adjective_animal_adjectives, adjective_animal_animals, friendly_words_descriptors,
-    friendly_words_objects, unique_names_generator_colors,
+    friendly_words_objects, semantic_materials, semantic_moods, semantic_shapes, semantic_weather,
+    unique_names_generator_colors,
 };
 
 /// Advisory grammar role for a word list in phrase-shape planning.
@@ -41,6 +42,14 @@ pub enum NamedWordList {
     Object,
     /// Friendly modifier list from Glitch `friendly-words` predicates.
     Descriptor,
+    /// Authored friendly mood modifier list.
+    Mood,
+    /// Authored material list for visual phrase shapes.
+    Material,
+    /// Authored shape/form list for visual phrase shapes.
+    Shape,
+    /// Authored weather/outdoor-condition modifier list.
+    Weather,
     /// English BIP-39 wordlist used as a positional dictionary.
     #[cfg(feature = "bip39-english")]
     Bip39English,
@@ -55,6 +64,12 @@ impl NamedWordList {
             "color" | "colors" => Some(Self::Color),
             "object" | "objects" => Some(Self::Object),
             "descriptor" | "descriptors" => Some(Self::Descriptor),
+            "mood" | "moods" => Some(Self::Mood),
+            "material" | "materials" => Some(Self::Material),
+            "shape" | "shapes" => Some(Self::Shape),
+            // Weather is intentionally singular because it is used here as an
+            // uncountable condition category.
+            "weather" => Some(Self::Weather),
             #[cfg(feature = "bip39-english")]
             "bip39-en" | "bip39-english" | "bip39-en-positional" => Some(Self::Bip39English),
             _ => None,
@@ -69,6 +84,10 @@ impl NamedWordList {
             Self::Color => "color",
             Self::Object => "object",
             Self::Descriptor => "descriptor",
+            Self::Mood => "mood",
+            Self::Material => "material",
+            Self::Shape => "shape",
+            Self::Weather => "weather",
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => "bip39-en",
         }
@@ -77,8 +96,11 @@ impl NamedWordList {
     /// Returns the advisory grammar role for this list.
     pub const fn role(self) -> WordListRole {
         match self {
-            Self::Adjective | Self::Color | Self::Descriptor => WordListRole::Modifier,
+            Self::Adjective | Self::Color | Self::Descriptor | Self::Mood | Self::Weather => {
+                WordListRole::Modifier
+            }
             Self::Animal | Self::Object => WordListRole::Head,
+            Self::Material | Self::Shape => WordListRole::Either,
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => WordListRole::Either,
         }
@@ -92,6 +114,10 @@ impl NamedWordList {
             Self::Color => unique_names_generator_colors::COLORS.len(),
             Self::Object => friendly_words_objects::OBJECTS.len(),
             Self::Descriptor => friendly_words_descriptors::DESCRIPTORS.len(),
+            Self::Mood => semantic_moods::MOODS.len(),
+            Self::Material => semantic_materials::MATERIALS.len(),
+            Self::Shape => semantic_shapes::SHAPES.len(),
+            Self::Weather => semantic_weather::WEATHER.len(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.len(0),
         }
@@ -110,6 +136,10 @@ impl NamedWordList {
             Self::Color => unique_names_generator_colors::COLORS.get(index).copied(),
             Self::Object => friendly_words_objects::OBJECTS.get(index).copied(),
             Self::Descriptor => friendly_words_descriptors::DESCRIPTORS.get(index).copied(),
+            Self::Mood => semantic_moods::MOODS.get(index).copied(),
+            Self::Material => semantic_materials::MATERIALS.get(index).copied(),
+            Self::Shape => semantic_shapes::SHAPES.get(index).copied(),
+            Self::Weather => semantic_weather::WEATHER.get(index).copied(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.word(index, 0),
         }
@@ -131,6 +161,18 @@ impl NamedWordList {
                 .iter()
                 .position(|candidate| *candidate == word),
             Self::Descriptor => friendly_words_descriptors::DESCRIPTORS
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Mood => semantic_moods::MOODS
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Material => semantic_materials::MATERIALS
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Shape => semantic_shapes::SHAPES
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Weather => semantic_weather::WEATHER
                 .iter()
                 .position(|candidate| *candidate == word),
             #[cfg(feature = "bip39-english")]
@@ -505,6 +547,22 @@ mod tests {
         assert_eq!(NamedWordList::Descriptor.len(), 1437);
         assert_eq!(NamedWordList::Descriptor.word(0), Some("abalone"));
         assert_eq!(NamedWordList::Descriptor.word(1436), Some("zircon"));
+
+        assert_eq!(NamedWordList::Mood.len(), 64);
+        assert_eq!(NamedWordList::Mood.word(0), Some("alert"));
+        assert_eq!(NamedWordList::Mood.word(63), Some("zestful"));
+
+        assert_eq!(NamedWordList::Material.len(), 64);
+        assert_eq!(NamedWordList::Material.word(0), Some("acrylic"));
+        assert_eq!(NamedWordList::Material.word(63), Some("zinc"));
+
+        assert_eq!(NamedWordList::Shape.len(), 40);
+        assert_eq!(NamedWordList::Shape.word(0), Some("angular"));
+        assert_eq!(NamedWordList::Shape.word(39), Some("zigzag"));
+
+        assert_eq!(NamedWordList::Weather.len(), 40);
+        assert_eq!(NamedWordList::Weather.word(0), Some("balmy"));
+        assert_eq!(NamedWordList::Weather.word(39), Some("wintry"));
     }
 
     #[test]
@@ -514,9 +572,34 @@ mod tests {
         assert_eq!(NamedWordList::Color.role(), WordListRole::Modifier);
         assert_eq!(NamedWordList::Object.role(), WordListRole::Head);
         assert_eq!(NamedWordList::Descriptor.role(), WordListRole::Modifier);
+        assert_eq!(NamedWordList::Mood.role(), WordListRole::Modifier);
+        assert_eq!(NamedWordList::Material.role(), WordListRole::Either);
+        assert_eq!(NamedWordList::Shape.role(), WordListRole::Either);
+        assert_eq!(NamedWordList::Weather.role(), WordListRole::Modifier);
 
         #[cfg(feature = "bip39-english")]
         assert_eq!(NamedWordList::Bip39English.role(), WordListRole::Either);
+    }
+
+    #[test]
+    fn named_list_parser_accepts_semantic_aliases() {
+        assert_eq!(NamedWordList::parse("mood"), Some(NamedWordList::Mood));
+        assert_eq!(NamedWordList::parse("moods"), Some(NamedWordList::Mood));
+        assert_eq!(
+            NamedWordList::parse("material"),
+            Some(NamedWordList::Material)
+        );
+        assert_eq!(
+            NamedWordList::parse("materials"),
+            Some(NamedWordList::Material)
+        );
+        assert_eq!(NamedWordList::parse("shape"), Some(NamedWordList::Shape));
+        assert_eq!(NamedWordList::parse("shapes"), Some(NamedWordList::Shape));
+        assert_eq!(
+            NamedWordList::parse("weather"),
+            Some(NamedWordList::Weather)
+        );
+        assert_eq!(NamedWordList::parse("weathers"), None);
     }
 
     #[test]
@@ -527,6 +610,10 @@ mod tests {
             NamedWordList::Color,
             NamedWordList::Object,
             NamedWordList::Descriptor,
+            NamedWordList::Mood,
+            NamedWordList::Material,
+            NamedWordList::Shape,
+            NamedWordList::Weather,
         ] {
             for index in 0..list.len() {
                 let word = list.word(index).expect("word exists");
@@ -581,6 +668,29 @@ mod tests {
         assert_eq!(sequence.index_of("zircon", 0), Some(1436));
         assert_eq!(sequence.index_of("zydeco", 1), Some(3050));
         assert_eq!(sequence.index_of("zydeco", 0), None);
+    }
+
+    #[test]
+    fn authored_semantic_sequences_have_stable_capacities() {
+        let mood_descriptor_object = WordListSequence::new(&[
+            NamedWordList::Mood,
+            NamedWordList::Descriptor,
+            NamedWordList::Object,
+        ]);
+        assert_eq!(mood_descriptor_object.capacity(), Some(280_594_368));
+        assert_eq!(mood_descriptor_object.word(0, 0), Some("alert"));
+        assert_eq!(mood_descriptor_object.word(0, 1), Some("abalone"));
+        assert_eq!(mood_descriptor_object.word(0, 2), Some("aardvark"));
+
+        let material_shape_object = WordListSequence::new(&[
+            NamedWordList::Material,
+            NamedWordList::Shape,
+            NamedWordList::Object,
+        ]);
+        assert_eq!(material_shape_object.capacity(), Some(7_810_560));
+        assert_eq!(material_shape_object.word(0, 0), Some("acrylic"));
+        assert_eq!(material_shape_object.word(0, 1), Some("angular"));
+        assert_eq!(material_shape_object.word(0, 2), Some("aardvark"));
     }
 
     #[cfg(feature = "alloc")]

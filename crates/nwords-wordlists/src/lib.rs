@@ -26,6 +26,22 @@ pub(crate) mod friendly_words_objects;
 #[path = "friendly_words_descriptors.rs"]
 pub(crate) mod friendly_words_descriptors;
 
+#[cfg(feature = "named")]
+#[path = "semantic_moods.rs"]
+pub(crate) mod semantic_moods;
+
+#[cfg(feature = "named")]
+#[path = "semantic_materials.rs"]
+pub(crate) mod semantic_materials;
+
+#[cfg(feature = "named")]
+#[path = "semantic_shapes.rs"]
+pub(crate) mod semantic_shapes;
+
+#[cfg(feature = "named")]
+#[path = "semantic_weather.rs"]
+pub(crate) mod semantic_weather;
+
 /// Curated English adjective-animal wordlists.
 #[cfg(feature = "adjective-animal")]
 pub mod adjective_animal;

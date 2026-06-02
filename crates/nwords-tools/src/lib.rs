@@ -205,6 +205,7 @@ pub fn sample_shape(lists: &[Vec<String>], max_samples: usize) -> Result<Vec<Str
 pub fn check_existing_vectors(root: &Path) -> Result<(), ToolError> {
     check_unique_names_generator_vectors(root)?;
     check_friendly_words_vectors(root)?;
+    check_authored_semantic_wordlists(root)?;
     Ok(())
 }
 
@@ -273,6 +274,59 @@ fn check_friendly_words_vectors(root: &Path) -> Result<(), ToolError> {
     Ok(())
 }
 
+fn check_authored_semantic_wordlists(root: &Path) -> Result<(), ToolError> {
+    for (artifact, vector_path, rust_path, expected_len) in [
+        (
+            "nwords-moods",
+            "tests/vectors/semantic-wordlists/mood/nwords-moods.txt",
+            "crates/nwords-wordlists/src/semantic_moods.rs",
+            64,
+        ),
+        (
+            "nwords-materials",
+            "tests/vectors/semantic-wordlists/material/nwords-materials.txt",
+            "crates/nwords-wordlists/src/semantic_materials.rs",
+            64,
+        ),
+        (
+            "nwords-shapes",
+            "tests/vectors/semantic-wordlists/shape/nwords-shapes.txt",
+            "crates/nwords-wordlists/src/semantic_shapes.rs",
+            40,
+        ),
+        (
+            "nwords-weather",
+            "tests/vectors/semantic-wordlists/weather/nwords-weather.txt",
+            "crates/nwords-wordlists/src/semantic_weather.rs",
+            40,
+        ),
+    ] {
+        let words = read_word_file(&root.join(vector_path))?;
+        let rust_words = read_rust_array_words(&root.join(rust_path))?;
+        validate_words(&words, WordPolicy::any_len())?;
+        require_len(artifact, &words, expected_len)?;
+        require_sorted(artifact, &words)?;
+        require_exact(artifact, &words, &rust_words)?;
+    }
+    Ok(())
+}
+
+fn require_len(artifact: &'static str, words: &[String], expected: usize) -> Result<(), ToolError> {
+    if words.len() == expected {
+        Ok(())
+    } else {
+        Err(ToolError::Mismatch { artifact })
+    }
+}
+
+fn require_sorted(artifact: &'static str, words: &[String]) -> Result<(), ToolError> {
+    if words.windows(2).all(|pair| pair[0] < pair[1]) {
+        Ok(())
+    } else {
+        Err(ToolError::Mismatch { artifact })
+    }
+}
+
 fn validate_const_name(name: &str) -> Result<(), ToolError> {
     if name.is_empty()
         || !name
@@ -337,8 +391,8 @@ fn collect_samples(
 #[cfg(test)]
 mod tests {
     use super::{
-        check_existing_vectors, derive_curated_list, emit_rust_array, sample_shape, validate_words,
-        ToolError, WordPolicy,
+        check_existing_vectors, derive_curated_list, emit_rust_array, require_sorted, sample_shape,
+        validate_words, ToolError, WordPolicy,
     };
     use std::path::Path;
 
@@ -429,6 +483,24 @@ mod tests {
                 "bravo delta".to_owned(),
                 "bravo echo".to_owned()
             ]
+        );
+    }
+
+    #[test]
+    fn authored_lists_must_be_strictly_sorted() {
+        let sorted = ["alpha", "bravo"]
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        let unsorted = ["bravo", "alpha"]
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+
+        assert_eq!(require_sorted("words", &sorted), Ok(()));
+        assert_eq!(
+            require_sorted("words", &unsorted),
+            Err(ToolError::Mismatch { artifact: "words" })
         );
     }
 
