@@ -10,8 +10,8 @@ use nwords_core::WordMap;
 
 use crate::{
     adjective_animal_adjectives, adjective_animal_animals, friendly_words_descriptors,
-    friendly_words_objects, semantic_materials, semantic_moods, semantic_shapes, semantic_weather,
-    unique_names_generator_colors,
+    friendly_words_objects, semantic_foods, semantic_materials, semantic_moods, semantic_plants,
+    semantic_shapes, semantic_weather, unique_names_generator_colors,
 };
 
 /// Advisory grammar role for a word list in phrase-shape planning.
@@ -50,6 +50,10 @@ pub enum NamedWordList {
     Shape,
     /// Authored weather/outdoor-condition modifier list.
     Weather,
+    /// Authored plant/crop/garden head-noun list.
+    Plant,
+    /// Authored food/ingredient/dish head-noun list.
+    Food,
     /// English BIP-39 wordlist used as a positional dictionary.
     #[cfg(feature = "bip39-english")]
     Bip39English,
@@ -70,6 +74,8 @@ impl NamedWordList {
             // Weather is intentionally singular because it is used here as an
             // uncountable condition category.
             "weather" => Some(Self::Weather),
+            "plant" | "plants" => Some(Self::Plant),
+            "food" | "foods" => Some(Self::Food),
             #[cfg(feature = "bip39-english")]
             "bip39-en" | "bip39-english" | "bip39-en-positional" => Some(Self::Bip39English),
             _ => None,
@@ -88,6 +94,8 @@ impl NamedWordList {
             Self::Material => "material",
             Self::Shape => "shape",
             Self::Weather => "weather",
+            Self::Plant => "plant",
+            Self::Food => "food",
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => "bip39-en",
         }
@@ -99,7 +107,7 @@ impl NamedWordList {
             Self::Adjective | Self::Color | Self::Descriptor | Self::Mood | Self::Weather => {
                 WordListRole::Modifier
             }
-            Self::Animal | Self::Object => WordListRole::Head,
+            Self::Animal | Self::Object | Self::Plant | Self::Food => WordListRole::Head,
             Self::Material | Self::Shape => WordListRole::Either,
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => WordListRole::Either,
@@ -118,6 +126,8 @@ impl NamedWordList {
             Self::Material => semantic_materials::MATERIALS.len(),
             Self::Shape => semantic_shapes::SHAPES.len(),
             Self::Weather => semantic_weather::WEATHER.len(),
+            Self::Plant => semantic_plants::PLANTS.len(),
+            Self::Food => semantic_foods::FOODS.len(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.len(0),
         }
@@ -140,6 +150,8 @@ impl NamedWordList {
             Self::Material => semantic_materials::MATERIALS.get(index).copied(),
             Self::Shape => semantic_shapes::SHAPES.get(index).copied(),
             Self::Weather => semantic_weather::WEATHER.get(index).copied(),
+            Self::Plant => semantic_plants::PLANTS.get(index).copied(),
+            Self::Food => semantic_foods::FOODS.get(index).copied(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.word(index, 0),
         }
@@ -173,6 +185,12 @@ impl NamedWordList {
                 .iter()
                 .position(|candidate| *candidate == word),
             Self::Weather => semantic_weather::WEATHER
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Plant => semantic_plants::PLANTS
+                .iter()
+                .position(|candidate| *candidate == word),
+            Self::Food => semantic_foods::FOODS
                 .iter()
                 .position(|candidate| *candidate == word),
             #[cfg(feature = "bip39-english")]
@@ -563,6 +581,14 @@ mod tests {
         assert_eq!(NamedWordList::Weather.len(), 40);
         assert_eq!(NamedWordList::Weather.word(0), Some("balmy"));
         assert_eq!(NamedWordList::Weather.word(39), Some("wintry"));
+
+        assert_eq!(NamedWordList::Plant.len(), 128);
+        assert_eq!(NamedWordList::Plant.word(0), Some("acacia"));
+        assert_eq!(NamedWordList::Plant.word(127), Some("zucchini"));
+
+        assert_eq!(NamedWordList::Food.len(), 128);
+        assert_eq!(NamedWordList::Food.word(0), Some("almond"));
+        assert_eq!(NamedWordList::Food.word(127), Some("zucchini"));
     }
 
     #[test]
@@ -576,6 +602,8 @@ mod tests {
         assert_eq!(NamedWordList::Material.role(), WordListRole::Either);
         assert_eq!(NamedWordList::Shape.role(), WordListRole::Either);
         assert_eq!(NamedWordList::Weather.role(), WordListRole::Modifier);
+        assert_eq!(NamedWordList::Plant.role(), WordListRole::Head);
+        assert_eq!(NamedWordList::Food.role(), WordListRole::Head);
 
         #[cfg(feature = "bip39-english")]
         assert_eq!(NamedWordList::Bip39English.role(), WordListRole::Either);
@@ -600,6 +628,10 @@ mod tests {
             Some(NamedWordList::Weather)
         );
         assert_eq!(NamedWordList::parse("weathers"), None);
+        assert_eq!(NamedWordList::parse("plant"), Some(NamedWordList::Plant));
+        assert_eq!(NamedWordList::parse("plants"), Some(NamedWordList::Plant));
+        assert_eq!(NamedWordList::parse("food"), Some(NamedWordList::Food));
+        assert_eq!(NamedWordList::parse("foods"), Some(NamedWordList::Food));
     }
 
     #[test]
@@ -614,6 +646,8 @@ mod tests {
             NamedWordList::Material,
             NamedWordList::Shape,
             NamedWordList::Weather,
+            NamedWordList::Plant,
+            NamedWordList::Food,
         ] {
             for index in 0..list.len() {
                 let word = list.word(index).expect("word exists");
@@ -691,6 +725,36 @@ mod tests {
         assert_eq!(material_shape_object.word(0, 0), Some("acrylic"));
         assert_eq!(material_shape_object.word(0, 1), Some("angular"));
         assert_eq!(material_shape_object.word(0, 2), Some("aardvark"));
+
+        let weather_descriptor_plant = WordListSequence::new(&[
+            NamedWordList::Weather,
+            NamedWordList::Descriptor,
+            NamedWordList::Plant,
+        ]);
+        assert_eq!(weather_descriptor_plant.capacity(), Some(7_357_440));
+        assert_eq!(weather_descriptor_plant.word(0, 0), Some("balmy"));
+        assert_eq!(weather_descriptor_plant.word(0, 1), Some("abalone"));
+        assert_eq!(weather_descriptor_plant.word(0, 2), Some("acacia"));
+
+        let mood_descriptor_food = WordListSequence::new(&[
+            NamedWordList::Mood,
+            NamedWordList::Descriptor,
+            NamedWordList::Food,
+        ]);
+        assert_eq!(mood_descriptor_food.capacity(), Some(11_771_904));
+        assert_eq!(mood_descriptor_food.word(0, 0), Some("alert"));
+        assert_eq!(mood_descriptor_food.word(0, 1), Some("abalone"));
+        assert_eq!(mood_descriptor_food.word(0, 2), Some("almond"));
+
+        let material_shape_food = WordListSequence::new(&[
+            NamedWordList::Material,
+            NamedWordList::Shape,
+            NamedWordList::Food,
+        ]);
+        assert_eq!(material_shape_food.capacity(), Some(327_680));
+        assert_eq!(material_shape_food.word(0, 0), Some("acrylic"));
+        assert_eq!(material_shape_food.word(0, 1), Some("angular"));
+        assert_eq!(material_shape_food.word(0, 2), Some("almond"));
     }
 
     #[cfg(feature = "alloc")]

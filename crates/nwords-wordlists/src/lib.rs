@@ -42,6 +42,14 @@ pub(crate) mod semantic_shapes;
 #[path = "semantic_weather.rs"]
 pub(crate) mod semantic_weather;
 
+#[cfg(feature = "named")]
+#[path = "semantic_plants.rs"]
+pub(crate) mod semantic_plants;
+
+#[cfg(feature = "named")]
+#[path = "semantic_foods.rs"]
+pub(crate) mod semantic_foods;
+
 /// Curated English adjective-animal wordlists.
 #[cfg(feature = "adjective-animal")]
 pub mod adjective_animal;

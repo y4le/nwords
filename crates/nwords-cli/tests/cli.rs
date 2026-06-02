@@ -184,6 +184,16 @@ fn presets_lists_stable_rows_and_caveat() {
         "material-shape-object\tmaterial,shape,object\tidentity\t3\t7810560\t7810560\t0\t"
     ));
     assert!(text.contains("mood-aa\tmood,adjective,animal\tidentity\t3\t15962688\t15962688\t0\t"));
+    assert!(text.contains("descriptor-plant\tdescriptor,plant\tidentity\t2\t183936\t183936\t0\t"));
+    assert!(text.contains(
+        "weather-descriptor-plant\tweather,descriptor,plant\tidentity\t3\t7357440\t7357440\t0\t"
+    ));
+    assert!(text.contains(
+        "mood-descriptor-food\tmood,descriptor,food\tidentity\t3\t11771904\t11771904\t0\t"
+    ));
+    assert!(
+        text.contains("material-shape-food\tmaterial,shape,food\tidentity\t3\t327680\t327680\t0\t")
+    );
 }
 
 #[test]
@@ -294,6 +304,18 @@ fn plan_shape_reports_position_counts_without_range() {
     assert!(text.contains("position_2_list: object\n"));
     assert!(text.contains("position_2_words: 3051\n"));
     assert!(text.contains("capacity: 7810560\n"));
+
+    let weather_descriptor_plant = nwords(&["plan", "--shape", "weather,descriptor,plant"]);
+    assert!(weather_descriptor_plant.status.success());
+    let text = stdout(&weather_descriptor_plant);
+    assert!(text.contains("shape: weather,descriptor,plant\n"));
+    assert!(text.contains("position_0_list: weather\n"));
+    assert!(text.contains("position_0_words: 40\n"));
+    assert!(text.contains("position_1_list: descriptor\n"));
+    assert!(text.contains("position_1_words: 1437\n"));
+    assert!(text.contains("position_2_list: plant\n"));
+    assert!(text.contains("position_2_words: 128\n"));
+    assert!(text.contains("capacity: 7357440\n"));
 }
 
 #[test]
@@ -511,6 +533,41 @@ fn authored_semantic_presets_round_trip() {
     let mood_aa_max = nwords(&["encode", "15962687", "--preset", "mood-aa"]);
     assert!(mood_aa_max.status.success());
     assert_eq!(stdout(&mood_aa_max), "zestful zippy zebra\n");
+}
+
+#[test]
+fn plant_food_presets_round_trip() {
+    let plant = nwords(&["encode", "0", "--preset", "descriptor-plant"]);
+    assert!(plant.status.success());
+    assert_eq!(stdout(&plant), "abalone acacia\n");
+
+    let plant_max = nwords(&["encode", "183935", "--preset", "descriptor-plant"]);
+    assert!(plant_max.status.success());
+    assert_eq!(stdout(&plant_max), "zircon zucchini\n");
+
+    let weather_plant = nwords(&["encode", "0", "--preset", "weather-descriptor-plant"]);
+    assert!(weather_plant.status.success());
+    assert_eq!(stdout(&weather_plant), "balmy abalone acacia\n");
+
+    let weather_plant_max = nwords(&["encode", "7357439", "--preset", "weather-descriptor-plant"]);
+    assert!(weather_plant_max.status.success());
+    assert_eq!(stdout(&weather_plant_max), "wintry zircon zucchini\n");
+
+    let food = nwords(&["encode", "0", "--preset", "mood-descriptor-food"]);
+    assert!(food.status.success());
+    assert_eq!(stdout(&food), "alert abalone almond\n");
+
+    let food_max = nwords(&["encode", "11771903", "--preset", "mood-descriptor-food"]);
+    assert!(food_max.status.success());
+    assert_eq!(stdout(&food_max), "zestful zircon zucchini\n");
+
+    let visual_food = nwords(&["encode", "0", "--preset", "material-shape-food"]);
+    assert!(visual_food.status.success());
+    assert_eq!(stdout(&visual_food), "acrylic angular almond\n");
+
+    let visual_food_max = nwords(&["encode", "327679", "--preset", "material-shape-food"]);
+    assert!(visual_food_max.status.success());
+    assert_eq!(stdout(&visual_food_max), "zinc zigzag zucchini\n");
 }
 
 #[test]

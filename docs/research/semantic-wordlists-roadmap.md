@@ -58,8 +58,8 @@ Current recommendations:
 | `material` | Authored with seed references | WordNet, Wikidata, material vocabularies | Either | 64 authored words |
 | `shape` | Authored with seed references | WordNet, Wikidata, geometry terms | Either | 40 authored words |
 | `weather` | Authored with seed references | NOAA public-domain weather glossaries | Modifier | 40 authored words |
-| `plant` | Authored with seed references | OpenFarm CC0, USDA PLANTS, Wikidata, WFO as reference | Head | 256-512 |
-| `food` | Authored with seed references | USDA FoodData Central CC0, FoodOn as reference, Wikidata | Head | 256-512 |
+| `plant` | Authored with seed references | OpenFarm, USDA PLANTS, Wikidata, WFO as reference | Head | 128 authored words |
+| `food` | Authored with seed references | USDA FoodData Central, FoodOn as reference, Wikidata | Head | 128 authored words |
 
 `descriptor` needs one naming decision before it is frozen: it overlaps with
 the existing `adjective` list. Keep it only if docs define it clearly as the
@@ -329,8 +329,8 @@ Assumptions used in this table:
 - `material`: 64 authored words
 - `shape`: 40 authored words
 - `weather`: 40 authored words
-- `plant`: 512 target words
-- `food`: 512 target words
+- `plant`: 128 authored words
+- `food`: 128 authored words
 
 | Preset shape | Illustrative capacity | Notes |
 |---|---:|---|
@@ -338,10 +338,10 @@ Assumptions used in this table:
 | `color,descriptor,object` | 227,982,924 | High-capacity friendly phrase using current `color`. |
 | `mood,descriptor,object` | 280,594,368 | Expressive three-word phrase if `mood` is carefully positive/neutral. |
 | `material,shape,object` | 7,810,560 | Concrete visual phrase such as material + form + object. |
-| `weather,descriptor,plant` | 29,429,760 | Useful after `plant` ships; avoid over-severe weather terms. |
-| `descriptor,plant` | 735,744 | Readable but lower capacity. |
-| `mood,descriptor,food` | 47,087,616 | Better capacity than `mood,food`; depends on food curation quality. |
-| `material,shape,food` | 1,310,720 | Novel, but phrase quality should be sampled before shipping. |
+| `weather,descriptor,plant` | 7,357,440 | Useful after `plant` ships; avoid over-severe weather terms. |
+| `descriptor,plant` | 183,936 | Readable but lower capacity. |
+| `mood,descriptor,food` | 11,771,904 | Better capacity than `mood,food`; depends on food curation quality. |
+| `material,shape,food` | 327,680 | Novel, but phrase quality should be sampled before shipping. |
 | `mood,adjective,animal` | 15,962,688 | Extends an existing phrase family with a new modifier slot. |
 
 Avoid presets such as `weather,mood,object`; they are grammatically legal as
@@ -381,11 +381,12 @@ for them explicitly.
 
 ### Phase D: Plant and food
 
-- Build `plant` candidates from OpenFarm CC0, USDA PLANTS, Wikidata, and WFO
-  as a naming reference.
-- Build `food` candidates from USDA FoodData Central CC0, with FoodOn as a
-  reference source if attribution is acceptable.
-- Curate to common, friendly, single-token head nouns.
+- Add authored `plant` and `food` snapshots with seed references, not direct
+  source transformations.
+- Use a conservative 128-word scope for each list to avoid padding with weak,
+  obscure, hazardous, or poor-composition entries.
+- Curate to common, friendly, single-token head nouns; allow clear crop/food
+  overlap where the word reads naturally in both categories.
 - Add source provenance that clearly distinguishes direct source snapshots from
   seed references.
 - Add presets only after phrase sampling against `descriptor`, `mood`,
@@ -437,8 +438,5 @@ Before any preset ships:
    list is authored and the seed references are non-authoritative.
 3. Decide whether role metadata should ever reject custom shapes, or only power
    docs, presets, and warnings.
-4. Decide the final `food` source mix: USDA FoodData Central only, or USDA plus
-   FoodOn as a CC BY reference.
-5. Decide whether `plant` should include only common plant words or also a small
-   number of crop/food overlap terms. Either choice is valid, but it must be
-   documented before freezing the list.
+4. After usage feedback, decide whether `plant` and `food` should grow through
+   new versioned list names, or remain conservative 128-word defaults.

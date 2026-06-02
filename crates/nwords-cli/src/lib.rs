@@ -84,6 +84,22 @@ const MOOD_ADJECTIVE_ANIMAL_SHAPE: &[NamedWordList] = &[
     NamedWordList::Adjective,
     NamedWordList::Animal,
 ];
+const DESCRIPTOR_PLANT_SHAPE: &[NamedWordList] = &[NamedWordList::Descriptor, NamedWordList::Plant];
+const WEATHER_DESCRIPTOR_PLANT_SHAPE: &[NamedWordList] = &[
+    NamedWordList::Weather,
+    NamedWordList::Descriptor,
+    NamedWordList::Plant,
+];
+const MOOD_DESCRIPTOR_FOOD_SHAPE: &[NamedWordList] = &[
+    NamedWordList::Mood,
+    NamedWordList::Descriptor,
+    NamedWordList::Food,
+];
+const MATERIAL_SHAPE_FOOD_SHAPE: &[NamedWordList] = &[
+    NamedWordList::Material,
+    NamedWordList::Shape,
+    NamedWordList::Food,
+];
 
 const PRESETS: &[Preset] = &[
     Preset {
@@ -192,6 +208,30 @@ const PRESETS: &[Preset] = &[
         name: "mood-aa",
         range: 15_962_688,
         shape: MOOD_ADJECTIVE_ANIMAL_SHAPE,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "descriptor-plant",
+        range: 183_936,
+        shape: DESCRIPTOR_PLANT_SHAPE,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "weather-descriptor-plant",
+        range: 7_357_440,
+        shape: WEATHER_DESCRIPTOR_PLANT_SHAPE,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "mood-descriptor-food",
+        range: 11_771_904,
+        shape: MOOD_DESCRIPTOR_FOOD_SHAPE,
+        permutation: IDENTITY_PERMUTATION,
+    },
+    Preset {
+        name: "material-shape-food",
+        range: 327_680,
+        shape: MATERIAL_SHAPE_FOOD_SHAPE,
         permutation: IDENTITY_PERMUTATION,
     },
 ];
@@ -1279,7 +1319,7 @@ USAGE:
     nwords text encode <text>
     nwords text decode <words...>
 
-Shapes are comma-separated ordered word-list names such as adjective,animal, descriptor,object, mood,descriptor,object, or material,shape,object.
+Shapes are comma-separated ordered word-list names such as adjective,animal, descriptor,object, weather,descriptor,plant, or mood,descriptor,food.
 
 COMMANDS:
     encode      Encode an integer ID into a positional word phrase.
@@ -1302,6 +1342,9 @@ EXAMPLES:
     nwords encode 42 --preset mood-descriptor-object
         Encode ID 42 with a mood-descriptor-object preset.
 
+    nwords encode 42 --preset weather-descriptor-plant
+        Encode ID 42 with a weather-descriptor-plant preset.
+
     nwords plan --shape color,adjective,animal
         Show per-position list sizes and total shape capacity.
 
@@ -1321,7 +1364,8 @@ DESCRIPTION:
 
 OPTIONS:
     --preset <name>     Use a built-in preset such as u32, dec6, aa, color-aa,
-                        descriptor-object, or mood-descriptor-object.
+                        descriptor-object, mood-descriptor-object, or
+                        weather-descriptor-plant.
     --range <R>         Accepted exclusive range [0, R). Accepts decimal digits
                         or exact scientific shorthand such as 1e6.
     --shape <lists>     Comma-separated named word lists, for example
@@ -1342,6 +1386,9 @@ EXAMPLES:
 
     nwords encode 42 --preset material-shape-object
         Encode ID 42 with a material-shape-object preset.
+
+    nwords encode 42 --preset mood-descriptor-food
+        Encode ID 42 with a mood-descriptor-food preset.
 
     nwords encode 42 --range 100000 --shape adjective,animal --explain
         Encode and include capacity, slack, and acceptance ratio metadata.
@@ -1378,6 +1425,9 @@ EXAMPLES:
 
     nwords decode \"alert abalone aardvark\" --preset mood-descriptor-object
         Decode a phrase with the mood-descriptor-object preset.
+
+    nwords decode \"balmy abalone acacia\" --preset weather-descriptor-plant
+        Decode a phrase with the weather-descriptor-plant preset.
 ";
 
 const PRESETS_HELP: &str = "\
@@ -1427,6 +1477,9 @@ EXAMPLES:
 
     nwords plan --shape material,shape,object
         Show list sizes and total capacity for the material-shape-object shape.
+
+    nwords plan --shape weather,descriptor,plant
+        Show list sizes and total capacity for the weather-descriptor-plant shape.
 
     nwords plan --range 1e6 --shape color,adjective,animal
         Show whether one million IDs fit in the custom shape.

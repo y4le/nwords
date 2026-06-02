@@ -300,6 +300,18 @@ fn check_authored_semantic_wordlists(root: &Path) -> Result<(), ToolError> {
             "crates/nwords-wordlists/src/semantic_weather.rs",
             40,
         ),
+        (
+            "nwords-plants",
+            "tests/vectors/semantic-wordlists/plant/nwords-plants.txt",
+            "crates/nwords-wordlists/src/semantic_plants.rs",
+            128,
+        ),
+        (
+            "nwords-foods",
+            "tests/vectors/semantic-wordlists/food/nwords-foods.txt",
+            "crates/nwords-wordlists/src/semantic_foods.rs",
+            128,
+        ),
     ] {
         let words = read_word_file(&root.join(vector_path))?;
         let rust_words = read_rust_array_words(&root.join(rust_path))?;
