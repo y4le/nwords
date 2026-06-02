@@ -1,4 +1,9 @@
-use std::process::{Command, Output};
+use std::{
+    fs,
+    path::PathBuf,
+    process::{Command, Output},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use nwords::core::WordMap;
 
@@ -15,6 +20,28 @@ fn stdout(output: &Output) -> String {
 
 fn stderr(output: &Output) -> String {
     String::from_utf8(output.stderr.clone()).expect("stderr utf8")
+}
+
+fn temp_wordlist(name: &str, contents: &[u8]) -> PathBuf {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system time")
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!(
+        "nwords-cli-test-{}-{nanos}-{name}.txt",
+        std::process::id()
+    ));
+    fs::write(&path, contents).expect("write temp wordlist");
+    path
+}
+
+fn lowercase_word(mut index: usize) -> String {
+    let mut bytes = [b'a'; 6];
+    for byte in bytes.iter_mut().rev() {
+        *byte = b'a' + (index % 26) as u8;
+        index /= 26;
+    }
+    String::from_utf8(bytes.to_vec()).expect("lowercase ascii word")
 }
 
 #[test]
@@ -363,6 +390,184 @@ fn custom_named_shape_round_trips_and_rejects_word_alias() {
     let word_alias = nwords(&["plan", "--range", "100", "--shape", "color,word"]);
     assert_eq!(word_alias.status.code(), Some(2));
     assert!(stderr(&word_alias).contains("use `bip39-en`"));
+}
+
+#[test]
+fn user_defined_shape_round_trips_and_reports_fingerprint() {
+    let list = temp_wordlist("project", b"alpha\n# ignored\n\nbravo\ncharlie\n");
+    let spec = format!("project={}", list.display());
+
+    let encoded = nwords(&[
+        "encode",
+        "5",
+        "--range",
+        "12",
+        "--shape",
+        "project,animal",
+        "--list",
+        &spec,
+        "--explain",
+    ]);
+    assert!(encoded.status.success());
+    let text = stdout(&encoded);
+    assert!(text.contains("preset: custom\n"));
+    assert!(text.contains("shape: project,animal\n"));
+    assert!(text.contains("capacity: 999\n"));
+    assert!(text.contains("phrase: alpha amphibian\n"));
+    assert!(text.contains("user_list_0_name: project\n"));
+    assert!(text.contains("user_list_0_words: 3\n"));
+    assert!(text.contains("user_list_0_fingerprint: fnv1a64:6fc51280479725c3\n"));
+
+    let decoded = nwords(&[
+        "decode",
+        "alpha amphibian",
+        "--range",
+        "12",
+        "--shape",
+        "project,animal",
+        "--list",
+        &spec,
+    ]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "5\n");
+
+    let plan = nwords(&["plan", "--shape", "project,animal", "--list", &spec]);
+    assert!(plan.status.success());
+    let text = stdout(&plan);
+    assert!(text.contains("position_0_list: project\n"));
+    assert!(text.contains("position_0_words: 3\n"));
+    assert!(text.contains("position_0_fingerprint: fnv1a64:6fc51280479725c3\n"));
+    assert!(text.contains("user_list_0_fingerprint: fnv1a64:6fc51280479725c3\n"));
+}
+
+#[test]
+fn user_defined_list_validation_errors_are_actionable() {
+    let duplicate = temp_wordlist("duplicate", b"alpha\nbravo\nalpha\n");
+    let duplicate_spec = format!("project={}", duplicate.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &duplicate_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("duplicate word in list `project` at line 3"));
+    assert!(stderr(&output).contains("first seen at line 1"));
+
+    let invalid = temp_wordlist("invalid", b"alpha\nBravo\n");
+    let invalid_spec = format!("project={}", invalid.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &invalid_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("invalid word in list `project` at line 2"));
+
+    let too_few = temp_wordlist("too-few", b"# ignored\n\nalpha\n");
+    let too_few_spec = format!("project={}", too_few.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &too_few_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("must contain at least two words"));
+
+    let collision = temp_wordlist("collision", b"alpha\nbravo\n");
+    let collision_spec = format!("animal={}", collision.display());
+    let output = nwords(&["plan", "--shape", "animal", "--list", &collision_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("collides with a built-in word list"));
+
+    let invalid_utf8 = temp_wordlist("invalid-utf8", &[0xff, b'\n']);
+    let invalid_utf8_spec = format!("project={}", invalid_utf8.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &invalid_utf8_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("not valid UTF-8"));
+
+    let output = nwords(&["plan", "--range", "10", "--list", &invalid_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("--list requires --shape"));
+
+    let valid = temp_wordlist("valid", b"alpha\nbravo\n");
+    let valid_spec = format!("project={}", valid.display());
+    let output = nwords(&[
+        "plan",
+        "--shape",
+        "project",
+        "--list",
+        &valid_spec,
+        "--list",
+        &valid_spec,
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("duplicate user list `project`"));
+
+    let output = nwords(&["plan", "--preset", "aa", "--list", &valid_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("do not combine --preset"));
+
+    let output = nwords(&[
+        "plan",
+        "--range",
+        "10",
+        "--dict",
+        "adjective-animal",
+        "--list",
+        &valid_spec,
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("cannot be combined with --dict or --words"));
+
+    let output = nwords(&[
+        "plan",
+        "--range",
+        "10",
+        "--words",
+        "2",
+        "--list",
+        &valid_spec,
+    ]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("cannot be combined with --dict or --words"));
+
+    let unused = temp_wordlist("unused", b"alpha\nbravo\n");
+    let unused_spec = format!("project={}", unused.display());
+    let output = nwords(&["plan", "--shape", "animal", "--list", &unused_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("user list `project` is not referenced by --shape"));
+
+    let invalid_name = temp_wordlist("invalid-name", b"alpha\nbravo\n");
+    let invalid_name_spec = format!("Project={}", invalid_name.display());
+    let output = nwords(&["plan", "--shape", "Project", "--list", &invalid_name_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("invalid user list name `Project`"));
+
+    let long_line = temp_wordlist(
+        "long-line",
+        format!("{}\nbravo\n", "a".repeat(129)).as_bytes(),
+    );
+    let long_line_spec = format!("project={}", long_line.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &long_line_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("line 1 exceeds"));
+
+    let oversized = temp_wordlist("oversized", &vec![b'a'; 1_048_577]);
+    let oversized_spec = format!("project={}", oversized.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &oversized_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("exceeds 1048576 bytes"));
+
+    let mut too_many_words = String::new();
+    for index in 0..4097 {
+        too_many_words.push_str(&lowercase_word(index));
+        too_many_words.push('\n');
+    }
+    let too_many_words = temp_wordlist("too-many-words", too_many_words.as_bytes());
+    let too_many_words_spec = format!("project={}", too_many_words.display());
+    let output = nwords(&["plan", "--shape", "project", "--list", &too_many_words_spec]);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("exceeds 4096 accepted words"));
+
+    let mut too_many_list_args = vec!["plan", "--shape", "list0"];
+    let list_specs = (0..33)
+        .map(|index| format!("list{index}={}", valid.display()))
+        .collect::<Vec<_>>();
+    for spec in &list_specs {
+        too_many_list_args.push("--list");
+        too_many_list_args.push(spec);
+    }
+    let output = nwords(&too_many_list_args);
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("at most 32 user lists"));
 }
 
 #[test]

@@ -21,6 +21,7 @@ cargo run -p nwords-cli -- encode 42 --preset mood-descriptor-object
 cargo run -p nwords-cli -- encode 42 --preset weather-descriptor-plant
 cargo run -p nwords-cli -- encode 1337 --range 1e6 --shape color,adjective,animal
 cargo run -p nwords-cli -- encode 42 --preset dec6-spread
+cargo run -p nwords-cli -- encode 5 --range 12 --shape project,animal --list project=words.txt
 cargo run -p nwords-cli -- text encode "hello"
 cargo run -p nwords-cli -- bytes encode --hex deadbeef
 cargo run -p nwords-cli -- presets
@@ -29,6 +30,7 @@ cargo run -p nwords-cli -- plan --range 1e6
 cargo run -p nwords-cli -- plan --shape descriptor,object
 cargo run -p nwords-cli -- plan --shape material,shape,object
 cargo run -p nwords-cli -- plan --shape mood,descriptor,food
+cargo run -p nwords-cli -- plan --shape project,animal --list project=words.txt
 cargo run -p nwords-cli -- plan --shape color,adjective,animal
 cargo run -p nwords-cli -- help encode
 ```
@@ -76,6 +78,13 @@ cargo run -p nwords-cli -- encode 0 --preset weather-descriptor-plant
 cargo run -p nwords-cli -- encode 0 --preset mood-descriptor-food
 # alert abalone almond
 ```
+
+User-defined lists can be mixed with built-ins by passing repeatable
+`--list name=path` entries and referencing `name` inside `--shape`. Files use
+one lowercase ASCII word per line; blank lines and full-line `#` comments are
+ignored. Pin and share the same list files for reproducible decoding. The CLI
+reports an `fnv1a64:<hex>` drift fingerprint for user lists; it is not a
+security hash.
 
 ### BIP-39 English
 

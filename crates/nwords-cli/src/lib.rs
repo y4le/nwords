@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use std::fmt;
+use std::{collections::BTreeMap, fmt, fs, path::Path};
 
 use clap::{Args, Parser, Subcommand};
 use nwords::{
@@ -11,7 +11,10 @@ use nwords::{
     word_bytes::WordBytes,
     wordlists::{
         bip39::English,
-        named::{NamedWordList, WordListSequence},
+        named::{
+            DynamicWordListSequence, DynamicWordListSlot, NamedWordList, OwnedWordList,
+            WordListError, WordListRole,
+        },
     },
 };
 
@@ -24,6 +27,12 @@ const NAMED_SHAPE_CAVEAT: &str =
     "Named word-list phrases are deterministic positional IDs, not random names.";
 const PRESETS_CAVEAT: &str =
     "Presets encode deterministic positional ID phrases; shape order is part of the decoding contract.";
+const USER_LIST_MAX_BYTES: u64 = 1_048_576;
+const USER_LIST_MAX_LISTS: usize = 32;
+const USER_LIST_MAX_WORDS: usize = 4_096;
+const USER_LIST_MAX_LINE_BYTES: usize = 128;
+const FNV1A64_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+const FNV1A64_PRIME: u64 = 0x0000_0100_0000_01b3;
 const IDENTITY_PERMUTATION: PermutationKind = PermutationKind::Identity;
 const DECIMAL_SPREAD: PermutationKind = PermutationKind::SpreadAffine {
     multiplier: 65_537,
@@ -373,6 +382,8 @@ struct ShapeOptions {
     shape: Option<String>,
     #[arg(long = "dict")]
     dictionary: Option<String>,
+    #[arg(long = "list", value_name = "NAME=PATH")]
+    lists: Vec<String>,
 }
 
 /// Captured CLI output.
@@ -548,11 +559,17 @@ fn presets() -> Result<String, CliError> {
     output.push('\n');
     output.push_str("name\tshape\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio\n");
     for preset in PRESETS {
-        let report = Report::new(preset.shape, preset.permutation, preset.range)?;
+        let resolved = resolve_builtin_lists(preset.shape)?;
+        let report = Report::new(
+            &resolved.lists,
+            &resolved.user_lists,
+            preset.permutation,
+            preset.range,
+        )?;
         output.push_str(&format!(
             "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
             preset.name,
-            format_shape(preset.shape),
+            format_builtin_shape(preset.shape),
             preset.permutation.name(),
             preset.shape.len(),
             preset.range,
@@ -571,24 +588,34 @@ fn plan(args: PlanArgs) -> Result<String, CliError> {
             || parsed.words.is_some()
             || parsed.dictionary.is_some()
             || parsed.shape.is_some()
+            || !parsed.list_specs.is_empty()
         {
             return Err(CliError::usage(
-                "do not combine --preset with --range, --words, --shape, or --dict",
+                "do not combine --preset with --range, --words, --shape, --dict, or --list",
             ));
         }
         let preset =
             find_preset(name).ok_or_else(|| CliError::usage(format!("unknown preset `{name}`")))?;
-        let report = Report::new(preset.shape, preset.permutation, preset.range)?;
+        let resolved = resolve_builtin_lists(preset.shape)?;
+        let report = Report::new(
+            &resolved.lists,
+            &resolved.user_lists,
+            preset.permutation,
+            preset.range,
+        )?;
         return Ok(format_report_fields("plan", &report, None, None));
     }
 
     let Some(range) = parsed.range else {
-        if let Some(shape) = parsed.shape.as_deref() {
+        if parsed.shape.is_some() {
             if parsed.words.is_some() || parsed.dictionary.is_some() {
                 return Err(CliError::usage(PLAN_HELP));
             }
-            let lists = parse_shape(shape)?;
-            return format_shape_report(&lists);
+            let resolved = resolve_custom_lists(&parsed, false, 1)?;
+            return format_shape_report(&resolved);
+        }
+        if !parsed.list_specs.is_empty() {
+            return Err(CliError::usage("--list requires --shape <lists>"));
         }
         return Err(CliError::usage(
             "plan requires --range <R> or --shape <lists>",
@@ -598,8 +625,13 @@ fn plan(args: PlanArgs) -> Result<String, CliError> {
         return Err(CliError::usage("range must be greater than zero"));
     }
 
-    let lists = resolve_custom_shape(&parsed, true, range)?;
-    let report = Report::new(&lists, IDENTITY_PERMUTATION, range)?;
+    let resolved = resolve_custom_lists(&parsed, true, range)?;
+    let report = Report::new(
+        &resolved.lists,
+        &resolved.user_lists,
+        IDENTITY_PERMUTATION,
+        range,
+    )?;
     Ok(format_report_fields("plan", &report, None, None))
 }
 
@@ -682,7 +714,12 @@ fn text_decode(args: TextDecodeArgs) -> Result<String, CliError> {
 }
 
 fn explain_encode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliError> {
-    let report = Report::new(&shape.lists, shape.permutation, shape.range)?;
+    let report = Report::new(
+        &shape.lists,
+        &shape.user_lists,
+        shape.permutation,
+        shape.range,
+    )?;
     Ok(format_report_fields(
         "encode",
         &report,
@@ -692,7 +729,12 @@ fn explain_encode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliEr
 }
 
 fn explain_decode(shape: &Shape, id: u128, phrase: &str) -> Result<String, CliError> {
-    let report = Report::new(&shape.lists, shape.permutation, shape.range)?;
+    let report = Report::new(
+        &shape.lists,
+        &shape.user_lists,
+        shape.permutation,
+        shape.range,
+    )?;
     Ok(format_report_fields(
         "decode",
         &report,
@@ -733,13 +775,14 @@ fn format_report_fields(
     if let Some(phrase) = phrase {
         output.push_str(&format!("phrase: {phrase}\n"));
     }
+    append_user_list_report(&mut output, &report.user_lists);
     output
 }
 
-fn format_shape_report(lists: &[NamedWordList]) -> Result<String, CliError> {
-    let capacity = CapacityDisplay(shape_capacity(lists).map_err(runtime_error)?);
+fn format_shape_report(resolved: &ResolvedLists) -> Result<String, CliError> {
+    let capacity = CapacityDisplay(shape_capacity(&resolved.lists).map_err(runtime_error)?);
     let mut output = String::new();
-    if lists.iter().any(|list| list.is_bip39_english()) {
+    if resolved.lists.iter().any(|list| list.is_bip39) {
         output.push_str(BIP39_POSITIONAL_CAVEAT);
     } else {
         output.push_str(NAMED_SHAPE_CAVEAT);
@@ -747,14 +790,32 @@ fn format_shape_report(lists: &[NamedWordList]) -> Result<String, CliError> {
     output.push('\n');
     output.push_str("mode: plan\n");
     output.push_str("preset: custom\n");
-    output.push_str(&format!("shape: {}\n", format_shape(lists)));
-    output.push_str(&format!("words: {}\n", lists.len()));
-    for (position, list) in lists.iter().enumerate() {
-        output.push_str(&format!("position_{position}_list: {}\n", list.name()));
-        output.push_str(&format!("position_{position}_words: {}\n", list.len()));
+    output.push_str(&format!("shape: {}\n", format_shape(&resolved.lists)));
+    output.push_str(&format!("words: {}\n", resolved.lists.len()));
+    for (position, list) in resolved.lists.iter().enumerate() {
+        output.push_str(&format!("position_{position}_list: {}\n", list.name));
+        output.push_str(&format!("position_{position}_words: {}\n", list.len));
+        if let Some(fingerprint) = list.fingerprint {
+            output.push_str(&format!(
+                "position_{position}_fingerprint: {}\n",
+                format_fingerprint(fingerprint)
+            ));
+        }
     }
     output.push_str(&format!("capacity: {capacity}\n"));
+    append_user_list_report(&mut output, &resolved.user_lists);
     Ok(output)
+}
+
+fn append_user_list_report(output: &mut String, user_lists: &[UserListReport]) {
+    for (index, list) in user_lists.iter().enumerate() {
+        output.push_str(&format!("user_list_{index}_name: {}\n", list.name));
+        output.push_str(&format!("user_list_{index}_words: {}\n", list.len));
+        output.push_str(&format!(
+            "user_list_{index}_fingerprint: {}\n",
+            format_fingerprint(list.fingerprint)
+        ));
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -798,7 +859,9 @@ enum ByteMode {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Shape {
     range: u128,
-    lists: Vec<NamedWordList>,
+    sequence: DynamicWordListSequence,
+    lists: Vec<ShapeList>,
+    user_lists: Vec<UserListReport>,
     permutation: PermutationKind,
     preset_name: Option<&'static str>,
 }
@@ -810,16 +873,20 @@ impl Shape {
                 || parsed.words.is_some()
                 || parsed.dictionary.is_some()
                 || parsed.shape.is_some()
+                || !parsed.list_specs.is_empty()
             {
                 return Err(CliError::usage(
-                    "do not combine --preset with --range, --words, --shape, or --dict",
+                    "do not combine --preset with --range, --words, --shape, --dict, or --list",
                 ));
             }
             let preset = find_preset(name)
                 .ok_or_else(|| CliError::usage(format!("unknown preset `{name}`")))?;
+            let resolved = resolve_builtin_lists(preset.shape)?;
             return Ok(Self {
                 range: preset.range,
-                lists: preset.shape.to_vec(),
+                sequence: resolved.sequence,
+                lists: resolved.lists,
+                user_lists: resolved.user_lists,
                 permutation: preset.permutation,
                 preset_name: Some(preset.name),
             });
@@ -833,11 +900,13 @@ impl Shape {
         if range == 0 {
             return Err(CliError::usage("range must be greater than zero"));
         }
-        let lists = resolve_custom_shape(parsed, false, range)?;
+        let resolved = resolve_custom_lists(parsed, false, range)?;
 
         Ok(Self {
             range,
-            lists,
+            sequence: resolved.sequence,
+            lists: resolved.lists,
+            user_lists: resolved.user_lists,
             permutation: IDENTITY_PERMUTATION,
             preset_name: None,
         })
@@ -846,13 +915,12 @@ impl Shape {
     fn codec(
         &self,
     ) -> Result<
-        MixedPositional<WordListSequence<'_>, AsciiSpace, AffinePermutation>,
+        MixedPositional<DynamicWordListSequence, AsciiSpace, AffinePermutation>,
         nwords::core::Error,
     > {
         let permutation = self.permutation.permutation(self.range)?;
-        let sequence = WordListSequence::new(&self.lists);
         MixedPositional::with_formatter_and_permutation(
-            sequence,
+            self.sequence.clone(),
             AsciiSpace,
             permutation,
             self.lists.len(),
@@ -863,7 +931,8 @@ impl Shape {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Report {
-    lists: Vec<NamedWordList>,
+    lists: Vec<ShapeList>,
+    user_lists: Vec<UserListReport>,
     permutation: PermutationKind,
     range: u128,
     capacity: CapacityDisplay,
@@ -872,7 +941,8 @@ struct Report {
 
 impl Report {
     fn new(
-        lists: &[NamedWordList],
+        lists: &[ShapeList],
+        user_lists: &[UserListReport],
         permutation: PermutationKind,
         range: u128,
     ) -> Result<Self, CliError> {
@@ -883,17 +953,25 @@ impl Report {
             return Err(CliError::usage("range must be greater than zero"));
         }
         let capacity = shape_capacity(lists).map_err(runtime_error)?;
+        let preset_name = if user_lists.is_empty() {
+            builtin_shape(lists).and_then(|shape| {
+                find_preset_by_shape(&shape, permutation, range).map(|preset| preset.name)
+            })
+        } else {
+            None
+        };
         Ok(Self {
             lists: lists.to_vec(),
+            user_lists: user_lists.to_vec(),
             permutation,
             range,
             capacity: CapacityDisplay(capacity),
-            preset_name: find_preset_by_shape(lists, permutation, range).map(|preset| preset.name),
+            preset_name,
         })
     }
 
     fn caveat(&self) -> &'static str {
-        if self.lists.iter().any(|list| list.is_bip39_english()) {
+        if self.lists.iter().any(|list| list.is_bip39) {
             BIP39_POSITIONAL_CAVEAT
         } else {
             NAMED_SHAPE_CAVEAT
@@ -921,6 +999,67 @@ impl Report {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ResolvedLists {
+    sequence: DynamicWordListSequence,
+    lists: Vec<ShapeList>,
+    user_lists: Vec<UserListReport>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ShapeList {
+    name: String,
+    len: usize,
+    is_bip39: bool,
+    builtin: Option<NamedWordList>,
+    fingerprint: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct UserListReport {
+    name: String,
+    len: usize,
+    fingerprint: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LoadedUserList {
+    list: OwnedWordList,
+    fingerprint: u64,
+}
+
+impl ShapeList {
+    fn builtin(list: NamedWordList) -> Self {
+        Self {
+            name: list.name().to_owned(),
+            len: list.len(),
+            is_bip39: list.is_bip39_english(),
+            builtin: Some(list),
+            fingerprint: None,
+        }
+    }
+
+    fn owned(user_list: &LoadedUserList) -> Self {
+        Self {
+            name: user_list.list.name().to_owned(),
+            len: user_list.list.len(),
+            is_bip39: false,
+            builtin: None,
+            fingerprint: Some(user_list.fingerprint),
+        }
+    }
+}
+
+impl UserListReport {
+    fn from_loaded(user_list: &LoadedUserList) -> Self {
+        Self {
+            name: user_list.list.name().to_owned(),
+            len: user_list.list.len(),
+            fingerprint: user_list.fingerprint,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct CapacityDisplay(CapacityClass);
 
@@ -945,6 +1084,7 @@ struct ParsedArgs {
     words: Option<usize>,
     shape: Option<String>,
     dictionary: Option<String>,
+    list_specs: Vec<String>,
     explain: bool,
 }
 
@@ -971,6 +1111,7 @@ impl ParsedArgs {
             words,
             shape: shape.shape,
             dictionary: shape.dictionary,
+            list_specs: shape.lists,
             explain,
         })
     }
@@ -1186,13 +1327,20 @@ fn format_hex(bytes: &[u8]) -> String {
     output
 }
 
-fn resolve_custom_shape(
+fn resolve_custom_lists(
     parsed: &ParsedArgs,
     allow_planning_default: bool,
     range: u128,
-) -> Result<Vec<NamedWordList>, CliError> {
+) -> Result<ResolvedLists, CliError> {
     if parsed.shape.is_some() && parsed.dictionary.is_some() {
         return Err(CliError::usage("do not combine --shape with --dict"));
+    }
+    if !parsed.list_specs.is_empty()
+        && (parsed.shape.is_none() || parsed.dictionary.is_some() || parsed.words.is_some())
+    {
+        return Err(CliError::usage(
+            "--list requires --shape <lists> and cannot be combined with --dict or --words",
+        ));
     }
     if let Some(shape) = parsed.shape.as_deref() {
         if parsed.words.is_some() {
@@ -1200,18 +1348,22 @@ fn resolve_custom_shape(
                 "shape has an intrinsic word count; omit --words",
             ));
         }
-        return parse_shape(shape);
+        let user_lists = load_user_lists(&parsed.list_specs)?;
+        return parse_shape(shape, user_lists);
     }
     if let Some(dictionary) = parsed.dictionary.as_deref() {
-        return resolve_legacy_dictionary_shape(dictionary, parsed.words);
+        let lists = resolve_legacy_dictionary_shape(dictionary, parsed.words)?;
+        return resolve_builtin_lists(&lists);
     }
     if let Some(words) = parsed.words {
-        return repeat_list(NamedWordList::Bip39English, words);
+        let lists = repeat_list(NamedWordList::Bip39English, words)?;
+        return resolve_builtin_lists(&lists);
     }
     if allow_planning_default {
         match stats::required_words(PlanTarget::Range(range), English.len(0)) {
             Ok(PlanSolution::RequiredWords { word_count, .. }) => {
-                repeat_list(NamedWordList::Bip39English, word_count)
+                let lists = repeat_list(NamedWordList::Bip39English, word_count)?;
+                resolve_builtin_lists(&lists)
             }
             Ok(_) => Err(CliError::runtime("unexpected stats planner result")),
             Err(error) => Err(runtime_error(error)),
@@ -1221,6 +1373,15 @@ fn resolve_custom_shape(
             "use --preset <name> or provide --range <R> (--shape <lists> | --words <N>)",
         ))
     }
+}
+
+fn resolve_builtin_lists(lists: &[NamedWordList]) -> Result<ResolvedLists, CliError> {
+    let sequence = DynamicWordListSequence::from_builtin(lists).map_err(wordlist_error)?;
+    Ok(ResolvedLists {
+        sequence,
+        lists: lists.iter().copied().map(ShapeList::builtin).collect(),
+        user_lists: Vec::new(),
+    })
 }
 
 fn resolve_legacy_dictionary_shape(
@@ -1254,8 +1415,15 @@ fn repeat_list(list: NamedWordList, words: usize) -> Result<Vec<NamedWordList>, 
     Ok(vec![list; words])
 }
 
-fn parse_shape(shape: &str) -> Result<Vec<NamedWordList>, CliError> {
+fn parse_shape(shape: &str, user_lists: Vec<LoadedUserList>) -> Result<ResolvedLists, CliError> {
     let mut lists = Vec::new();
+    let mut positions = Vec::new();
+    let mut used_user_lists = vec![false; user_lists.len()];
+    let user_by_name = user_lists
+        .iter()
+        .enumerate()
+        .map(|(index, user_list)| (user_list.list.name(), index))
+        .collect::<BTreeMap<_, _>>();
     for raw_name in shape.split(',') {
         let name = raw_name.trim();
         if name.is_empty() {
@@ -1266,22 +1434,60 @@ fn parse_shape(shape: &str) -> Result<Vec<NamedWordList>, CliError> {
                 "unknown word list `word`; use `bip39-en` for the BIP-39 English positional wordlist",
             ));
         }
-        let list = NamedWordList::parse(name)
-            .ok_or_else(|| CliError::usage(format!("unknown word list `{name}`")))?;
-        lists.push(list);
+        if let Some(list) = NamedWordList::parse(name) {
+            positions.push(DynamicWordListSlot::Builtin(list));
+            lists.push(ShapeList::builtin(list));
+        } else if let Some(index) = user_by_name.get(name).copied() {
+            let user_list = &user_lists[index];
+            positions.push(DynamicWordListSlot::Owned(index));
+            lists.push(ShapeList::owned(user_list));
+            used_user_lists[index] = true;
+        } else {
+            return Err(CliError::usage(format!("unknown word list `{name}`")));
+        }
     }
     if lists.is_empty() {
         return Err(CliError::usage("shape must contain at least one word list"));
     }
-    Ok(lists)
+    if let Some(index) = used_user_lists.iter().position(|used| !used) {
+        return Err(CliError::usage(format!(
+            "user list `{}` is not referenced by --shape",
+            user_lists[index].list.name()
+        )));
+    }
+    let user_reports = user_lists
+        .iter()
+        .map(UserListReport::from_loaded)
+        .collect::<Vec<_>>();
+    let owned = user_lists
+        .into_iter()
+        .map(|user_list| user_list.list)
+        .collect::<Vec<_>>();
+    let sequence = DynamicWordListSequence::new(owned, positions).map_err(wordlist_error)?;
+    Ok(ResolvedLists {
+        sequence,
+        lists,
+        user_lists: user_reports,
+    })
 }
 
-fn shape_capacity(lists: &[NamedWordList]) -> Result<CapacityClass, nwords::core::Error> {
-    let sizes = lists.iter().map(|list| list.len()).collect::<Vec<_>>();
+fn shape_capacity(lists: &[ShapeList]) -> Result<CapacityClass, nwords::core::Error> {
+    let sizes = lists.iter().map(|list| list.len).collect::<Vec<_>>();
     stats::capacity_mixed(&sizes)
 }
 
-fn format_shape(lists: &[NamedWordList]) -> String {
+fn format_shape(lists: &[ShapeList]) -> String {
+    let mut output = String::new();
+    for (index, list) in lists.iter().enumerate() {
+        if index > 0 {
+            output.push(',');
+        }
+        output.push_str(&list.name);
+    }
+    output
+}
+
+fn format_builtin_shape(lists: &[NamedWordList]) -> String {
     let mut output = String::new();
     for (index, list) in lists.iter().enumerate() {
         if index > 0 {
@@ -1290,6 +1496,132 @@ fn format_shape(lists: &[NamedWordList]) -> String {
         output.push_str(list.name());
     }
     output
+}
+
+fn builtin_shape(lists: &[ShapeList]) -> Option<Vec<NamedWordList>> {
+    lists.iter().map(|list| list.builtin).collect()
+}
+
+fn load_user_lists(specs: &[String]) -> Result<Vec<LoadedUserList>, CliError> {
+    if specs.len() > USER_LIST_MAX_LISTS {
+        return Err(CliError::usage(format!(
+            "at most {USER_LIST_MAX_LISTS} user lists may be provided"
+        )));
+    }
+    let mut loaded = Vec::new();
+    let mut names = BTreeMap::<String, usize>::new();
+    for spec in specs {
+        let (name, path) = spec
+            .split_once('=')
+            .ok_or_else(|| CliError::usage("--list must use NAME=PATH"))?;
+        if name.is_empty() || path.is_empty() {
+            return Err(CliError::usage("--list must use NAME=PATH"));
+        }
+        if let Some(first) = names.insert(name.to_owned(), loaded.len()) {
+            return Err(CliError::usage(format!(
+                "duplicate user list `{name}`; first provided at --list {}",
+                first + 1
+            )));
+        }
+        loaded.push(load_user_list(name, Path::new(path))?);
+    }
+    Ok(loaded)
+}
+
+fn load_user_list(name: &str, path: &Path) -> Result<LoadedUserList, CliError> {
+    let metadata = fs::metadata(path)
+        .map_err(|error| CliError::usage(format!("failed to read list `{name}`: {error}")))?;
+    if metadata.len() > USER_LIST_MAX_BYTES {
+        return Err(CliError::usage(format!(
+            "list `{name}` exceeds {USER_LIST_MAX_BYTES} bytes"
+        )));
+    }
+    let bytes = fs::read(path)
+        .map_err(|error| CliError::usage(format!("failed to read list `{name}`: {error}")))?;
+    if bytes.len() as u64 > USER_LIST_MAX_BYTES {
+        return Err(CliError::usage(format!(
+            "list `{name}` exceeds {USER_LIST_MAX_BYTES} bytes"
+        )));
+    }
+    let text = String::from_utf8(bytes)
+        .map_err(|_| CliError::usage(format!("list `{name}` is not valid UTF-8")))?;
+    let words = parse_user_list_words(name, &text)?;
+    let fingerprint = fingerprint_words(&words);
+    let list = OwnedWordList::new(name.to_owned(), WordListRole::Either, words)
+        .map_err(|error| wordlist_construction_error(name, error))?;
+    Ok(LoadedUserList { list, fingerprint })
+}
+
+fn parse_user_list_words(name: &str, text: &str) -> Result<Vec<String>, CliError> {
+    let mut words = Vec::new();
+    let mut seen = BTreeMap::<String, usize>::new();
+    for (line_index, line) in text.lines().enumerate() {
+        let line_number = line_index + 1;
+        let trimmed = line.trim();
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+        if trimmed.len() > USER_LIST_MAX_LINE_BYTES {
+            return Err(CliError::usage(format!(
+                "list `{name}` line {line_number} exceeds {USER_LIST_MAX_LINE_BYTES} bytes"
+            )));
+        }
+        if !trimmed.bytes().all(|byte| byte.is_ascii_lowercase()) {
+            return Err(CliError::usage(format!(
+                "invalid word in list `{name}` at line {line_number}"
+            )));
+        }
+        if let Some(first_line) = seen.insert(trimmed.to_owned(), line_number) {
+            return Err(CliError::usage(format!(
+                "duplicate word in list `{name}` at line {line_number}; first seen at line {first_line}"
+            )));
+        }
+        if words.len() == USER_LIST_MAX_WORDS {
+            return Err(CliError::usage(format!(
+                "list `{name}` exceeds {USER_LIST_MAX_WORDS} accepted words"
+            )));
+        }
+        words.push(trimmed.to_owned());
+    }
+    Ok(words)
+}
+
+fn fingerprint_words(words: &[String]) -> u64 {
+    let mut hash = FNV1A64_OFFSET;
+    for word in words {
+        for byte in word.as_bytes().iter().copied().chain([0]) {
+            hash ^= u64::from(byte);
+            hash = hash.wrapping_mul(FNV1A64_PRIME);
+        }
+    }
+    hash
+}
+
+fn format_fingerprint(fingerprint: u64) -> String {
+    format!("fnv1a64:{fingerprint:016x}")
+}
+
+fn wordlist_error(error: WordListError) -> CliError {
+    CliError::usage(format!("invalid word list: {error:?}"))
+}
+
+fn wordlist_construction_error(name: &str, error: WordListError) -> CliError {
+    match error {
+        WordListError::InvalidListName => CliError::usage(format!("invalid user list name `{name}`")),
+        WordListError::BuiltinNameCollision => {
+            CliError::usage(format!("user list `{name}` collides with a built-in word list"))
+        }
+        WordListError::TooFewWords { len } => {
+            CliError::usage(format!("list `{name}` must contain at least two words; found {len}"))
+        }
+        WordListError::InvalidWord { index } => CliError::usage(format!(
+            "invalid word in list `{name}` at accepted index {index}"
+        )),
+        WordListError::DuplicateWord { first, duplicate } => CliError::usage(format!(
+            "duplicate word in list `{name}` at accepted index {duplicate}; first seen at accepted index {first}"
+        )),
+        other => CliError::usage(format!("invalid user list `{name}`: {other:?}")),
+    }
 }
 
 fn find_preset(name: &str) -> Option<&'static Preset> {
@@ -1310,16 +1642,19 @@ const HELP: &str = "\
 nwords: positional ID phrase converter
 
 USAGE:
-    nwords encode <id> (--preset <name> | --range <R> (--shape <lists> | --words <N>)) [--explain]
-    nwords decode <words...> (--preset <name> | --range <R> (--shape <lists> | --words <N>)) [--explain]
+    nwords encode <id> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
+    nwords decode <words...> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
     nwords presets
-    nwords plan (--preset <name> | --shape <lists> | --range <R> [--shape <lists> | --words <N>])
+    nwords plan (--preset <name> | --shape <lists> [--list NAME=PATH]... | --range <R> [--shape <lists> [--list NAME=PATH]... | --words <N>])
     nwords bytes encode (--text <text> | --hex <hex>)
     nwords bytes decode (--text | --hex) <words...>
     nwords text encode <text>
     nwords text decode <words...>
 
-Shapes are comma-separated ordered word-list names such as adjective,animal, descriptor,object, weather,descriptor,plant, or mood,descriptor,food.
+Shapes are comma-separated ordered word-list names such as adjective,animal,
+descriptor,object, weather,descriptor,plant, or mood,descriptor,food. Add
+repeatable --list NAME=PATH entries to use lowercase user-defined wordlist
+files in --shape.
 
 COMMANDS:
     encode      Encode an integer ID into a positional word phrase.
@@ -1345,6 +1680,9 @@ EXAMPLES:
     nwords encode 42 --preset weather-descriptor-plant
         Encode ID 42 with a weather-descriptor-plant preset.
 
+    nwords encode 5 --range 12 --shape project,animal --list project=words.txt
+        Encode with a user-defined project list and built-in animal list.
+
     nwords plan --shape color,adjective,animal
         Show per-position list sizes and total shape capacity.
 
@@ -1355,7 +1693,7 @@ const ENCODE_HELP: &str = "\
 nwords encode: encode an integer ID into a deterministic word phrase
 
 USAGE:
-    nwords encode <id> (--preset <name> | --range <R> (--shape <lists> | --words <N>)) [--explain]
+    nwords encode <id> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
 
 DESCRIPTION:
     Encodes an integer ID from the accepted range into a fixed ordered phrase.
@@ -1370,6 +1708,9 @@ OPTIONS:
                         or exact scientific shorthand such as 1e6.
     --shape <lists>     Comma-separated named word lists, for example
                         adjective,animal or color,adjective,animal.
+    --list NAME=PATH    Add a user-defined list for --shape. Repeatable.
+                        Files use one lowercase word per line; blank lines and
+                        full-line # comments are ignored.
     --words <N>         Repeat the BIP-39 English positional list N times.
     --dict <name>       Legacy alias; adjective-animal is accepted.
     --explain           Print phrase plus capacity/range metadata.
@@ -1390,6 +1731,9 @@ EXAMPLES:
     nwords encode 42 --preset mood-descriptor-food
         Encode ID 42 with a mood-descriptor-food preset.
 
+    nwords encode 5 --range 12 --shape project,animal --list project=words.txt --explain
+        Encode with a user-defined list and print its drift fingerprint.
+
     nwords encode 42 --range 100000 --shape adjective,animal --explain
         Encode and include capacity, slack, and acceptance ratio metadata.
 ";
@@ -1398,7 +1742,7 @@ const DECODE_HELP: &str = "\
 nwords decode: decode a deterministic word phrase back into an integer ID
 
 USAGE:
-    nwords decode <words...> (--preset <name> | --range <R> (--shape <lists> | --words <N>)) [--explain]
+    nwords decode <words...> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
 
 DESCRIPTION:
     Decodes a phrase created with the same preset or custom shape back into its
@@ -1409,6 +1753,8 @@ OPTIONS:
     --preset <name>     Use the same built-in preset used for encoding.
     --range <R>         Accepted exclusive range [0, R). Must match encoding.
     --shape <lists>     Ordered named lists. Must match encoding.
+    --list NAME=PATH    Add a user-defined list for --shape. Must match the
+                        files used for encoding.
     --words <N>         Repeat the BIP-39 English positional list N times.
     --dict <name>       Legacy alias; adjective-animal is accepted.
     --explain           Print ID plus capacity/range metadata.
@@ -1453,7 +1799,7 @@ const PLAN_HELP: &str = "\
 nwords plan: show capacity and range statistics
 
 USAGE:
-    nwords plan (--preset <name> | --shape <lists> | --range <R> [--shape <lists> | --words <N>])
+    nwords plan (--preset <name> | --shape <lists> [--list NAME=PATH]... | --range <R> [--shape <lists> [--list NAME=PATH]... | --words <N>])
 
 DESCRIPTION:
     Reports phrase-shape capacity and, when a range is provided, whether the
@@ -1463,6 +1809,8 @@ OPTIONS:
     --preset <name>     Report stats for a built-in preset.
     --shape <lists>     Report shape-only stats, or combine with --range for
                         range/slack/acceptance stats.
+    --list NAME=PATH    Add a user-defined list for --shape. Plan output
+                        reports a non-security FNV-1a drift fingerprint.
     --range <R>         Accepted exclusive range [0, R). Accepts decimal digits
                         or exact scientific shorthand such as 1e6.
     --words <N>         Repeat the BIP-39 English positional list N times.

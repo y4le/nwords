@@ -197,6 +197,23 @@ mechanical, but a non-executable YAML copy is intentionally avoided because it
 would drift and a YAML parser dependency is not justified for the current
 preset table.
 
+User-defined wordlists are runtime-owned named lists, not new core traits.
+The CLI accepts repeatable `--list name=path` entries only with `--shape`;
+each provided user-list name must be referenced in the ordered shape. List
+files are UTF-8, one lowercase ASCII word per line; blank lines and full-line
+`#` comments are ignored. The accepted token order is the encoding order. The
+CLI rejects invalid names, built-in name collisions, duplicate list names,
+unreferenced user lists, duplicate words with line numbers, invalid tokens
+with line numbers, too-few words, invalid UTF-8, and bounded
+file/line/list-size overages.
+
+All CLI shapes resolve to `DynamicWordListSequence`, including pure built-in
+shapes. Reports retain per-position metadata so pure built-in shapes can still
+be recognized as presets, while any user-defined participation is reported as
+`preset: custom`. User-defined lists report an `fnv1a64:<hex>` fingerprint over
+accepted tokens with NUL separators. This is a drift and reproducibility aid,
+not a security hash.
+
 ## Agent Guidance
 
 Repo-local agent skills live under `.agents/skills/<skill-name>/SKILL.md`.

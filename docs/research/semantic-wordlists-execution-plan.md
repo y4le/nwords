@@ -227,8 +227,9 @@ For user-defined lists, `plan` and `--explain` should report a dependency-free
 drift fingerprint for each loaded list:
 
 ```text
-list_project_words: 128
-list_project_fingerprint: fnv1a64:0123456789abcdef
+user_list_0_name: project
+user_list_0_words: 128
+user_list_0_fingerprint: fnv1a64:0123456789abcdef
 ```
 
 Fingerprint rules:

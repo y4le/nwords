@@ -98,6 +98,28 @@ Required checks:
 12. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots,
    authored snapshots, source READMEs, and upstream licenses.
 
+### User-defined word-list files
+
+User-defined wordlists are owned runtime lists used only through explicit
+`--list name=path` CLI options and ordered `--shape` entries.
+
+Required checks:
+
+1. `--list` is rejected unless `--shape` is present, and is rejected with
+   `--preset`, `--dict`, or `--words`.
+2. Files must be valid UTF-8, lowercase ASCII, one word per accepted line.
+3. Blank lines and full-line `#` comments are ignored.
+4. File order is preserved as encoding order.
+5. Duplicate words report the duplicate line and first-seen line.
+6. Invalid words report the source line.
+7. Invalid names, built-in name collisions, duplicate list names, unreferenced
+   user lists, too-few words, excessive file size, excessive line length, and
+   excessive accepted word count are rejected.
+8. Mixed built-in/user-defined shapes round-trip encode and decode.
+9. `plan` and `--explain` report user-list word counts and non-security
+   `fnv1a64` drift fingerprints.
+10. Any shape containing a user-defined list reports `preset: custom`.
+
 ### Affine spread permutations
 
 Spread presets use the positional permutation layer. They are not security or
