@@ -216,6 +216,9 @@ assert_eq!(bip39.word_count, 18);
 
 ## Static Web Demo
 
+For reusable Node/browser output and the Murmur naming use case, see the
+[JavaScript / WASM package plan](docs/wasm-package-plan.md).
+
 The repository includes a small browser demo under `site/` backed by the Rust
 implementation compiled to WebAssembly from `crates/nwords-web`.
 
