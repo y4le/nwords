@@ -92,12 +92,18 @@ Required checks:
    total capacity without requiring a range.
 9. CLI `--shape color,adjective,animal` and `--shape descriptor,object`
    round-trip custom ranges.
-10. CLI range parsing accepts exact shorthand such as `1e6` and rejects
+10. CLI custom `--shape`, `--words`, and legacy `--dict` encode/decode without
+   `--range` use exact full capacity as the accepted range when capacity fits
+   in `u128`.
+11. CLI custom encode/decode without `--range` rejects `BeyondU128` shapes with
+   a clear message requiring `--range`.
+12. CLI narrowed custom ranges still reject slack phrase states during decode.
+13. CLI range parsing accepts exact shorthand such as `1e6` and rejects
    non-integer shorthand expansions.
-11. CLI rejects the generic `word` list name and suggests `bip39-en`.
-12. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots,
+14. CLI rejects the generic `word` list name and suggests `bip39-en`.
+15. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots,
    authored snapshots, source READMEs, and upstream licenses.
-13. `plant` and `food` authored word lists are disjoint.
+16. `plant` and `food` authored word lists are disjoint.
 
 ### User-defined word-list files
 

@@ -82,8 +82,17 @@ represented as an exclusive `u128` upper bound.
 For ordered named-list shapes such as `adjective,animal`, the CLI wraps
 `nwords::positional::MixedPositional` over
 `nwords::wordlists::named::WordListSequence`. These shapes have intrinsic
-position counts; users provide `--range` and `--shape`, and omit `--words`.
-The older `--dict adjective-animal` form remains a compatibility alias.
+position counts; users provide `--shape` and omit `--words`. If `--range` is
+omitted for explicit custom `--shape`, `--words`, or legacy `--dict` inputs,
+the CLI uses the exact full phrase capacity as the accepted ID range. If that
+capacity is `BeyondU128`, encode/decode reject omitted `--range` and require an
+explicit finite accepted range. Providing `--range` narrows the accepted domain
+and keeps slack rejection semantics. The older `--dict adjective-animal` form
+remains a compatibility alias.
+
+Preset names keep their configured ranges. For example, `--preset dec6` means
+range `[0, 1_000_000)`, not the full capacity of its underlying two-word
+BIP-39 positional shape.
 
 Do not describe preset capacity as security entropy unless the input IDs are
 uniformly sampled from the stated range.
@@ -199,8 +208,11 @@ Add:
 ```sh
 nwords encode 123 --range 1000000 --words 2
 nwords decode <words...> --range 1000000 --words 2
+nwords encode 4194303 --words 2
+nwords decode "zoo zoo" --words 2
 nwords encode 123 --preset dec6 --explain
 nwords encode 123 --range 100000 --shape adjective,animal
+nwords encode 249416 --shape adjective,animal
 nwords encode 1337 --range 1e6 --shape color,adjective,animal
 ```
 
@@ -208,7 +220,7 @@ Custom flags:
 
 | Flag | Meaning |
 |---|---|
-| `--range <R>` | accepted exclusive ID range `[0, R)`; accepts decimal digits or exact scientific shorthand such as `1e6` |
+| `--range <R>` | optional accepted exclusive ID range `[0, R)`; accepts decimal digits or exact scientific shorthand such as `1e6`; omit with explicit custom shapes to use exact full capacity |
 | `--words <N>` | fixed output word count |
 | `--shape <lists>` | comma-separated ordered named word lists |
 | `--dict <name>` | legacy named dictionary alias |
@@ -311,6 +323,10 @@ Required Phase-2 tests:
 Required Phase-3 tests:
 
 - custom `--range` and `--words` round-trip.
+- custom encode/decode without `--range` uses exact full capacity when capacity
+  fits in `u128`.
+- custom encode/decode without `--range` rejects `BeyondU128` shapes with a
+  clear message requiring `--range`.
 - `--explain` reports capacity, range, slack, and acceptance ratio.
 - alternate shape/list names either work or fail with a usage error.
 

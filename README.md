@@ -19,6 +19,7 @@ cargo run -p nwords-cli -- encode 42 --preset aa
 cargo run -p nwords-cli -- encode 42 --preset descriptor-object
 cargo run -p nwords-cli -- encode 42 --preset mood-descriptor-object
 cargo run -p nwords-cli -- encode 42 --preset weather-descriptor-plant
+cargo run -p nwords-cli -- encode 4384286 --shape descriptor,object
 cargo run -p nwords-cli -- encode 1337 --range 1e6 --shape color,adjective,animal
 cargo run -p nwords-cli -- encode 42 --preset dec6-spread
 cargo run -p nwords-cli -- encode 5 --range 12 --shape project,animal --list project=words.txt
@@ -38,6 +39,11 @@ cargo run -p nwords-cli -- help encode
 `*-spread` presets apply a deterministic reversible permutation before
 positional encoding, so nearby assigned IDs usually produce less visually
 similar phrases. They are not encryption and do not add entropy.
+
+For custom `--shape`, `--words`, or legacy `--dict` encoding, omit `--range`
+to use the exact full phrase capacity as the accepted ID range. Provide
+`--range` to narrow the accepted domain and reject slack phrase states. Shapes
+whose full capacity exceeds `u128` require an explicit `--range`.
 
 `text` and `bytes` commands use `word-bytes-v1`: a 32-bit big-endian byte
 length, payload bytes, and zero padding to an 11-bit word boundary. Text is

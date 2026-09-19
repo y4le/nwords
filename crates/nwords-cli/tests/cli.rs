@@ -361,6 +361,64 @@ fn custom_range_and_words_round_trip() {
     ]);
     assert!(decoded.status.success());
     assert_eq!(stdout(&decoded), "123\n");
+
+    let full_capacity_max = nwords(&["encode", "4194303", "--words", "2"]);
+    assert!(full_capacity_max.status.success());
+    assert_eq!(stdout(&full_capacity_max), "zoo zoo\n");
+
+    let full_capacity_decoded = nwords(&["decode", "zoo zoo", "--words", "2"]);
+    assert!(full_capacity_decoded.status.success());
+    assert_eq!(stdout(&full_capacity_decoded), "4194303\n");
+
+    let full_capacity_out_of_range = nwords(&["encode", "4194304", "--words", "2"]);
+    assert_eq!(full_capacity_out_of_range.status.code(), Some(1));
+    assert!(stderr(&full_capacity_out_of_range).contains("outside range"));
+
+    let explain = nwords(&["encode", "4194303", "--words", "2", "--explain"]);
+    assert!(explain.status.success());
+    let text = stdout(&explain);
+    assert!(text.contains("range: 4194304\n"));
+    assert!(text.contains("capacity: 4194304\n"));
+    assert!(text.contains("slack: 0\n"));
+    assert!(text.contains("acceptance_ratio: 4194304/4194304\n"));
+
+    let words = nwords::wordlists::bip39::English;
+    let slack_word = words.word(100, 1).expect("word 100");
+    let slack = nwords(&[
+        "decode", "abandon", slack_word, "--range", "100", "--words", "2",
+    ]);
+    assert_eq!(slack.status.code(), Some(1));
+    assert!(stderr(&slack).contains("outside range"));
+
+    let beyond_u128 = nwords(&["encode", "0", "--words", "12"]);
+    assert_eq!(beyond_u128.status.code(), Some(2));
+    assert!(stderr(&beyond_u128).contains("shape capacity exceeds u128"));
+    assert!(stderr(&beyond_u128).contains("provide --range"));
+
+    let phrase = ["abandon"; 12].join(" ");
+    let beyond_u128_decode = nwords(&["decode", &phrase, "--words", "12"]);
+    assert_eq!(beyond_u128_decode.status.code(), Some(2));
+    assert!(stderr(&beyond_u128_decode).contains("shape capacity exceeds u128"));
+
+    let explicit_range = nwords(&["encode", "0", "--words", "12", "--range", "1"]);
+    assert!(explicit_range.status.success());
+    assert_eq!(stdout(&explicit_range).trim(), phrase);
+    let explicit_decode = nwords(&["decode", &phrase, "--words", "12", "--range", "1"]);
+    assert!(explicit_decode.status.success());
+    assert_eq!(stdout(&explicit_decode), "0\n");
+}
+
+#[test]
+fn legacy_dictionary_defaults_to_full_capacity() {
+    let encoded = nwords(&["encode", "249416", "--dict", "adjective-animal"]);
+    assert!(encoded.status.success());
+    assert_eq!(stdout(&encoded), "zippy zebra\n");
+    let decoded = nwords(&["decode", "zippy zebra", "--dict", "adjective-animal"]);
+    assert!(decoded.status.success());
+    assert_eq!(stdout(&decoded), "249416\n");
+    let invalid = nwords(&["encode", "249417", "--dict", "adjective-animal"]);
+    assert_eq!(invalid.status.code(), Some(1));
+    assert!(stderr(&invalid).contains("outside range"));
 }
 
 #[test]
@@ -396,6 +454,37 @@ fn custom_named_shape_round_trips_and_rejects_word_alias() {
 fn user_defined_shape_round_trips_and_reports_fingerprint() {
     let list = temp_wordlist("project", b"alpha\n# ignored\n\nbravo\ncharlie\n");
     let spec = format!("project={}", list.display());
+
+    let full = nwords(&[
+        "encode",
+        "998",
+        "--shape",
+        "project,animal",
+        "--list",
+        &spec,
+    ]);
+    assert!(full.status.success());
+    assert_eq!(stdout(&full), "charlie zebra\n");
+    let full_decoded = nwords(&[
+        "decode",
+        "charlie zebra",
+        "--shape",
+        "project,animal",
+        "--list",
+        &spec,
+    ]);
+    assert!(full_decoded.status.success());
+    assert_eq!(stdout(&full_decoded), "998\n");
+    let invalid = nwords(&[
+        "encode",
+        "999",
+        "--shape",
+        "project,animal",
+        "--list",
+        &spec,
+    ]);
+    assert_eq!(invalid.status.code(), Some(1));
+    assert!(stderr(&invalid).contains("outside range"));
 
     let encoded = nwords(&[
         "encode",
@@ -663,6 +752,19 @@ fn adjective_animal_presets_and_custom_dictionary_round_trip() {
     ]);
     assert!(custom_decoded.status.success());
     assert_eq!(stdout(&custom_decoded), "42\n");
+
+    let full_capacity = nwords(&["encode", "12969683", "--shape", "color,adjective,animal"]);
+    assert!(full_capacity.status.success());
+    assert_eq!(stdout(&full_capacity), "yellow zippy zebra\n");
+
+    let full_capacity_decoded = nwords(&[
+        "decode",
+        "yellow zippy zebra",
+        "--shape",
+        "color,adjective,animal",
+    ]);
+    assert!(full_capacity_decoded.status.success());
+    assert_eq!(stdout(&full_capacity_decoded), "12969683\n");
 
     let conflicting_words = nwords(&[
         "encode",

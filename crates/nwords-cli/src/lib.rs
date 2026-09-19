@@ -892,15 +892,15 @@ impl Shape {
             });
         }
 
-        let range = parsed.range.ok_or_else(|| {
-            CliError::usage(
-                "use --preset <name> or provide --range <R> (--shape <lists> | --words <N>)",
-            )
-        })?;
-        if range == 0 {
+        if parsed.range == Some(0) {
             return Err(CliError::usage("range must be greater than zero"));
         }
-        let resolved = resolve_custom_lists(parsed, false, range)?;
+
+        let resolved = resolve_custom_lists(parsed, false, parsed.range.unwrap_or(1))?;
+        let range = match parsed.range {
+            Some(range) => range,
+            None => full_capacity_range(&resolved.lists)?,
+        };
 
         Ok(Self {
             range,
@@ -1370,7 +1370,7 @@ fn resolve_custom_lists(
         }
     } else {
         Err(CliError::usage(
-            "use --preset <name> or provide --range <R> (--shape <lists> | --words <N>)",
+            "use --preset <name> or provide --shape <lists>, --words <N>, or --dict <name> (optionally with --range <R>)",
         ))
     }
 }
@@ -1474,6 +1474,15 @@ fn parse_shape(shape: &str, user_lists: Vec<LoadedUserList>) -> Result<ResolvedL
 fn shape_capacity(lists: &[ShapeList]) -> Result<CapacityClass, nwords::core::Error> {
     let sizes = lists.iter().map(|list| list.len).collect::<Vec<_>>();
     stats::capacity_mixed(&sizes)
+}
+
+fn full_capacity_range(lists: &[ShapeList]) -> Result<u128, CliError> {
+    match shape_capacity(lists).map_err(runtime_error)? {
+        CapacityClass::Exact(capacity) => Ok(capacity),
+        CapacityClass::BeyondU128 { .. } => Err(CliError::usage(
+            "shape capacity exceeds u128; provide --range <R> to choose an accepted ID range",
+        )),
+    }
 }
 
 fn format_shape(lists: &[ShapeList]) -> String {
@@ -1642,8 +1651,8 @@ const HELP: &str = "\
 nwords: positional ID phrase converter
 
 USAGE:
-    nwords encode <id> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
-    nwords decode <words...> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
+    nwords encode <id> (--preset <name> | [--range <R>] (--shape <lists> [--list NAME=PATH]... | --words <N> | --dict <name>)) [--explain]
+    nwords decode <words...> (--preset <name> | [--range <R>] (--shape <lists> [--list NAME=PATH]... | --words <N> | --dict <name>)) [--explain]
     nwords presets
     nwords plan (--preset <name> | --shape <lists> [--list NAME=PATH]... | --range <R> [--shape <lists> [--list NAME=PATH]... | --words <N>])
     nwords bytes encode (--text <text> | --hex <hex>)
@@ -1671,6 +1680,9 @@ EXAMPLES:
     nwords encode 1337 --range 1e6 --shape color,adjective,animal
         Encode ID 1337 into a custom ordered named-list shape.
 
+    nwords encode 4384286 --shape descriptor,object
+        Encode using the full descriptor-object shape capacity as the range.
+
     nwords encode 42 --preset descriptor-object
         Encode ID 42 with the descriptor-object preset.
 
@@ -1693,19 +1705,21 @@ const ENCODE_HELP: &str = "\
 nwords encode: encode an integer ID into a deterministic word phrase
 
 USAGE:
-    nwords encode <id> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
+    nwords encode <id> (--preset <name> | [--range <R>] (--shape <lists> [--list NAME=PATH]... | --words <N> | --dict <name>)) [--explain]
 
 DESCRIPTION:
     Encodes an integer ID from the accepted range into a fixed ordered phrase.
     The mapping is deterministic and bidirectional. Shape order is part of the
-    decoding contract.
+    decoding contract. For custom shapes, omit --range to use the exact full
+    shape capacity as the accepted range.
 
 OPTIONS:
     --preset <name>     Use a built-in preset such as u32, dec6, aa, color-aa,
                         descriptor-object, mood-descriptor-object, or
                         weather-descriptor-plant.
-    --range <R>         Accepted exclusive range [0, R). Accepts decimal digits
-                        or exact scientific shorthand such as 1e6.
+    --range <R>         Optional accepted exclusive range [0, R). Accepts
+                        decimal digits or exact scientific shorthand such as
+                        1e6. Omit it for full exact shape capacity.
     --shape <lists>     Comma-separated named word lists, for example
                         adjective,animal or color,adjective,animal.
     --list NAME=PATH    Add a user-defined list for --shape. Repeatable.
@@ -1721,6 +1735,9 @@ EXAMPLES:
 
     nwords encode 1337 --range 1e6 --shape color,adjective,animal
         Encode ID 1337 with a custom color-adjective-animal shape.
+
+    nwords encode 4384286 --shape descriptor,object
+        Encode using the full descriptor-object shape capacity as the range.
 
     nwords encode 42 --preset descriptor-object
         Encode ID 42 with the descriptor-object preset.
@@ -1742,16 +1759,18 @@ const DECODE_HELP: &str = "\
 nwords decode: decode a deterministic word phrase back into an integer ID
 
 USAGE:
-    nwords decode <words...> (--preset <name> | --range <R> (--shape <lists> [--list NAME=PATH]... | --words <N>)) [--explain]
+    nwords decode <words...> (--preset <name> | [--range <R>] (--shape <lists> [--list NAME=PATH]... | --words <N> | --dict <name>)) [--explain]
 
 DESCRIPTION:
     Decodes a phrase created with the same preset or custom shape back into its
-    original integer ID. Unknown words are reported by position and are not
-    echoed in errors.
+    original integer ID. For custom shapes, omit --range only when encoding
+    also used full exact shape capacity. Unknown words are reported by position
+    and are not echoed in errors.
 
 OPTIONS:
     --preset <name>     Use the same built-in preset used for encoding.
-    --range <R>         Accepted exclusive range [0, R). Must match encoding.
+    --range <R>         Optional accepted exclusive range [0, R). Must match
+                        encoding when encoding used a narrowed range.
     --shape <lists>     Ordered named lists. Must match encoding.
     --list NAME=PATH    Add a user-defined list for --shape. Must match the
                         files used for encoding.
@@ -1765,6 +1784,9 @@ EXAMPLES:
 
     nwords decode \"amaranth abundant amphibian\" --range 1e6 --shape color,adjective,animal
         Decode a phrase with a custom ordered named-list shape.
+
+    nwords decode \"zircon zydeco\" --shape descriptor,object
+        Decode using the full descriptor-object shape capacity as the range.
 
     nwords decode \"abalone aardvark\" --preset descriptor-object
         Decode a phrase with the descriptor-object preset.

@@ -192,6 +192,13 @@ The CLI exposes custom ordered shapes with `--shape adjective,animal`. Legacy
 positional shape entries are named `bip39-en`; the generic name `word` is not
 accepted because it obscures the BIP-39 positional caveat.
 
+For CLI custom encode/decode over explicit `--shape`, `--words`, or legacy
+`--dict` inputs, omitted `--range` means the accepted ID range is the exact
+full phrase capacity when that capacity is `CapacityClass::Exact`. If the full
+shape capacity is `BeyondU128`, the CLI rejects omitted `--range` and requires
+an explicit finite accepted range. Presets keep their configured range; preset
+names remain range/shape/permutation bundles.
+
 Preset definitions stay in Rust constants for V1. They are structured as
 `name + range + shape + permutation` so a later YAML/codegen layer would be
 mechanical, but a non-executable YAML copy is intentionally avoided because it
