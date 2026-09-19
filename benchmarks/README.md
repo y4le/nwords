@@ -4,6 +4,38 @@ These comparisons exercise the current Rust library and its JavaScript/WASM pack
 against alternatives in their own runtimes. They do not change production code or
 add runtime dependencies to nwords. The Rust harness is a separate Cargo workspace.
 
+## Recorded results
+
+[Full report](results/2026-09-19-linux-arm64.md),
+[standalone chart](results/2026-09-19-linux-arm64.svg),
+[raw observations and provenance](results/2026-09-19-linux-arm64.json), and
+[process summaries](results/2026-09-19-linux-arm64.summary.json).
+
+The 2026-09-19 run used one explicitly pinned ARM CPU, seven process rounds per cell,
+903 warm batches and 30 startup observations per package. All 4,096-ID roundtrip and
+native/WASM parity checks passed. No cell exceeded the 25% relative-IQR flag, and
+no rounds were discarded. These are measurements on a shared host, not portable guarantees.
+
+- **Rust names:** nwords with rand 0.8 took 40.9 ns/name versus names at 55.2;
+  nwords with rand 0.10 took 37.6 versus petname at 37.7. Dictionaries and RNG
+  families match, although nwords draws once and the competitors twice.
+- **JS names:** nwords WASM took 777.5 ns/name in Node versus UNG at 163.3;
+  Chromium took 1,421.4 versus 101.9. These rows use the same dictionaries and Math.random.
+- **Reversible u32:** three-word native nwords encoding took 66.9 ns and decoding
+  1,613.7 ns; mnemonic took 48.6 and 52.2. Both use three words, but different
+  vocabularies and parsing rules. nwords searches linearly; mnemonic builds a hash
+  index whose first decode cost was 81.34 µs.
+- **JS reversible u32:** niceware encoded 9.2× faster in Node and 8.1× in Chromium,
+  and decoded 3.4× and 5.0× faster respectively. It uses two words from a 65,536-word
+  dictionary; nwords uses four animal words from 333. The shipped browser assets
+  served here were 874,306 bytes for niceware versus 144,889 for nwords, uncompressed.
+
+The native binding diagnostic also costs more than a reused native codec. Together
+with the source's per-call shape construction, validation and JSON work, this suggests
+prepared codecs and a leaner JS boundary as optimization candidates; it does not
+measure how much either change would save. Indexed decoding is another candidate.
+No production behavior or API was changed for these measurements.
+
 ## Reproduce
 
 Use Rust 1.94.0, Node 24.14.1, npm 11.11.0 and Python 3. Install benchmark tools:

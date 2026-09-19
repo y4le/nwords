@@ -6,6 +6,10 @@ helpers for dictionary size, word count, capacity, and accepted ID range.
 
 The implementation is dependency-light and forbids unsafe code in every crate.
 
+[Rust, Node and browser benchmarks](benchmarks/README.md) compare readable-name
+generation and reversible IDs with alternatives, including reproducible results
+and the differences between their word formats.
+
 ## Examples
 
 ### CLI ID Phrases
