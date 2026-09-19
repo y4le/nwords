@@ -74,7 +74,7 @@ cargo run -p nwords-cli -- encode 0 --preset mood-descriptor-object
 cargo run -p nwords-cli -- encode 0 --preset material-shape-object
 # acrylic angular aardvark
 cargo run -p nwords-cli -- encode 0 --preset weather-descriptor-plant
-# balmy abalone acacia
+# balmy abalone abelia
 cargo run -p nwords-cli -- encode 0 --preset mood-descriptor-food
 # alert abalone almond
 ```

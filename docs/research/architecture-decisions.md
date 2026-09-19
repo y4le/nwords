@@ -176,10 +176,11 @@ single source list. Their seed references include Princeton WordNet, Wikidata
 structured data, USDA PLANTS, OpenFarm, USDA FoodData Central, and for weather
 terms the National Weather Service glossary and disclaimer. The frozen counts
 are 64 moods, 64 materials, 40 shapes, 40 weather terms, 128 plants, and
-128 foods, all in alphabetical order. The CLI ships `mood,descriptor,object`,
-`material,shape,object`, `mood,adjective,animal`, `descriptor,plant`,
-`weather,descriptor,plant`, `mood,descriptor,food`, and
-`material,shape,food` presets after phrase review.
+128 foods, all in alphabetical order. `plant` and `food` are intentionally
+disjoint exact word sets; this does not imply that their meanings never
+overlap. The CLI ships `mood,descriptor,object`, `material,shape,object`,
+`mood,adjective,animal`, `descriptor,plant`, `weather,descriptor,plant`,
+`mood,descriptor,food`, and `material,shape,food` presets after phrase review.
 
 The public adapter is `named::WordListSequence`, which implements the existing
 position-aware `WordMap` trait by dispatching position `i` to `shape[i]`.

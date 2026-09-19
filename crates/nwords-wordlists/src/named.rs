@@ -50,7 +50,7 @@ pub enum NamedWordList {
     Shape,
     /// Authored weather/outdoor-condition modifier list.
     Weather,
-    /// Authored plant/crop/garden head-noun list.
+    /// Authored ornamental plant and garden head-noun list.
     Plant,
     /// Authored food/ingredient/dish head-noun list.
     Food,
@@ -583,8 +583,8 @@ mod tests {
         assert_eq!(NamedWordList::Weather.word(39), Some("wintry"));
 
         assert_eq!(NamedWordList::Plant.len(), 128);
-        assert_eq!(NamedWordList::Plant.word(0), Some("acacia"));
-        assert_eq!(NamedWordList::Plant.word(127), Some("zucchini"));
+        assert_eq!(NamedWordList::Plant.word(0), Some("abelia"));
+        assert_eq!(NamedWordList::Plant.word(127), Some("zinnia"));
 
         assert_eq!(NamedWordList::Food.len(), 128);
         assert_eq!(NamedWordList::Food.word(0), Some("almond"));
@@ -734,7 +734,7 @@ mod tests {
         assert_eq!(weather_descriptor_plant.capacity(), Some(7_357_440));
         assert_eq!(weather_descriptor_plant.word(0, 0), Some("balmy"));
         assert_eq!(weather_descriptor_plant.word(0, 1), Some("abalone"));
-        assert_eq!(weather_descriptor_plant.word(0, 2), Some("acacia"));
+        assert_eq!(weather_descriptor_plant.word(0, 2), Some("abelia"));
 
         let mood_descriptor_food = WordListSequence::new(&[
             NamedWordList::Mood,

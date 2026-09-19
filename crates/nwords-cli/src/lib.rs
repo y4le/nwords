@@ -1772,7 +1772,7 @@ EXAMPLES:
     nwords decode \"alert abalone aardvark\" --preset mood-descriptor-object
         Decode a phrase with the mood-descriptor-object preset.
 
-    nwords decode \"balmy abalone acacia\" --preset weather-descriptor-plant
+    nwords decode \"balmy abalone abelia\" --preset weather-descriptor-plant
         Decode a phrase with the weather-descriptor-plant preset.
 ";
 

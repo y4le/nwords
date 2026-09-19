@@ -33,10 +33,24 @@ impl WordPolicy {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ToolError {
-    Io { path: PathBuf, message: String },
-    InvalidWord { index: usize },
-    DuplicateWord { first: usize, duplicate: usize },
-    Mismatch { artifact: &'static str },
+    Io {
+        path: PathBuf,
+        message: String,
+    },
+    InvalidWord {
+        index: usize,
+    },
+    DuplicateWord {
+        first: usize,
+        duplicate: usize,
+    },
+    Overlap {
+        artifact: &'static str,
+        index: usize,
+    },
+    Mismatch {
+        artifact: &'static str,
+    },
     EmptyList,
     Usage(String),
 }
@@ -50,6 +64,12 @@ impl fmt::Display for ToolError {
                 write!(
                     f,
                     "duplicate word at index {duplicate}; first seen at {first}"
+                )
+            }
+            Self::Overlap { artifact, index } => {
+                write!(
+                    f,
+                    "{artifact} word lists overlap at right-list index {index}"
                 )
             }
             Self::Mismatch { artifact } => write!(f, "{artifact} does not match expected output"),
@@ -320,6 +340,11 @@ fn check_authored_semantic_wordlists(root: &Path) -> Result<(), ToolError> {
         require_sorted(artifact, &words)?;
         require_exact(artifact, &words, &rust_words)?;
     }
+    let plants =
+        read_word_file(&root.join("tests/vectors/semantic-wordlists/plant/nwords-plants.txt"))?;
+    let foods =
+        read_word_file(&root.join("tests/vectors/semantic-wordlists/food/nwords-foods.txt"))?;
+    require_disjoint("nwords-plants-foods", &plants, &foods)?;
     Ok(())
 }
 
@@ -336,6 +361,22 @@ fn require_sorted(artifact: &'static str, words: &[String]) -> Result<(), ToolEr
         Ok(())
     } else {
         Err(ToolError::Mismatch { artifact })
+    }
+}
+
+fn require_disjoint(
+    artifact: &'static str,
+    left: &[String],
+    right: &[String],
+) -> Result<(), ToolError> {
+    let left_words = left.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    if let Some(index) = right
+        .iter()
+        .position(|word| left_words.contains(word.as_str()))
+    {
+        Err(ToolError::Overlap { artifact, index })
+    } else {
+        Ok(())
     }
 }
 
@@ -403,8 +444,8 @@ fn collect_samples(
 #[cfg(test)]
 mod tests {
     use super::{
-        check_existing_vectors, derive_curated_list, emit_rust_array, require_sorted, sample_shape,
-        validate_words, ToolError, WordPolicy,
+        check_existing_vectors, derive_curated_list, emit_rust_array, require_disjoint,
+        require_sorted, sample_shape, validate_words, ToolError, WordPolicy,
     };
     use std::path::Path;
 
@@ -517,7 +558,37 @@ mod tests {
     }
 
     #[test]
-    fn reproduces_existing_unique_names_generator_vectors() {
+    fn disjoint_lists_reject_shared_words() {
+        let left = ["alpha", "bravo"]
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        let right = ["charlie", "delta"]
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        let overlapping = ["bravo", "charlie"]
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+
+        assert_eq!(require_disjoint("lists", &left, &right), Ok(()));
+        assert_eq!(
+            require_disjoint("lists", &left, &overlapping),
+            Err(ToolError::Overlap {
+                artifact: "lists",
+                index: 0,
+            })
+        );
+        let message = require_disjoint("lists", &left, &overlapping)
+            .expect_err("shared word must fail")
+            .to_string();
+        assert!(message.contains("right-list index 0"));
+        assert!(!message.contains("bravo"));
+    }
+
+    #[test]
+    fn reproduces_existing_vectors_and_checks_authored_wordlists() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         check_existing_vectors(&root).unwrap();
     }

@@ -110,9 +110,10 @@ Repository: <https://github.com/openfarmcc/OpenFarm>
 
 Software license: MIT. Data license: CC0.
 
-OpenFarm is a useful seed for `plant`, especially crops and garden plants. It
-should not define the full scope of `plant`, because the list should be common,
-friendly, and phrase-oriented rather than a gardening database.
+OpenFarm is a useful reference for `plant`, especially garden plants. It should
+not define the full scope of `plant`, because the list should be common,
+friendly, ornamental/garden-focused, and phrase-oriented rather than a gardening
+database.
 
 ### USDA PLANTS
 
@@ -198,7 +199,7 @@ Additional category-specific rules:
 | `material` | Prefer common substances and textures that work attributively. Exclude trademarks and chemical hazards. |
 | `shape` | Prefer common visual forms. Avoid specialist geometry unless familiar in everyday speech. |
 | `weather` | Prefer common weather adjectives or terms that work before a head noun. Exclude alerts, acronyms, scales, and severe-event bureaucracy. |
-| `plant` | Common single-token plant nouns only. Exclude Latin binomials, cultivars, drug-associated plants, notably toxic defaults, and highly obscure taxonomy. |
+| `plant` | Common single-token ornamental/garden plant nouns only. Exclude food-list entries, Latin binomials, cultivars, drug-associated plants, notably toxic defaults, and highly obscure taxonomy. |
 | `food` | Generic single-token foods only. Exclude brands, alcohol/drugs, medical/allergen framing, preparations that require multiword names, dominant non-food homographs, and very obscure regional items. |
 
 Cross-product review is required. Clean individual words can still make bad
@@ -385,8 +386,8 @@ for them explicitly.
   source transformations.
 - Use a conservative 128-word scope for each list to avoid padding with weak,
   obscure, hazardous, or poor-composition entries.
-- Curate to common, friendly, single-token head nouns; allow clear crop/food
-  overlap where the word reads naturally in both categories.
+- Curate to common, friendly, single-token head nouns; keep `plant` and `food`
+  disjoint exact word sets; semantic overlap is still possible.
 - Add source provenance that clearly distinguishes direct source snapshots from
   seed references.
 - Add presets only after phrase sampling against `descriptor`, `mood`,

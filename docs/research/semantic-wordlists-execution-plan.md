@@ -508,7 +508,8 @@ Changes:
 - Use CC0/public-domain sources as candidate seeds where possible.
 - Keep CC BY sources reference-only unless attribution posture is explicitly
   accepted.
-- Curate to common, friendly, single-token head nouns.
+- Curate to common, friendly, single-token head nouns. Keep `plant`
+  ornamental/garden-focused and disjoint from `food`.
 - Generate arrays, variants, tests, and only the presets that pass phrase
   sampling.
 
@@ -526,6 +527,7 @@ Acceptance criteria:
   non-food homographs, and very obscure regional items.
 - `plant` excludes Latin binomials, cultivars, drug-associated plants, notably
   toxic defaults, and obscure taxonomy.
+- `plant` and `food` are disjoint exact word sets.
 - Curated files are frozen in documented order.
 - Phrase samples pass review before presets ship.
 - All list and preset tests from earlier phases apply.
@@ -656,7 +658,7 @@ Every user-defined wordlist feature requires:
 | Whether CLI role hints for user lists ship | 5 or later | Defer; default user lists to `Either`. |
 | Whether dynamic lookup gets an index map | 5 or later | Start linear; add per-list lookup map only if benchmarks justify it. |
 | Final `food` source mix | 4 | Prefer USDA CC0 as seed; keep FoodOn reference-only unless CC BY posture is accepted. |
-| Final `plant` scope | 4 | Common friendly plants/crops, not exhaustive botany. |
+| Final `plant` scope | 4 | Common friendly ornamental plants, flowers, trees, houseplants, and garden or landscape nouns; disjoint from `food`. |
 | Semantic preset grouping in CLI | 6 | Add only if preset output becomes hard to scan. |
 
 ## Suggested Commit Slices

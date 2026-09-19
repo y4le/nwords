@@ -759,19 +759,38 @@ fn authored_semantic_presets_round_trip() {
 fn plant_food_presets_round_trip() {
     let plant = nwords(&["encode", "0", "--preset", "descriptor-plant"]);
     assert!(plant.status.success());
-    assert_eq!(stdout(&plant), "abalone acacia\n");
+    assert_eq!(stdout(&plant), "abalone abelia\n");
 
     let plant_max = nwords(&["encode", "183935", "--preset", "descriptor-plant"]);
     assert!(plant_max.status.success());
-    assert_eq!(stdout(&plant_max), "zircon zucchini\n");
+    assert_eq!(stdout(&plant_max), "zircon zinnia\n");
 
     let weather_plant = nwords(&["encode", "0", "--preset", "weather-descriptor-plant"]);
     assert!(weather_plant.status.success());
-    assert_eq!(stdout(&weather_plant), "balmy abalone acacia\n");
+    assert_eq!(stdout(&weather_plant), "balmy abalone abelia\n");
 
     let weather_plant_max = nwords(&["encode", "7357439", "--preset", "weather-descriptor-plant"]);
     assert!(weather_plant_max.status.success());
-    assert_eq!(stdout(&weather_plant_max), "wintry zircon zucchini\n");
+    assert_eq!(stdout(&weather_plant_max), "wintry zircon zinnia\n");
+
+    for (preset, phrase, id) in [
+        ("descriptor-plant", "abalone abelia", "0"),
+        ("descriptor-plant", "zircon zinnia", "183935"),
+        ("weather-descriptor-plant", "balmy abalone abelia", "0"),
+        (
+            "weather-descriptor-plant",
+            "wintry zircon zinnia",
+            "7357439",
+        ),
+    ] {
+        let decoded = nwords(&["decode", phrase, "--preset", preset]);
+        assert!(decoded.status.success());
+        assert_eq!(stdout(&decoded).trim(), id);
+    }
+    let help = nwords(&["help", "decode"]);
+    assert!(help.status.success());
+    assert!(stdout(&help)
+        .contains("nwords decode \"balmy abalone abelia\" --preset weather-descriptor-plant"));
 
     let food = nwords(&["encode", "0", "--preset", "mood-descriptor-food"]);
     assert!(food.status.success());

@@ -77,7 +77,7 @@ Required checks:
 4. Boundary words are stable (`able`/`zippy`, `aardvark`/`zebra`,
    `amaranth`/`yellow`, `abalone`/`zircon`, `aardvark`/`zydeco`,
    `alert`/`zestful`, `acrylic`/`zinc`, `angular`/`zigzag`, and
-   `balmy`/`wintry`, `acacia`/`zucchini`, and `almond`/`zucchini`) because
+   `balmy`/`wintry`, `abelia`/`zinnia`, and `almond`/`zucchini`) because
    word order is an encoding contract.
 5. CLI `aa` preset maps `0` to the first adjective-animal pair and
    `capacity - 1` to the last pair.
@@ -97,6 +97,7 @@ Required checks:
 11. CLI rejects the generic `word` list name and suggests `bip39-en`.
 12. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots,
    authored snapshots, source READMEs, and upstream licenses.
+13. `plant` and `food` authored word lists are disjoint.
 
 ### User-defined word-list files
 
