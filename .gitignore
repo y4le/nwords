@@ -17,3 +17,7 @@
 # JavaScript package tooling and assembled artifacts
 /packages/nwords-js/node_modules/
 /dist/
+/benchmarks/rust/target/
+/benchmarks/js/node_modules/
+/benchmarks/.work/
+/benchmarks/__pycache__/

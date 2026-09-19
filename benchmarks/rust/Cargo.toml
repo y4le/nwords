@@ -1,0 +1,20 @@
+[package]
+name = "nwords-comparison"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+nwords = { path = "../../crates/nwords", default-features = false, features = ["std", "named", "positional", "stats", "bip39-english"] }
+nwords-js = { path = "../../crates/nwords-js" }
+names = { version = "=0.14.0", default-features = false }
+petname = { version = "=3.2.0", default-features = false, features = ["default-rng", "default-words"] }
+mnemonic = "=1.1.1"
+rand = "=0.8.8"
+rand10 = { package = "rand", version = "=0.10.2" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
