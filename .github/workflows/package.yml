@@ -1,0 +1,31 @@
+name: WASM package
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  packed-consumers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+      - run: npm install --global npm@11.11.0
+      - uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          targets: wasm32-unknown-unknown
+      - run: cargo install wasm-pack --version 0.14.0 --locked
+      - run: npm ci --ignore-scripts
+        working-directory: packages/nwords-js
+      - run: npx playwright install --with-deps chromium
+        working-directory: packages/nwords-js
+      - run: npm run build && npm test
+        working-directory: packages/nwords-js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nwords-package
+          path: |
+            dist/tarballs/*.tgz
+            dist/package-build.json
+            dist/package-qualification.json

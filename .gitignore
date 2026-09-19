@@ -13,3 +13,7 @@
 
 # Local agent/runtime state
 /.parley/
+
+# JavaScript package tooling and assembled artifacts
+/packages/nwords-js/node_modules/
+/dist/

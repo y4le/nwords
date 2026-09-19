@@ -253,6 +253,19 @@ uploads `site/` as the Pages artifact.
 call the Rust library from the static browser app without reimplementing the
 codec in JavaScript.
 
+## JavaScript / WASM package
+
+A private local `@y4le/nwords` tarball provides named-shape ID encoding for Node
+24.14.1 and browser ESM. It includes compiled WASM and needs no Rust tools at
+installation or runtime. See the [package API and build instructions](packages/nwords-js/README.md)
+and [implementation plan](docs/wasm-package-plan.md).
+
+```js
+import { loadNwords } from '@y4le/nwords/node';
+const words = await loadNwords();
+words.encodeId(42n, { lists: ['adjective', 'animal'] }); // 'able cardinal'
+```
+
 ## `no_std + alloc`
 
 Default builds use `std`. For `no_std + alloc`, disable default features and

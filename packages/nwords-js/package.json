@@ -1,0 +1,17 @@
+{
+  "name": "nwords-js-development",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.14.1 <25"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/test-package.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.5",
+    "playwright": "1.63.0",
+    "typescript": "7.0.2"
+  }
+}
