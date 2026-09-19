@@ -109,6 +109,20 @@ const MATERIAL_SHAPE_FOOD_SHAPE: &[NamedWordList] = &[
     NamedWordList::Shape,
     NamedWordList::Food,
 ];
+const BUILTIN_WORD_LISTS: &[NamedWordList] = &[
+    NamedWordList::Adjective,
+    NamedWordList::Animal,
+    NamedWordList::Color,
+    NamedWordList::Descriptor,
+    NamedWordList::Object,
+    NamedWordList::Mood,
+    NamedWordList::Material,
+    NamedWordList::Shape,
+    NamedWordList::Weather,
+    NamedWordList::Plant,
+    NamedWordList::Food,
+    NamedWordList::Bip39English,
+];
 
 const PRESETS: &[Preset] = &[
     Preset {
@@ -265,6 +279,8 @@ enum Command {
     Decode(DecodeArgs),
     /// List built-in positional ID presets.
     Presets,
+    /// List built-in shape word lists.
+    Lists,
     /// Show capacity and range statistics.
     Plan(PlanArgs),
     /// Encode or decode arbitrary bytes with word-bytes-v1.
@@ -435,6 +451,7 @@ fn dispatch(cli: Cli) -> Result<String, CliError> {
         Some(Command::Encode(args)) => encode(args),
         Some(Command::Decode(args)) => decode(args),
         Some(Command::Presets) => presets(),
+        Some(Command::Lists) => lists(),
         Some(Command::Plan(args)) => plan(args),
         Some(Command::Bytes(args)) => bytes_command(args),
         Some(Command::Text(args)) => text_command(args),
@@ -488,6 +505,7 @@ fn help(args: &[String]) -> Result<String, CliError> {
             "encode" => Ok(ENCODE_HELP.to_owned()),
             "decode" => Ok(DECODE_HELP.to_owned()),
             "presets" => Ok(PRESETS_HELP.to_owned()),
+            "lists" => Ok(LISTS_HELP.to_owned()),
             "plan" => Ok(PLAN_HELP.to_owned()),
             "bytes" => Ok(BYTES_HELP.to_owned()),
             "text" => Ok(TEXT_HELP.to_owned()),
@@ -576,6 +594,24 @@ fn presets() -> Result<String, CliError> {
             report.capacity,
             report.slack(),
             report.acceptance_ratio()
+        ));
+    }
+    Ok(output)
+}
+
+fn lists() -> Result<String, CliError> {
+    let mut output = String::new();
+    output.push_str("Built-in word-list names and order are decoding compatibility surfaces.");
+    output.push('\n');
+    output.push_str("name\taliases\trole\twords\texamples\n");
+    for list in BUILTIN_WORD_LISTS {
+        output.push_str(&format!(
+            "{}\t{}\t{}\t{}\t{}\n",
+            list.name(),
+            word_list_aliases(*list),
+            role_name(list.role()),
+            list.len(),
+            example_words(*list)
         ));
     }
     Ok(output)
@@ -1496,6 +1532,46 @@ fn format_shape(lists: &[ShapeList]) -> String {
     output
 }
 
+fn role_name(role: WordListRole) -> &'static str {
+    match role {
+        WordListRole::Modifier => "modifier",
+        WordListRole::Head => "head",
+        WordListRole::Either => "either",
+    }
+}
+
+fn word_list_aliases(list: NamedWordList) -> &'static str {
+    match list {
+        NamedWordList::Adjective => "adjectives",
+        NamedWordList::Animal => "animals",
+        NamedWordList::Color => "colors",
+        NamedWordList::Descriptor => "descriptors",
+        NamedWordList::Object => "objects",
+        NamedWordList::Mood => "moods",
+        NamedWordList::Material => "materials",
+        NamedWordList::Shape => "shapes",
+        NamedWordList::Weather => "-",
+        NamedWordList::Plant => "plants",
+        NamedWordList::Food => "foods",
+        NamedWordList::Bip39English => "bip39-english,bip39-en-positional",
+    }
+}
+
+fn example_words(list: NamedWordList) -> String {
+    let len = list.len();
+    let indexes = [0, len / 2, len.saturating_sub(1)];
+    let mut output = String::new();
+    for (index, word_index) in indexes.into_iter().enumerate() {
+        if index > 0 {
+            output.push(',');
+        }
+        if let Some(word) = list.word(word_index) {
+            output.push_str(word);
+        }
+    }
+    output
+}
+
 fn format_builtin_shape(lists: &[NamedWordList]) -> String {
     let mut output = String::new();
     for (index, list) in lists.iter().enumerate() {
@@ -1654,6 +1730,7 @@ USAGE:
     nwords encode <id> (--preset <name> | [--range <R>] (--shape <lists> [--list NAME=PATH]... | --words <N> | --dict <name>)) [--explain]
     nwords decode <words...> (--preset <name> | [--range <R>] (--shape <lists> [--list NAME=PATH]... | --words <N> | --dict <name>)) [--explain]
     nwords presets
+    nwords lists
     nwords plan (--preset <name> | --shape <lists> [--list NAME=PATH]... | --range <R> [--shape <lists> [--list NAME=PATH]... | --words <N>])
     nwords bytes encode (--text <text> | --hex <hex>)
     nwords bytes decode (--text | --hex) <words...>
@@ -1669,6 +1746,7 @@ COMMANDS:
     encode      Encode an integer ID into a positional word phrase.
     decode      Decode a positional word phrase back into an integer ID.
     presets     List built-in preset ranges and shapes.
+    lists       List built-in shape word lists.
     plan        Show capacity and range statistics for a preset or shape.
     bytes       Encode or decode arbitrary bytes with word-bytes-v1.
     text        Encode or decode UTF-8 text with word-bytes-v1.
@@ -1694,6 +1772,9 @@ EXAMPLES:
 
     nwords encode 5 --range 12 --shape project,animal --list project=words.txt
         Encode with a user-defined project list and built-in animal list.
+
+    nwords lists
+        List built-in shape word-list names, sizes, roles, aliases, and examples.
 
     nwords plan --shape color,adjective,animal
         Show per-position list sizes and total shape capacity.
@@ -1817,6 +1898,26 @@ EXAMPLES:
         Show detailed stats for one preset.
 ";
 
+const LISTS_HELP: &str = "\
+nwords lists: list built-in shape word lists
+
+USAGE:
+    nwords lists
+
+DESCRIPTION:
+    Prints a tab-separated table of built-in word lists usable in --shape,
+    including canonical name, aliases, advisory role, word count, and sample
+    words from the list. User-defined --list files are runtime inputs and are
+    not shown here.
+
+EXAMPLES:
+    nwords lists
+        List built-in shape word-list names and sizes.
+
+    nwords plan --shape descriptor,object
+        Plan a shape using names from the list catalog.
+";
+
 const PLAN_HELP: &str = "\
 nwords plan: show capacity and range statistics
 
@@ -1839,6 +1940,9 @@ OPTIONS:
     --dict <name>       Legacy alias; adjective-animal is accepted.
 
 EXAMPLES:
+    nwords lists
+        Show built-in word-list names available for --shape.
+
     nwords plan --shape color,adjective,animal
         Show list sizes and total capacity for the ordered shape.
 

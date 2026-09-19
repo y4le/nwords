@@ -129,6 +129,12 @@ fn help_supports_command_topics_and_examples() {
     assert!(text.contains("nwords encode 1337 --range 1e6 --shape color,adjective,animal"));
     assert_eq!(stderr(&encode), "");
 
+    let lists = nwords(&["help", "lists"]);
+    assert!(lists.status.success());
+    let text = stdout(&lists);
+    assert!(text.contains("nwords lists:"));
+    assert!(text.contains("canonical name, aliases, advisory role, word count"));
+
     let bytes_encode = nwords(&["help", "bytes", "encode"]);
     assert!(bytes_encode.status.success());
     let text = stdout(&bytes_encode);
@@ -778,6 +784,49 @@ fn adjective_animal_presets_and_custom_dictionary_round_trip() {
     ]);
     assert_eq!(conflicting_words.status.code(), Some(2));
     assert!(stderr(&conflicting_words).contains("intrinsic word count"));
+}
+
+#[test]
+fn lists_reports_shape_options_with_examples() {
+    let output = nwords(&["lists"]);
+
+    assert!(output.status.success());
+    assert_eq!(stderr(&output), "");
+    let text = stdout(&output);
+    assert!(
+        text.contains("Built-in word-list names and order are decoding compatibility surfaces.")
+    );
+    assert!(text.contains("name\taliases\trole\twords\texamples\n"));
+    assert_eq!(text.lines().count(), 14);
+    assert!(text.contains("adjective\tadjectives\tmodifier\t749\table,"));
+    assert!(text.contains(",zippy\n"));
+    assert!(text.contains("animal\tanimals\thead\t333\taardvark,"));
+    assert!(text.contains(",zebra\n"));
+    assert!(text.contains("color\tcolors\tmodifier\t52\tamaranth,"));
+    assert!(text.contains("descriptor\tdescriptors\tmodifier\t1437\tabalone,"));
+    assert!(text.contains("object\tobjects\thead\t3051\taardvark,"));
+    assert!(text.contains("mood\tmoods\tmodifier\t64\talert,"));
+    assert!(text.contains("material\tmaterials\teither\t64\tacrylic,"));
+    assert!(text.contains("shape\tshapes\teither\t40\tangular,"));
+    assert!(text.contains("weather\t-\tmodifier\t40\tbalmy,"));
+    assert!(text.contains("plant\tplants\thead\t128\tabelia,"));
+    assert!(text.contains("food\tfoods\thead\t128\talmond,"));
+    assert!(text.contains("bip39-en\tbip39-english,bip39-en-positional\teither\t2048\tabandon,"));
+    assert!(text.contains(",zoo\n"));
+
+    for row in text.lines().skip(2) {
+        let fields = row.split('\t').collect::<Vec<_>>();
+        assert_eq!(fields.len(), 5);
+        for name in
+            std::iter::once(fields[0]).chain(fields[1].split(',').filter(|alias| *alias != "-"))
+        {
+            let plan = nwords(&["plan", "--shape", name]);
+            assert!(plan.status.success(), "catalog name {name} must resolve");
+            let plan = stdout(&plan);
+            assert!(plan.contains(&format!("position_0_list: {}\n", fields[0])));
+            assert!(plan.contains(&format!("position_0_words: {}\n", fields[3])));
+        }
+    }
 }
 
 #[test]

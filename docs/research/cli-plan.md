@@ -162,6 +162,7 @@ Add:
 
 ```sh
 nwords presets
+nwords lists
 nwords plan --preset u32
 nwords plan --range <range>
 nwords plan --shape <lists>

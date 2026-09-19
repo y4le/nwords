@@ -26,6 +26,7 @@ cargo run -p nwords-cli -- encode 5 --range 12 --shape project,animal --list pro
 cargo run -p nwords-cli -- text encode "hello"
 cargo run -p nwords-cli -- bytes encode --hex deadbeef
 cargo run -p nwords-cli -- presets
+cargo run -p nwords-cli -- lists
 cargo run -p nwords-cli -- plan --preset u32
 cargo run -p nwords-cli -- plan --range 1e6
 cargo run -p nwords-cli -- plan --shape descriptor,object
@@ -91,6 +92,9 @@ one lowercase ASCII word per line; blank lines and full-line `#` comments are
 ignored, with only outer ASCII whitespace trimmed. Pin and share the same list
 files for reproducible decoding. The CLI reports an `fnv1a64:<hex>` drift
 fingerprint for user lists; it is not a security hash.
+
+Run `nwords lists` to see built-in shape word-list names, aliases, roles,
+sizes, and sample words.
 
 ### BIP-39 English
 

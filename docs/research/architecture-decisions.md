@@ -199,6 +199,10 @@ shape capacity is `BeyondU128`, the CLI rejects omitted `--range` and requires
 an explicit finite accepted range. Presets keep their configured range; preset
 names remain range/shape/permutation bundles.
 
+The CLI exposes `nwords lists` as the built-in shape-list catalog. It reports
+canonical names, parser aliases, advisory roles, word counts, and sample words
+so users can discover valid `--shape` entries without reading source files.
+
 Preset definitions stay in Rust constants for V1. They are structured as
 `name + range + shape + permutation` so a later YAML/codegen layer would be
 mechanical, but a non-executable YAML copy is intentionally avoided because it

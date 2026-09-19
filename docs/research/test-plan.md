@@ -103,7 +103,9 @@ Required checks:
 14. CLI rejects the generic `word` list name and suggests `bip39-en`.
 15. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots,
    authored snapshots, source READMEs, and upstream licenses.
-16. `plant` and `food` authored word lists are disjoint.
+16. CLI `lists` reports built-in shape-list canonical names, aliases, advisory
+   roles, word counts, and sample words.
+17. `plant` and `food` authored word lists are disjoint.
 
 ### User-defined word-list files
 
