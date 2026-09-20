@@ -182,30 +182,16 @@ impl NamedWordList {
             Self::Color => unique_names_generator_colors::COLORS
                 .binary_search(&word)
                 .ok(),
-            Self::Object => friendly_words_objects::OBJECTS
-                .iter()
-                .position(|candidate| *candidate == word),
+            Self::Object => friendly_words_objects::OBJECTS.binary_search(&word).ok(),
             Self::Descriptor => friendly_words_descriptors::DESCRIPTORS
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Mood => semantic_moods::MOODS
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Material => semantic_materials::MATERIALS
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Shape => semantic_shapes::SHAPES
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Weather => semantic_weather::WEATHER
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Plant => semantic_plants::PLANTS
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Food => semantic_foods::FOODS
-                .iter()
-                .position(|candidate| *candidate == word),
+                .binary_search(&word)
+                .ok(),
+            Self::Mood => semantic_moods::MOODS.binary_search(&word).ok(),
+            Self::Material => semantic_materials::MATERIALS.binary_search(&word).ok(),
+            Self::Shape => semantic_shapes::SHAPES.binary_search(&word).ok(),
+            Self::Weather => semantic_weather::WEATHER.binary_search(&word).ok(),
+            Self::Plant => semantic_plants::PLANTS.binary_search(&word).ok(),
+            Self::Food => semantic_foods::FOODS.binary_search(&word).ok(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.index_of(word, 0),
         }
@@ -272,6 +258,7 @@ pub struct OwnedWordList {
     name: String,
     role: WordListRole,
     words: Vec<String>,
+    lookup_order: Vec<usize>,
 }
 
 #[cfg(feature = "alloc")]
@@ -292,7 +279,55 @@ impl OwnedWordList {
             return Err(WordListError::BuiltinNameCollision);
         }
         validate_words(&words)?;
-        Ok(Self { name, role, words })
+        Ok(Self::validated(name, role, words))
+    }
+
+    /// Creates a list of exact Unicode tokens for whitespace-separated phrases.
+    ///
+    /// Tokens must be nonempty and contain no whitespace, control characters,
+    /// or BOM. Case, punctuation, accents, emoji, and order are preserved.
+    /// This is separate from `new`, which retains the CLI lowercase-ASCII policy.
+    pub fn from_tokens(
+        name: impl Into<String>,
+        role: WordListRole,
+        words: Vec<String>,
+    ) -> Result<Self, WordListError> {
+        let name = name.into();
+        validate_owned_list_name(&name)?;
+        if NamedWordList::parse(&name).is_some() {
+            return Err(WordListError::BuiltinNameCollision);
+        }
+        if words.len() < 2 {
+            return Err(WordListError::TooFewWords { len: words.len() });
+        }
+        let mut seen = BTreeMap::new();
+        for (index, word) in words.iter().enumerate() {
+            if word.is_empty()
+                || word
+                    .chars()
+                    .any(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{feff}')
+            {
+                return Err(WordListError::InvalidWord { index });
+            }
+            if let Some(first) = seen.insert(word, index) {
+                return Err(WordListError::DuplicateWord {
+                    first,
+                    duplicate: index,
+                });
+            }
+        }
+        Ok(Self::validated(name, role, words))
+    }
+
+    fn validated(name: String, role: WordListRole, words: Vec<String>) -> Self {
+        let mut lookup_order = (0..words.len()).collect::<Vec<_>>();
+        lookup_order.sort_unstable_by(|a, b| words[*a].cmp(&words[*b]));
+        Self {
+            name,
+            role,
+            words,
+            lookup_order,
+        }
     }
 
     /// Returns the user-defined list name.
@@ -322,7 +357,10 @@ impl OwnedWordList {
 
     /// Returns the index for `word`.
     pub fn index_of(&self, word: &str) -> Option<usize> {
-        self.words.iter().position(|candidate| candidate == word)
+        self.lookup_order
+            .binary_search_by(|index| self.words[*index].as_str().cmp(word))
+            .ok()
+            .map(|slot| self.lookup_order[slot])
     }
 
     /// Returns the backing words in index order.
@@ -674,6 +712,14 @@ mod tests {
             NamedWordList::Adjective,
             NamedWordList::Animal,
             NamedWordList::Color,
+            NamedWordList::Object,
+            NamedWordList::Descriptor,
+            NamedWordList::Mood,
+            NamedWordList::Material,
+            NamedWordList::Shape,
+            NamedWordList::Weather,
+            NamedWordList::Plant,
+            NamedWordList::Food,
         ] {
             for index in 1..list.len() {
                 assert!(
@@ -866,6 +912,42 @@ mod tests {
                 ),
                 Err(WordListError::InvalidWord { index: 1 })
             );
+        }
+
+        #[test]
+        fn unicode_tokens_keep_order_and_index_exactly() {
+            let words = ["🦊", "Cat", "cat", "é", "e\u{301}", "yo-yo", "\"quote\""];
+            let list = OwnedWordList::from_tokens(
+                "tokens",
+                WordListRole::Either,
+                words.iter().map(|w| (*w).into()).collect(),
+            )
+            .unwrap();
+            for (index, word) in words.iter().enumerate() {
+                assert_eq!(list.word(index), Some(*word));
+                assert_eq!(list.index_of(word), Some(index));
+            }
+            assert_eq!(list.index_of("CAT"), None);
+            for invalid in ["a b", "a\t", "\0", "\u{feff}", ""] {
+                assert!(OwnedWordList::from_tokens(
+                    "tokens",
+                    WordListRole::Either,
+                    vec![invalid.into(), "valid".into()]
+                )
+                .is_err());
+            }
+            assert!(OwnedWordList::from_tokens(
+                "tokens",
+                WordListRole::Either,
+                vec!["same".into(), "same".into()]
+            )
+            .is_err());
+            assert!(OwnedWordList::new(
+                "tokens",
+                WordListRole::Either,
+                vec!["Cat".into(), "dog".into()]
+            )
+            .is_err());
         }
 
         #[test]
