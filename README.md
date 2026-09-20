@@ -231,32 +231,29 @@ assert_eq!(bip39.word_count, 18);
 
 ## Static Web Demo
 
-For reusable Node/browser output and the Murmur naming use case, see the
-[JavaScript / WASM package plan](docs/wasm-package-plan.md).
-
-The repository includes a small browser demo under `site/` backed by the Rust
-implementation compiled to WebAssembly from `crates/nwords-web`.
+The browser demo under `site/` shows `adjective+,animal` names for numbers,
+exact bits, bytes, and text alongside an English BIP-39 mnemonic converter.
+Each panel shows the package imports that define its conversion.
 
 Build the static demo:
 
 ```sh
-wasm-pack build crates/nwords-web --target web --out-dir ../../site/pkg --no-pack
+npm ci --prefix packages/nwords-js --ignore-scripts
+npm run build --prefix packages/nwords-js
+npm run build:site --prefix packages/nwords-js
 ```
 
-Then serve `site/` with any static file server:
+Then serve the production output:
 
 ```sh
-python3 -m http.server 8787 --bind 127.0.0.1 --directory site
+python3 -m http.server 8787 --bind 127.0.0.1 --directory dist/site
 ```
 
-The demo exposes numeric ID encode/decode, preset planning reports, spread
-comparison, and `word-bytes-v1` text encode/decode. GitHub Pages deployment is
-handled by `.github/workflows/pages.yml`, which builds the WASM package and
-uploads `site/` as the Pages artifact.
-
-`wasm-bindgen` is the only web-demo runtime bridge dependency; it is used to
-call the Rust library from the static browser app without reimplementing the
-codec in JavaScript.
+GitHub Pages builds and uploads the same production output. The names panel
+uses a small JavaScript `BigInt` codec and imports only adjective and animal;
+the BIP-39 panel loads its Rust WASM codec when opened. See the
+[implementation plan](docs/browser-demo-implementation-plan.md) and
+[backlog](docs/browser-demo-backlog.md).
 
 ## JavaScript / WASM package
 

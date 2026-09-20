@@ -1,10 +1,71 @@
 # nwords for Node and browsers
 
 This private development package contains compiled Rust codecs, WebAssembly,
-JavaScript loaders, and TypeScript declarations. Consumers install the packed
+JavaScript codecs and loaders, and TypeScript declarations. Consumers install the packed
 tarball with npm; they do not need Rust, wasm-pack, or an install script.
 Node 24.14.1 and ordinary browser ESM in the tested Chromium are the initial
-qualification targets. Registry publication and broad bundler support are deferred.
+qualification targets. Vite production builds are qualified; registry
+publication and other bundlers are deferred.
+
+## Selective imports
+
+Use the small ESM codec and only the wordsets your name format needs:
+
+```js
+import { defineVariable } from '@y4le/nwords/variable';
+import { decodeBits, encodeText, decodeText } from '@y4le/nwords/views';
+import { adjective } from '@y4le/nwords/wordsets/adjective';
+import { animal } from '@y4le/nwords/wordsets/animal';
+
+const codec = defineVariable({
+  scheme: 'variable-v1',
+  pattern: [{ list: adjective, repeat: { min: 1 } }, animal],
+  maxWords: 32,
+});
+codec.encodeId(42n);                // 'able cardinal'
+codec.decodePhrase('able cardinal'); // 42n
+decodeBits(codec, 'able cardinal');   // '01011'
+decodeText(codec, encodeText(codec, 'hello')); // 'hello'
+```
+
+The descriptor specifies one repeated list, a fixed suffix, and an explicit
+minimum of zero or one repetitions. `maxWords` is required and can be set
+through 64. The mapping is `variable-v1`, independent of the word bound. This codec
+accepts nonnegative `bigint` or canonical decimal strings and supports values
+above `u128`. Bit strings map bijectively through `int('1' + bits) - 1`, so
+leading zeros and exact bit length survive. `decodeBytes` and `decodeText`
+require a byte-aligned bit view; text decoding uses strict UTF-8. A phrase
+does not identify which view was used. Save the scheme, ordered wordsets,
+minimum, and word bound with any persisted phrase.
+An optional positive exclusive `range` restricts accepted IDs without
+changing phrases already in range. `describe()` reports that range, exact
+word-bounded capacity, required words, and the largest bit length guaranteed
+to fit for every bitstring.
+The decoder's UTF-8 phrase limit follows the selected word bound; all phrases
+the codec can emit remain decodable, including 64-word custom-list phrases.
+
+Wordset subpaths are independent ESM modules, including `color`, `object`,
+`descriptor`, `mood`, `material`, `shape`, `weather`, `plant`, `food`, and
+`eff-long`. A production Vite build importing only the example above emits no
+WASM and omits all unimported wordsets. The tarball carries every optional
+wordset and its notices. The existing `@y4le/nwords/{node,web}` entry below
+retains its full Rust-backed API.
+
+English BIP-39 has a separate Rust WASM entry:
+
+```js
+import { loadBip39 } from '@y4le/nwords/bip39/web';
+
+const bip39 = await loadBip39();
+const mnemonic = bip39.encodeEntropy(new Uint8Array(16));
+// 'abandon' repeated 11 times, then 'about'
+bip39.decodeMnemonic(mnemonic); // original 16 bytes
+```
+
+Node uses `@y4le/nwords/bip39/node`. Legal entropy lengths are 16, 20, 24,
+28, and 32 bytes. Decoding validates English words, count, and checksum and
+returns exact entropy. This API does not derive a seed or generate wallet
+entropy. The BIP-39-only Vite build emits one WASM asset and no naming lists.
 
 ```js
 import { loadNwords } from '@y4le/nwords/node';
@@ -67,6 +128,9 @@ where available. Codes are `INVALID_INPUT`, `UNKNOWN_LIST`, `INVALID_SHAPE`,
 `INVALID_UTF8`, `RANDOM_UNAVAILABLE`, and `INTERNAL_ERROR`.
 Messages do not echo input phrases or words. `NwordsLoadError` separately uses
 `LOAD_FAILED` or `ASSET_CONFLICT`. Error classes are exported from both entries.
+The selective entries also use `NOT_BYTE_ALIGNED` for a bit view that cannot
+be read as bytes, plus the BIP-39 codes `INVALID_ENTROPY_LENGTH`,
+`INVALID_WORD_COUNT`, `UNKNOWN_WORD`, and `INVALID_CHECKSUM`.
 
 ## Building from the source repository
 
@@ -77,14 +141,15 @@ and the committed Cargo/npm lockfiles. The binding version is pinned to 0.2.120.
 npm ci --prefix packages/nwords-js --ignore-scripts
 npx --prefix packages/nwords-js playwright install chromium
 npm run build --prefix packages/nwords-js
+npm run build:site --prefix packages/nwords-js
 npm test --prefix packages/nwords-js
 ```
 
 Normal builds require a clean committed source revision. While implementing,
 use `npm run build --prefix packages/nwords-js -- --dev`; both the dirty state
 and development mode are recorded. Run `npm test --prefix packages/nwords-js -- --dev`
-to test that development artifact. Build output lives under `dist/`, separate
-from the static demo's `site/pkg/`. `dist/package-build.json` records packed
+to test that development artifact. Build output lives under `dist/`; the
+production site is `dist/site/`. `dist/package-build.json` records packed
 size and integrity. The template enforces `private: true` and has no lifecycle
 scripts. Rust release optimization remains the default. Optional experiments use
 `--profile baseline|thin|fat|size`; these custom profiles affect this package build,

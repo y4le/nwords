@@ -189,20 +189,25 @@ BIP-39 mnemonic APIs.
 
 ## Static Web Demo
 
-The static demo lives in `site/` and uses the Rust implementation through
-`crates/nwords-web` WebAssembly bindings. It is not a JavaScript reimplementation
-of the codec.
+The static demo source lives in `site/`. Names use the package's ESM
+`variable-v1` BigInt codec and selected wordset modules; English BIP-39 uses
+the package's dedicated Rust WebAssembly binding. Both panels show their
+package imports beside the conversion.
 
 Build it before serving locally:
 
 ```sh
-wasm-pack build crates/nwords-web --target web --out-dir ../../site/pkg --no-pack
-python3 -m http.server 8787 --bind 127.0.0.1 --directory site
+npm ci --prefix packages/nwords-js --ignore-scripts
+npm run build --prefix packages/nwords-js
+npm run build:site --prefix packages/nwords-js
+python3 -m http.server 8787 --bind 127.0.0.1 --directory dist/site
 ```
 
-The GitHub Pages workflow builds the WASM package and uploads `site/`. Keep the
-same caveats in web-demo copy: BIP-39 words are positional dictionary entries,
-spread is not encryption or entropy, and text is byte-exact UTF-8.
+The GitHub Pages workflow builds and tests the package and uploads `dist/site`.
+The Bitcoin panel uses actual BIP-39 entropy and checksum, while the full JS
+entry's `bip39-en` list remains a positional dictionary. Names preserve exact
+bits; byte and text views require whole bytes and strict UTF-8. Encoding does
+not encrypt, assign uniqueness, or add entropy.
 
 ## Response Checklist
 

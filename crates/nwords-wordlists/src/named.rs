@@ -596,6 +596,78 @@ mod tests {
     use nwords_core::WordMap;
 
     #[test]
+    fn named_lists_match_checked_in_wordset_snapshots() {
+        let snapshots = [
+            (
+                NamedWordList::Adjective,
+                include_str!("../../../tests/vectors/adjective-animal/nwords-adjectives.txt"),
+            ),
+            (
+                NamedWordList::Animal,
+                include_str!("../../../tests/vectors/adjective-animal/nwords-animals.txt"),
+            ),
+            (
+                NamedWordList::Color,
+                include_str!(
+                    "../../../tests/vectors/adjective-animal/unique-names-generator-colors.txt"
+                ),
+            ),
+            (
+                NamedWordList::Object,
+                include_str!("../../../tests/vectors/friendly-words/nwords-objects.txt"),
+            ),
+            (
+                NamedWordList::Descriptor,
+                include_str!("../../../tests/vectors/friendly-words/nwords-descriptors.txt"),
+            ),
+            (
+                NamedWordList::Mood,
+                include_str!("../../../tests/vectors/semantic-wordlists/mood/nwords-moods.txt"),
+            ),
+            (
+                NamedWordList::Material,
+                include_str!(
+                    "../../../tests/vectors/semantic-wordlists/material/nwords-materials.txt"
+                ),
+            ),
+            (
+                NamedWordList::Shape,
+                include_str!("../../../tests/vectors/semantic-wordlists/shape/nwords-shapes.txt"),
+            ),
+            (
+                NamedWordList::Weather,
+                include_str!(
+                    "../../../tests/vectors/semantic-wordlists/weather/nwords-weather.txt"
+                ),
+            ),
+            (
+                NamedWordList::Plant,
+                include_str!("../../../tests/vectors/semantic-wordlists/plant/nwords-plants.txt"),
+            ),
+            (
+                NamedWordList::Food,
+                include_str!("../../../tests/vectors/semantic-wordlists/food/nwords-foods.txt"),
+            ),
+            #[cfg(feature = "eff-long")]
+            (
+                NamedWordList::EffLong,
+                include_str!("../../../tests/vectors/eff-long/words.txt"),
+            ),
+        ];
+        for (list, source) in snapshots {
+            assert_eq!(
+                list.len(),
+                source.lines().count(),
+                "{} word count",
+                list.name()
+            );
+            for (index, word) in source.lines().enumerate() {
+                assert_eq!(list.word(index), Some(word), "{} word {index}", list.name());
+            }
+        }
+    }
+
+    #[test]
     fn named_lists_have_stable_boundaries() {
         assert_eq!(NamedWordList::Adjective.len(), 749);
         assert_eq!(NamedWordList::Adjective.word(0), Some("able"));

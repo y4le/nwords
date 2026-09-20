@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { gzipSync } from 'node:zlib';
+import { cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
@@ -15,6 +17,13 @@ assert(process.argv.slice(2).every(arg => arg === '--dev'), 'Usage: npm test -- 
 const report = JSON.parse(await readFile(join(root, 'dist/package-build.json'), 'utf8'));
 assert(dev || (!report.dirty && !report.development), 'Qualification requires a clean build');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+async function assetSizes(directory) {
+  const names = (await readdir(directory, { recursive: true })).filter(name => /\.(js|wasm|css)$/u.test(name)).sort();
+  return Promise.all(names.map(async name => {
+    const bytes = await readFile(join(directory, name));
+    return { name, bytes: bytes.length, gzipBytes: gzipSync(bytes, { level: 9 }).length };
+  }));
+}
 assert.equal(hash(await readFile(report.tarball)), report.tarballSha256);
 const assertSource = () => {
   if (dev) return;
@@ -34,33 +43,91 @@ try {
   const packed = join(temporary, 'node_modules/@y4le/nwords');
   const manifest = JSON.parse(await readFile(join(packed, 'package.json'), 'utf8'));
   assert.equal(manifest.private, true); assert.equal(manifest.scripts, undefined);
-  assert.deepEqual(Object.keys(manifest.exports), ['./node', './web', './wasm']);
+  for (const name of ['./node', './web', './variable', './views', './bip39/node', './bip39/web', './bip39/wasm', './wasm']) {
+    assert(manifest.exports[name], `Missing public export ${name}`);
+  }
   assert.equal(JSON.parse(await readFile(join(packed, 'build.json'), 'utf8')).sourceCommit, report.sourceCommit);
   const wasm = await readFile(join(packed, 'wasm/nwords_js_bg.wasm'));
   assert.equal(hash(wasm), report.wasm.sha256);
+  const bip39Wasm = await readFile(join(packed, 'wasm/bip39/nwords_js_bip39_bg.wasm'));
+  assert.equal(hash(bip39Wasm), report.bip39Wasm.sha256);
+  const snapshots = {
+    adjective: 'adjective-animal/nwords-adjectives.txt', animal: 'adjective-animal/nwords-animals.txt',
+    color: 'adjective-animal/unique-names-generator-colors.txt', object: 'friendly-words/nwords-objects.txt',
+    descriptor: 'friendly-words/nwords-descriptors.txt', mood: 'semantic-wordlists/mood/nwords-moods.txt',
+    material: 'semantic-wordlists/material/nwords-materials.txt', shape: 'semantic-wordlists/shape/nwords-shapes.txt',
+    weather: 'semantic-wordlists/weather/nwords-weather.txt', plant: 'semantic-wordlists/plant/nwords-plants.txt',
+    food: 'semantic-wordlists/food/nwords-foods.txt', 'eff-long': 'eff-long/words.txt',
+  };
+  const wordsetNames = Object.keys(snapshots).sort();
+  assert.deepEqual((await readdir(join(project, 'src/wordsets'))).filter(name => name.endsWith('.js')).map(name => name.slice(0, -3)).sort(), wordsetNames);
+  assert.deepEqual(Object.keys(manifest.exports).filter(name => name.startsWith('./wordsets/')).map(name => name.slice(11)).sort(), wordsetNames);
+  for (const [name, source] of Object.entries(snapshots)) {
+    const identifier = name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+    const module = await import(pathToFileURL(join(packed, 'src/wordsets', `${name}.js`)).href);
+    const expected = (await readFile(join(root, 'tests/vectors', source), 'utf8')).trimEnd().split('\n');
+    assert.equal(module[identifier]?.name, name, `${name} canonical name`);
+    assert.deepEqual(module[identifier]?.words, expected, `${name} encoding order`);
+  }
   for (const name of ['LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE.md', 'notices/rust-1.94.0-stdlib.txt', 'notices/dependencies.json', 'notices/wordlists/licenses/unique-names-generator-MIT.LICENSE', 'notices/wordlists/licenses/glitch-friendly-words-MIT.LICENSE', 'notices/wordlists/licenses/eff-CC-BY-4.0.LICENSE', 'notices/wordlists/eff-long/README.md', 'notices/wordlists/licenses/python-mnemonic-MIT.LICENSE', 'examples/node.mjs', 'examples/browser.html']) assert((await readFile(join(packed, name))).length > 0, name);
-  for (const file of ['consumer.mjs', 'contract.mjs', 'types.ts']) await cp(join(project, 'test', file), join(temporary, file));
+  for (const file of ['consumer.mjs', 'contract.mjs', 'bip39.mjs', 'codec.mjs', 'types.ts']) await cp(join(project, 'test', file), join(temporary, file));
+  await cp(join(root, 'tests/vectors/bip39/trezor-python-mnemonic-vectors.json'), join(temporary, 'bip39-vectors.json'));
   await cp(join(root, 'tests/vectors/js/named-shapes.tsv'), join(temporary, 'vectors.tsv'));
   await cp(join(root, 'tests/vectors/variable/variable-v1.tsv'), join(temporary, 'variable-vectors.tsv'));
   const isolated = { env: { ...process.env, PATH: join(temporary, 'no-tools') } };
   for (const mode of ['contract', 'bytes', 'no-web-globals']) run(process.execPath, [join(temporary, 'consumer.mjs'), mode], isolated);
+  run(process.execPath, [join(temporary, 'bip39.mjs')], isolated);
+  run(process.execPath, [join(temporary, 'codec.mjs')], isolated);
+  const namesRoot = join(temporary, 'bundle-names');
+  await cp(join(project, 'test/consumers/names-only'), namesRoot, { recursive: true });
+  run(process.execPath, [join(project, 'node_modules/vite/bin/vite.js'), 'build', namesRoot, '--base', './', '--logLevel', 'error']);
+  const namesDist = join(namesRoot, 'dist');
+  const namesFiles = await readdir(namesDist, { recursive: true });
+  assert.equal(namesFiles.filter(name => name.endsWith('.wasm')).length, 0, 'Names-only bundle needs no WASM');
+  const namesJs = (await Promise.all(namesFiles.filter(name => name.endsWith('.js')).map(name => readFile(join(namesDist, name), 'utf8')))).join('\n');
+  assert(namesJs.includes('aardvark') && namesJs.includes('cardinal'), 'Names-only bundle includes selected words');
+  assert(!namesJs.includes('abacus') && !namesJs.includes('abandon'), 'Names-only bundle excludes EFF and BIP-39 lists');
+  const bundleRoot = join(temporary, 'bundle-bip39');
+  await cp(join(project, 'test/consumers/bip39-only'), bundleRoot, { recursive: true });
+  run(process.execPath, [join(project, 'node_modules/vite/bin/vite.js'), 'build', bundleRoot, '--base', './', '--logLevel', 'error']);
+  const bundleDist = join(bundleRoot, 'dist');
+  const bundleFiles = (await readdir(bundleDist, { recursive: true })).filter(name => name.endsWith('.wasm'));
+  assert.equal(bundleFiles.length, 1, 'BIP-39-only production bundle emits one WASM asset');
+  assert.equal(hash(await readFile(join(bundleDist, bundleFiles[0]))), report.bip39Wasm.sha256);
+  for (const file of (await readdir(bundleDist, { recursive: true })).filter(name => name.endsWith('.js'))) {
+    assert(!(await readFile(join(bundleDist, file))).includes(Buffer.from('aardvark')), 'Naming wordsets must be absent from BIP-39 bundle');
+  }
   await writeFile(join(temporary, 'consumer.cjs'), "const assert = require('node:assert/strict'); import('@y4le/nwords/node').then(async ({loadNwords}) => { assert.equal((await loadNwords()).encodeId(42n, {lists:['adjective','animal']}), 'able cardinal'); }).catch(error => { console.error(error); process.exitCode = 1; });\n");
   run(process.execPath, [join(temporary, 'consumer.cjs')], isolated);
   const cold = Array.from({ length: 5 }, () => JSON.parse(run(process.execPath, [join(temporary, 'consumer.mjs'), 'measure'], isolated)));
   for (const [module, resolution] of [['NodeNext', 'NodeNext'], ['ESNext', 'Bundler']]) run(process.execPath, [join(project, 'node_modules/typescript/bin/tsc'), '--noEmit', '--strict', '--skipLibCheck', 'false', '--target', 'ES2022', '--module', module, '--moduleResolution', resolution, '--lib', 'ES2022,DOM', '--types', 'node', '--typeRoots', join(project, 'node_modules/@types'), 'types.ts']);
-  run('wasm-pack', ['build', 'crates/nwords-web', '--target', 'web', '--release', '--no-opt', '--no-pack', '--out-dir', '../../site/pkg', '--locked'], { cwd: root, env: { ...process.env, RUSTUP_TOOLCHAIN: '1.94.0' } });
+  run(process.execPath, [join(project, 'scripts/build-site.mjs')], { cwd: root });
+  const siteDist = join(root, 'dist/site');
+  const siteFiles = await readdir(siteDist, { recursive: true });
+  const siteWasm = siteFiles.filter(name => name.endsWith('.wasm'));
+  assert.equal(siteWasm.length, 1, 'Combined site emits only one WASM');
+  assert.equal(hash(await readFile(join(siteDist, siteWasm[0]))), report.bip39Wasm.sha256, 'Site WASM is the BIP-39 artifact');
   let requests = 0;
+  let failBip39Once = false;
+  let failureGate;
   server = createServer(async (request, response) => {
     try {
       const path = new URL(request.url, 'http://localhost').pathname;
       if (path === '/') { response.setHeader('Content-Type', 'text/html'); response.end('<!doctype html><title>packed consumer</title>'); return; }
       if (path.endsWith('.wasm')) requests++;
+      if (failBip39Once && path.includes('nwords_js_bip39_bg') && path.endsWith('.wasm')) {
+        failBip39Once = false;
+        const gate = failureGate;
+        if (gate) { gate.started(); await gate.release; }
+        else await new Promise(resolve => setTimeout(resolve, 150));
+        response.writeHead(404); response.end(); return;
+      }
       if (path === '/missing.wasm') { response.writeHead(404); response.end(); return; }
       if (path === '/corrupt.wasm' || path === '/empty.wasm') { response.setHeader('Content-Type', 'application/wasm'); response.end(path === '/corrupt.wasm' ? Buffer.from([0, 1, 2]) : Buffer.from([0, 97, 115, 109, 1, 0, 0, 0])); return; }
       let base;
       let relative;
       if (path.startsWith('/package/')) { base = packed; relative = path.slice(9); }
-      else if (path.startsWith('/demo/')) { base = join(root, 'site'); relative = path.slice(6) || 'index.html'; }
+      else if (path.startsWith('/demo/')) { base = siteDist; relative = path.slice(6) || 'index.html'; }
       else { base = temporary; relative = path.slice(1); }
       const file = resolve(base, relative);
       if (!file.startsWith(base + sep)) throw new Error('Invalid path');
@@ -113,21 +180,93 @@ try {
     await page.close();
   }
   assert.deepEqual(warnings, [], 'Generated initialization must not emit deprecated-argument warnings');
-  const demo = await browser.newPage();
+  const failedMnemonicPage = await browser.newPage();
+  await failedMnemonicPage.goto(origin);
+  failBip39Once = true;
+  await failedMnemonicPage.evaluate(async () => {
+    const { loadBip39, NwordsLoadError } = await import('/package/src/bip39/web.js');
+    let rejected = false;
+    try { await loadBip39(); } catch (error) { rejected = error instanceof NwordsLoadError && error.code === 'LOAD_FAILED'; }
+    if (!rejected) throw new Error('Expected BIP-39 load failure');
+    if ((await loadBip39()).encodeEntropy(new Uint8Array(16)) !== 'abandon '.repeat(11) + 'about') {
+      throw new Error('BIP-39 retry failed');
+    }
+  });
+  await failedMnemonicPage.close();
+  const mnemonicPage = await browser.newPage();
+  await mnemonicPage.goto(origin);
+  const beforeBip39 = requests;
+  await mnemonicPage.evaluate(() => import('/package/src/bip39/web.js'));
+  assert.equal(requests, beforeBip39, 'Importing BIP-39 must not fetch WASM');
+  await mnemonicPage.evaluate(async () => {
+    const { loadBip39 } = await import('/package/src/bip39/web.js');
+    const codec = await loadBip39();
+    const phrase = codec.encodeEntropy(new Uint8Array(16));
+    if (phrase !== 'abandon '.repeat(11) + 'about' || codec.decodeMnemonic(phrase).length !== 16) {
+      throw new Error('Browser BIP-39 vector mismatch');
+    }
+  });
+  assert.equal(requests, beforeBip39 + 1, 'BIP-39 loads one WASM asset');
+  await mnemonicPage.close();
+  const bundlePage = await browser.newPage();
+  const bundleRequests = [];
+  bundlePage.on('request', request => bundleRequests.push(new URL(request.url()).pathname));
+  await bundlePage.goto(origin + '/bundle-bip39/dist/index.html');
+  await bundlePage.waitForFunction(() => document.querySelector('#phrase')?.textContent?.endsWith('about'));
+  assert.equal(await bundlePage.locator('#phrase').textContent(), 'abandon '.repeat(11) + 'about');
+  assert.equal(bundleRequests.filter(path => path.endsWith('.wasm')).length, 1);
+  assert(bundleRequests.every(path => path.startsWith('/bundle-bip39/dist/')), 'Bundle only requests its own assets');
+  await bundlePage.close();
+  const failedDemo = await browser.newPage();
+  const pageErrors = [];
+  failedDemo.on('pageerror', error => pageErrors.push(error.message));
+  await failedDemo.goto(origin + '/demo/');
+  const [typedEntropy, typedMnemonic] = JSON.parse(await readFile(join(temporary, 'bip39-vectors.json'), 'utf8')).english[1];
+  const started = Promise.withResolvers();
+  const released = Promise.withResolvers();
+  failureGate = { started: started.resolve, release: released.promise };
+  failBip39Once = true;
+  try {
+    await failedDemo.click('#bitcoin-tab');
+    let timer;
+    try {
+      await Promise.race([started.promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('BIP-39 asset request did not start')), 5000); })]);
+    } finally { clearTimeout(timer); }
+    await failedDemo.fill('#entropy-value', typedEntropy);
+  } finally { released.resolve(); failureGate = undefined; failBip39Once = false; }
+  await failedDemo.waitForFunction(() => document.querySelector('#bitcoin-status')?.textContent?.includes('LOAD_FAILED'));
+  assert.deepEqual(pageErrors, [], 'Typing during BIP-39 load failure creates no unhandled rejection');
+  await failedDemo.click('#names-tab');
+  await failedDemo.click('#bitcoin-tab');
+  await failedDemo.waitForFunction(expected => document.querySelector('#mnemonic-value')?.value === expected, typedMnemonic);
+  assert.equal(await failedDemo.inputValue('#entropy-value'), typedEntropy);
+  await failedDemo.close();
+  const demo = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const demoRequests = [];
+  demo.on('request', request => demoRequests.push(request.url()));
   await demo.goto(origin + '/demo/');
-  await demo.waitForFunction(() => document.querySelector('#encode-button')?.disabled === false);
-  await demo.selectOption('#preset-select', 'dec6');
-  await demo.fill('#id-input', '42');
-  await demo.click('#encode-button');
-  assert.equal(await demo.inputValue('#phrase-input'), 'abandon aim');
-  await demo.click('#decode-button');
-  assert.equal(await demo.locator('#id-output strong').first().textContent(), '42');
-  await demo.fill('#text-input', 'hello');
-  await demo.click('#text-encode-button');
-  await demo.fill('#text-input', '');
-  await demo.click('#text-decode-button');
-  assert.equal(await demo.inputValue('#text-input'), 'hello');
-  const qualification = { schema: 'nwords.qualification.v1', sourceCommit: report.sourceCommit, dirty: report.dirty, development: report.development, tarballSha256: report.tarballSha256, wasm: report.wasm, packedBytes: report.packedBytes, unpackedBytes: report.unpackedBytes, runtime: { node: process.version, platform: process.platform, arch: process.arch, chromium: browser.version() }, checks: ['Node loader without lazy web globals', 'installed ESM', 'CJS dynamic import', 'tool-free consumers', 'direct WASM ABI', 'NodeNext and Bundler declarations', 'Chromium contract and loader recovery', 'existing demo'], coldNodeSamples: cold };
+  await demo.waitForFunction(() => document.querySelector('#names-phrase')?.value === 'able cardinal');
+  assert(!demoRequests.some(url => url.endsWith('.wasm')), 'Opening Names does not fetch BIP-39');
+  await demo.fill('#names-phrase', 'able cardinal');
+  assert.equal(await demo.inputValue('#names-value'), '42');
+  await demo.selectOption('#names-view', 'bits');
+  assert.equal(await demo.inputValue('#names-value'), '01011');
+  await demo.fill('#names-value', '00000000');
+  assert.equal(await demo.inputValue('#names-phrase'), 'able rooster');
+  await demo.selectOption('#names-view', 'text');
+  await demo.fill('#names-value', 'hello');
+  await demo.fill('#names-phrase', await demo.inputValue('#names-phrase'));
+  assert.equal(await demo.inputValue('#names-value'), 'hello');
+  await demo.click('#bitcoin-tab');
+  await demo.waitForFunction(() => document.querySelector('#mnemonic-value')?.value.endsWith('about'));
+  assert.equal(await demo.inputValue('#mnemonic-value'), 'abandon '.repeat(11) + 'about');
+  assert.equal(demoRequests.filter(url => url.endsWith('.wasm')).length, 1);
+  await demo.fill('#mnemonic-value', 'abandon '.repeat(12).trim());
+  assert.match(await demo.locator('#bitcoin-status').textContent(), /INVALID_CHECKSUM/);
+  assert.equal(await demo.evaluate(() => location.search + location.hash), '');
+  assert.deepEqual(await demo.evaluate(() => [localStorage.length, sessionStorage.length]), [0, 0]);
+  assert(demoRequests.every(url => url.startsWith(origin + '/demo/')), 'Site makes no third-party requests');
+  const qualification = { schema: 'nwords.qualification.v1', sourceCommit: report.sourceCommit, dirty: report.dirty, development: report.development, tarballSha256: report.tarballSha256, wasm: report.wasm, bip39Wasm: report.bip39Wasm, packedBytes: report.packedBytes, unpackedBytes: report.unpackedBytes, bundles: { namesOnly: await assetSizes(namesDist), bip39Only: await assetSizes(bundleDist), site: await assetSizes(siteDist) }, runtime: { node: process.version, platform: process.platform, arch: process.arch, chromium: browser.version() }, checks: ['Node loader without lazy web globals', 'installed ESM', 'CJS dynamic import', 'tool-free consumers', 'direct WASM ABI', 'NodeNext and Bundler declarations', 'Chromium contract and loader recovery', 'English BIP-39 reference vectors in packed Node and Chromium', 'variable-v1 parity and wide bit views', 'names-only Vite bundle', 'BIP-39-only Vite bundle', 'combined site on narrow viewport'], coldNodeSamples: cold };
   assertSource();
   await writeFile(join(root, 'dist/package-qualification.json'), JSON.stringify(qualification, null, 2) + '\n');
   console.log(JSON.stringify(qualification, null, 2));

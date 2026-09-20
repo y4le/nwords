@@ -17,17 +17,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+          cache: npm
+          cache-dependency-path: packages/nwords-js/package-lock.json
+      - run: npm install --global npm@11.11.0
+      - uses: dtolnay/rust-toolchain@1.94.0
         with:
           targets: wasm32-unknown-unknown
       - name: Install wasm-pack
         run: cargo install wasm-pack --locked --version 0.14.0
-      - name: Build static WASM demo
-        run: wasm-pack build crates/nwords-web --target web --out-dir ../../site/pkg --no-pack
+      - run: npm ci --ignore-scripts
+        working-directory: packages/nwords-js
+      - run: npx playwright install --with-deps chromium
+        working-directory: packages/nwords-js
+      - name: Build and test package and production site
+        run: npm run build && npm test
+        working-directory: packages/nwords-js
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: site
+          path: dist/site
 
   deploy:
     needs: build
