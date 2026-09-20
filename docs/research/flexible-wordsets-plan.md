@@ -7,10 +7,10 @@ EFF landscape research. Existing fixed IDs and `word-bytes-v1` remain stable.
 
 1. Freeze EFF long in original dice-roll order with attribution, feature flags,
    and named-list CLI support.
-2. Implement `variable-v1` in Rust with independent tier-enumeration tests.
-3. Add `radix-bytes-v1` for reversible bytes with arbitrary mixed dictionaries.
-4. Add exact Unicode custom-list construction and indexed lookup, preserving
+2. Add exact Unicode custom-list construction and indexed lookup, preserving
    the existing strict CLI constructor.
+3. Implement `variable-v1` in Rust with independent tier-enumeration tests.
+4. Add `radix-bytes-v1` for reversible bytes with arbitrary mixed dictionaries.
 5. Expose built-in/custom fixed and variable formats, framed bytes/text, and
    platform-random generation through the Node/browser package. Include owned
    prepared codecs, checked transport, declarations and consumer tests.

@@ -1,0 +1,147 @@
+{
+  "schema": "nwords.wordsets-benchmark.v1",
+  "node": "v24.14.1",
+  "arch": "arm64",
+  "date": "2026-09-20T04:29:46.590Z",
+  "sourceCommit": "4004c0ac5836fa6327a6d1de68be10282957744f",
+  "dirty": true,
+  "module": "/home/yale/dev/nwords-performance/dist/nwords-js/src/node.js",
+  "build": {
+    "schema": "nwords.build.v1",
+    "sourceCommit": "d768fe227ba830906e226c0f194db612faddec39",
+    "dirty": false,
+    "development": false,
+    "tools": {
+      "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+      "cargo": "cargo 1.94.0 (85eff7c80 2026-01-15)",
+      "wasmPack": "wasm-pack 0.14.0",
+      "wasmBindgen": "0.2.120",
+      "node": "v24.14.1",
+      "npm": "11.11.0"
+    },
+    "rustflags": [
+      "--remap-path-prefix=<workspace>/=/nwords/",
+      "--remap-path-prefix=<cargo-home>=/cargo"
+    ],
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-release; wasm-opt disabled",
+      "profile": "baseline",
+      "optimizer": null,
+      "bytes": 139984,
+      "sha256": "f5385e3f8591bf58ba8bed9f3677d3865bfac9ab70a6c9715bee55d203396b55"
+    },
+    "cargoLockSha256": "ca3425a79ecc37e8fb025059632fa1e4f59b38aaa9c7d12d1187cc9d7c8bc1ef",
+    "tarball": "/home/yale/dev/nwords-performance/dist/tarballs/y4le-nwords-0.1.0.tgz",
+    "packedBytes": 102929,
+    "unpackedBytes": 747565,
+    "integrity": "sha512-RL7UCrJ/9iMoATuldfA/d0JuWiVd6XV6lXi0W2lFdEt44u+tKerTfafMb4bd1oVkMFo9e88s0df+4pVSe5jS1w==",
+    "tarballSha256": "652f85b11ad36b873b4252ba2c8a559daf8bb440523461ef49a056920d394528"
+  },
+  "cpuAffinity": "pid 350's current affinity list: 19",
+  "wrapperSha256": "182b032fd8453c0ec199963a6ace825f668012c2734864bb7536d0504df4fe0a",
+  "sink": 224,
+  "rows": [
+    {
+      "name": "animal-u32/prepared-encode",
+      "wordCount": [
+        4
+      ],
+      "iterations": 20000,
+      "medianNs": 261.5191500000002,
+      "q1Ns": 259.9783500000001,
+      "q3Ns": 419.7433000000004,
+      "samplesNs": [
+        891.0301500000002,
+        496.13455,
+        419.7433000000004,
+        270.1296999999997,
+        259.4679499999998,
+        260.2902999999998,
+        259.9783500000001,
+        258.4702999999998,
+        261.5191500000002
+      ]
+    },
+    {
+      "name": "animal-u32/prepared-decode",
+      "wordCount": [
+        4
+      ],
+      "iterations": 20000,
+      "medianNs": 323.52690000000024,
+      "q1Ns": 321.8180000000004,
+      "q3Ns": 337.6631500000002,
+      "samplesNs": [
+        878.8499000000002,
+        371.5871,
+        337.6631500000002,
+        323.52690000000024,
+        322.0740500000005,
+        321.8180000000004,
+        323.72450000000015,
+        321.768449999999,
+        321.614000000001
+      ]
+    },
+    {
+      "name": "animal-u32/stateless-encode",
+      "wordCount": [
+        4
+      ],
+      "iterations": 20000,
+      "medianNs": 597.7942999999982,
+      "q1Ns": 595.3782499999988,
+      "q3Ns": 603.9912499999986,
+      "samplesNs": [
+        933.4094499999993,
+        870.5224999999998,
+        601.3375499999995,
+        595.3454500000006,
+        596.3654999999989,
+        597.7942999999982,
+        595.3782499999988,
+        594.3366000000026,
+        603.9912499999986
+      ]
+    },
+    {
+      "name": "niceware-bytes-16/encode",
+      "wordCount": 8,
+      "iterations": 20000,
+      "medianNs": 176.81895000000054,
+      "q1Ns": 176.54375000000186,
+      "q3Ns": 178.49020000000166,
+      "samplesNs": [
+        273.0177999999995,
+        391.0459000000003,
+        176.81895000000054,
+        178.49020000000166,
+        177.12455000000205,
+        176.35574999999903,
+        176.54375000000186,
+        176.76774999999907,
+        176.52934999999843
+      ]
+    },
+    {
+      "name": "niceware-bytes-16/decode",
+      "wordCount": 8,
+      "iterations": 20000,
+      "medianNs": 722.9201499999988,
+      "q1Ns": 722.2041499999989,
+      "q3Ns": 723.4969499999977,
+      "samplesNs": [
+        1117.1436999999999,
+        722.2041499999989,
+        723.3513999999985,
+        723.4969499999977,
+        722.6489499999985,
+        726.6730499999994,
+        722.9201499999988,
+        720.84495,
+        719.6960999999988
+      ]
+    }
+  ]
+}

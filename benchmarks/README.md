@@ -89,8 +89,8 @@ cargo clippy --manifest-path benchmarks/rust/Cargo.toml --all-targets -- -D warn
 | Diagnostics | RNG one/two draws; construction; native JSON binding; first mnemonic decode | RNG one/two draws; Node crypto+nwords; fresh-process import/init/first op |
 
 The three-word native nwords row is **positional encoding using the BIP-39 list**,
-not a wallet mnemonic or checksum benchmark. The JS package currently exposes only
-adjective/animal/color, so four words are needed for a u32. No BIP-39 entropy/seed,
+not a wallet mnemonic or checksum benchmark. The JS package used in that historical comparison exposed only
+adjective/animal/color, so four words were needed for a u32. No BIP-39 entropy/seed,
 text, networking, collision registry, or allocation-uniqueness guarantee is tested.
 
 Names use hyphens in Rust (a Formatter for nwords) and spaces in JS. No post-process
@@ -177,3 +177,10 @@ virtual environment and run `plot.py` with the same input and `--output chart.sv
 Plotting dependencies do not enter either measured runtime.
 
 `python3 benchmarks/test_report.py` checks process-level aggregation and rejects incomplete samples.
+
+## Flexible wordsets extension
+
+[Focused measurements](results/wordsets/README.md) cover EFF IDs, variable IDs,
+prepared custom lists and cyclic byte encoding, plus Niceware (JS) and mnemonic
+(Rust) sixteen-byte comparisons. These are separate from the original
+multi-process suite; formats, framing and output word counts differ.

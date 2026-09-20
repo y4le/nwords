@@ -248,3 +248,10 @@ facade structured-clone rejection, idempotent disposal and use-after-disposal gu
 Benchmark processes validate all 4096 prepared four-word results against native phrases
 and prepared pair results against the stateless codec before
 timing; preparation/destruction has its own diagnostic cell.
+
+## Flexible wordset extensions
+
+Require the coverage enumerated in [flexible-wordsets-plan.md](flexible-wordsets-plan.md),
+including independent tier ranking, numerical/resource bounds, byte canonicality,
+custom Unicode ordering, and packed Node/browser parity. Existing fixed vectors
+and legacy byte vectors remain regression gates.

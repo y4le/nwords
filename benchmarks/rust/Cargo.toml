@@ -7,7 +7,7 @@ publish = false
 [workspace]
 
 [dependencies]
-nwords = { path = "../../crates/nwords", default-features = false, features = ["std", "named", "positional", "stats", "bip39-english"] }
+nwords = { path = "../../crates/nwords", default-features = false, features = ["std", "named", "positional", "stats", "bip39-english", "eff-long", "word-bytes"] }
 nwords-js = { path = "../../crates/nwords-js" }
 names = { version = "=0.14.0", default-features = false }
 petname = { version = "=3.2.0", default-features = false, features = ["default-rng", "default-words"] }
