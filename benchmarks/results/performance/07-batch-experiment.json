@@ -1,0 +1,5978 @@
+{
+  "metadata": {
+    "sourceCommit": "cdb5633b0b275f91d70a4a32342ba5fcf4cf4919",
+    "development": true,
+    "artifact": {
+      "schema": "nwords.build.v1",
+      "sourceCommit": "cdb5633b0b275f91d70a4a32342ba5fcf4cf4919",
+      "dirty": true,
+      "development": true,
+      "tools": {
+        "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+        "cargo": "cargo 1.94.0 (85eff7c80 2026-01-15)",
+        "wasmPack": "wasm-pack 0.14.0",
+        "wasmBindgen": "0.2.120",
+        "node": "v24.14.1",
+        "npm": "11.11.0"
+      },
+      "rustflags": [
+        "--remap-path-prefix=<workspace>/=/nwords/",
+        "--remap-path-prefix=<cargo-home>=/cargo"
+      ],
+      "wasm": {
+        "target": "web",
+        "optimization": "rustc-release; wasm-opt disabled",
+        "profile": "baseline",
+        "optimizer": null,
+        "bytes": 147208,
+        "sha256": "33239a0373101e93d8dd815af67afd61024e66f2e1650efb35c3b48d5aa74e49"
+      },
+      "cargoLockSha256": "ca3425a79ecc37e8fb025059632fa1e4f59b38aaa9c7d12d1187cc9d7c8bc1ef",
+      "tarball": "/tmp/nwords-performance-next/dist/tarballs/y4le-nwords-0.1.0.tgz",
+      "packedBytes": 106676,
+      "unpackedBytes": 760612,
+      "integrity": "sha512-rrVoa/bdtSfsNLhb7VCz0CTK6kO/IyNstBGGgkSLfNFAiSpWhbAUtoatX6kdeiHf6WZuJ/5Iw7sXMyKI+mZ4VQ==",
+      "tarballSha256": "7ef8223f5ff6c1f029396d83511e21f4488ec3780e266b1375ff60e86628edc5"
+    },
+    "qualification": {
+      "schema": "nwords.qualification.v1",
+      "sourceCommit": "cdb5633b0b275f91d70a4a32342ba5fcf4cf4919",
+      "dirty": true,
+      "development": true,
+      "tarballSha256": "7ef8223f5ff6c1f029396d83511e21f4488ec3780e266b1375ff60e86628edc5",
+      "wasm": {
+        "target": "web",
+        "optimization": "rustc-release; wasm-opt disabled",
+        "profile": "baseline",
+        "optimizer": null,
+        "bytes": 147208,
+        "sha256": "33239a0373101e93d8dd815af67afd61024e66f2e1650efb35c3b48d5aa74e49"
+      },
+      "packedBytes": 106676,
+      "unpackedBytes": 760612,
+      "runtime": {
+        "node": "v24.14.1",
+        "platform": "linux",
+        "arch": "arm64",
+        "chromium": "153.0.8010.12"
+      },
+      "checks": [
+        "Node loader without lazy web globals",
+        "installed ESM",
+        "CJS dynamic import",
+        "tool-free consumers",
+        "direct WASM ABI",
+        "NodeNext and Bundler declarations",
+        "Chromium contract and loader recovery",
+        "existing demo"
+      ],
+      "coldNodeSamples": [
+        {
+          "importMs": 2.5382360000000013,
+          "initializationMs": 2.0374139999999983,
+          "totalMs": 5.422491000000001
+        },
+        {
+          "importMs": 2.4391299999999987,
+          "initializationMs": 1.5816489999999988,
+          "totalMs": 4.882435999999998
+        },
+        {
+          "importMs": 2.540027000000002,
+          "initializationMs": 1.8954770000000032,
+          "totalMs": 5.299705000000003
+        },
+        {
+          "importMs": 2.236007999999998,
+          "initializationMs": 1.5990579999999994,
+          "totalMs": 4.696546999999999
+        },
+        {
+          "importMs": 2.7658699999999996,
+          "initializationMs": 1.752707000000001,
+          "totalMs": 5.4674510000000005
+        }
+      ]
+    },
+    "nativeReferenceSha256": "10b1bb29ecb086f78f6a77e809fc58bb7d75568c5456c9e1cbafaebf5ce31ee0",
+    "fixtureSha256": "d07e4815bf2252c114e41a99ec5a9ffeed12dcd977abe1ed2eb35817691e347d",
+    "cpuInfo": "Architecture:                         aarch64\nCPU op-mode(s):                       64-bit\nByte Order:                           Little Endian\nCPU(s):                               20\nOn-line CPU(s) list:                  0-19\nVendor ID:                            ARM\nModel name:                           Cortex-X925\nModel:                                1\nThread(s) per core:                   1\nCore(s) per socket:                   10\nSocket(s):                            1\nStepping:                             r0p1\nCPU(s) scaling MHz:                   109%\nCPU max MHz:                          4004.0000\nCPU min MHz:                          1378.0000\nBogoMIPS:                             2000.00\nFlags:                                fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint svei8mm svebf16 i8mm bf16 dgh bti ecv afp wfxt\nModel name:                           Cortex-A725\nModel:                                1\nThread(s) per core:                   1\nCore(s) per socket:                   10\nSocket(s):                            1\nStepping:                             r0p1\nCPU(s) scaling MHz:                   112%\nCPU max MHz:                          2860.0000\nCPU min MHz:                          338.0000\nBogoMIPS:                             2000.00\nFlags:                                fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint svei8mm svebf16 i8mm bf16 dgh bti ecv afp wfxt\nL1d cache:                            1.3 MiB (20 instances)\nL1i cache:                            1.3 MiB (20 instances)\nL2 cache:                             25 MiB (20 instances)\nL3 cache:                             24 MiB (2 instances)\nNUMA node(s):                         1\nNUMA node0 CPU(s):                    0-19\nVulnerability Gather data sampling:   Not affected\nVulnerability Itlb multihit:          Not affected\nVulnerability L1tf:                   Not affected\nVulnerability Mds:                    Not affected\nVulnerability Meltdown:               Not affected\nVulnerability Mmio stale data:        Not affected\nVulnerability Reg file data sampling: Not affected\nVulnerability Retbleed:               Not affected\nVulnerability Spec rstack overflow:   Not affected\nVulnerability Spec store bypass:      Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:             Mitigation; __user pointer sanitization\nVulnerability Spectre v2:             Not affected\nVulnerability Srbds:                  Not affected\nVulnerability Tsx async abort:        Not affected\n",
+    "roundLoad": [
+      {
+        "round": 0,
+        "before": [
+          12.38720703125,
+          12.361328125,
+          11.73681640625
+        ],
+        "cpuTicksBefore": {
+          "total": 473546954,
+          "idle": 55470061
+        },
+        "after": [
+          12.6123046875,
+          12.45751953125,
+          11.80126953125
+        ],
+        "cpuTicksAfter": {
+          "total": 473551153,
+          "idle": 55470062
+        }
+      },
+      {
+        "round": 1,
+        "before": [
+          12.6123046875,
+          12.45751953125,
+          11.80126953125
+        ],
+        "cpuTicksBefore": {
+          "total": 473551153,
+          "idle": 55470062
+        },
+        "after": [
+          14.51953125,
+          12.90234375,
+          11.9755859375
+        ],
+        "cpuTicksAfter": {
+          "total": 473555356,
+          "idle": 55470062
+        }
+      },
+      {
+        "round": 2,
+        "before": [
+          14.51953125,
+          12.90234375,
+          11.9755859375
+        ],
+        "cpuTicksBefore": {
+          "total": 473555356,
+          "idle": 55470062
+        },
+        "after": [
+          12.921875,
+          12.69921875,
+          11.95068359375
+        ],
+        "cpuTicksAfter": {
+          "total": 473559554,
+          "idle": 55470062
+        }
+      }
+    ],
+    "cpu": 19,
+    "rounds": 3,
+    "samplesPerProcess": 3,
+    "warmupMs": 100,
+    "targetSampleMs": 100,
+    "startedUtc": "2026-09-20T00:53:10Z",
+    "diffSha256": "51a3be3187183427f9ff718104082af0b95f71c4f70c717611df18eca258f221",
+    "harnessHashes": {
+      "/tmp/nwords-batch-experiment.py": "46bfe1d06096f9ab415002ab2f801ea9918808fcc3c00b45104ab30446b893f7",
+      "/tmp/nwords-performance-next/benchmarks/js/suite.mjs": "d01f4bd8a83180d33841f194baac76c437f6c968d8feb1514db091191d940384",
+      "/tmp/nwords-performance-next/benchmarks/js/node.mjs": "0cdeab0f5edc982aaf97d486e9997fda2783016eb86fc4b7e4f7137ec77cd7ad",
+      "/tmp/nwords-performance-next/benchmarks/js/browser.mjs": "f9a319df6aac8b0fe4a380a3a3928dd4e21baa1c03679c1d28ed34613d450cc7"
+    },
+    "completedUtc": "2026-09-20T00:55:16Z"
+  },
+  "records": [
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 157800783.00000003,
+      "nsPerOp": 601.9622154235841,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 157837808,
+      "nsPerOp": 602.1034545898438,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 157806430.99999997,
+      "nsPerOp": 601.9837608337401,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 3894741166
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 524288,
+      "elapsedNs": 147002986.99999997,
+      "nsPerOp": 280.38594627380365,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 524288,
+      "elapsedNs": 147059756,
+      "nsPerOp": 280.49422454833984,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 524288,
+      "elapsedNs": 147253150,
+      "nsPerOp": 280.863094329834,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 373667616
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 32768,
+      "elapsedNs": 143376596.99999994,
+      "nsPerOp": 4375.506500244139,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 32768,
+      "elapsedNs": 143529974.00000003,
+      "nsPerOp": 4380.18719482422,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 32768,
+      "elapsedNs": 143609543.00000003,
+      "nsPerOp": 4382.615447998048,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 368434176
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 158000000,
+      "nsPerOp": 602.72216796875,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 157900000.5722046,
+      "nsPerOp": 602.3407004249748,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 158100000.38146973,
+      "nsPerOp": 603.103639150504,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2023524777
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 32768,
+      "elapsedNs": 195557892.9999999,
+      "nsPerOp": 5967.953277587888,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 32768,
+      "elapsedNs": 195672293.99999997,
+      "nsPerOp": 5971.444519042968,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 32768,
+      "elapsedNs": 195882616.99999988,
+      "nsPerOp": 5977.8630676269495,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 360060672
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 163699999.80926514,
+      "nsPerOp": 624.4659416552167,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 159300000.19073486,
+      "nsPerOp": 607.6812751416583,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 158399999.61853027,
+      "nsPerOp": 604.2480454198085,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 176366928
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 135199308.00000003,
+      "nsPerOp": 8251.910888671877,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 134626903.0000001,
+      "nsPerOp": 8216.9740600586,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 134431108.00000012,
+      "nsPerOp": 8205.023681640632,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 985160096
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 542000000,
+      "nsPerOp": 132324.21875,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 536399999.6185303,
+      "nsPerOp": 130957.03115686774,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 536500000,
+      "nsPerOp": 130981.4453125,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 107199999.80926514,
+      "nsPerOp": 408.93554614740424,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 106699999.80926514,
+      "nsPerOp": 407.02819751459174,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 107199999.80926514,
+      "nsPerOp": 408.93554614740424,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 181600368
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 283830810.00000006,
+      "nsPerOp": 69294.63134765626,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 283753240.9999999,
+      "nsPerOp": 69275.6936035156,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 284132861.00000006,
+      "nsPerOp": 69368.37426757814,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 506800000.19073486,
+      "nsPerOp": 123730.46879656613,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 564000000,
+      "nsPerOp": 137695.3125,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 498699999.80926514,
+      "nsPerOp": 121752.92964093387,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 379735152.9999999,
+      "nsPerOp": 92708.7775878906,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 382647488.00000006,
+      "nsPerOp": 93419.79687500001,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 380075157.00000024,
+      "nsPerOp": 92791.78637695318,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 104400000.57220459,
+      "nsPerOp": 6372.070347424597,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 103599999.42779541,
+      "nsPerOp": 6323.242152575403,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 103800000.19073486,
+      "nsPerOp": 6335.449230391532,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 184217088
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 535994400.00000006,
+      "nsPerOp": 130858.00781250001,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 535502459.0000003,
+      "nsPerOp": 130737.90502929695,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 536113441.9999998,
+      "nsPerOp": 130887.0708007812,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 439164720.00000024,
+      "nsPerOp": 107217.94921875006,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 439852104.00000006,
+      "nsPerOp": 107385.76757812501,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 438746060.0000002,
+      "nsPerOp": 107115.73730468754,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 447899999.6185303,
+      "nsPerOp": 109350.58584436774,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 449500000,
+      "nsPerOp": 109741.2109375,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 448900000.5722046,
+      "nsPerOp": 109594.72670219839,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 128600903.00000001,
+      "nsPerOp": 490.5735130310059,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 128243555.00000001,
+      "nsPerOp": 489.21033859252935,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 128536198.00000001,
+      "nsPerOp": 490.32668304443365,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 189973872
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 114199999.80926514,
+      "nsPerOp": 435.63842700677924,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 113599999.42779541,
+      "nsPerOp": 433.3496071922127,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 113600000.38146973,
+      "nsPerOp": 433.3496108301915,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2301142013
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 412600000.3814697,
+      "nsPerOp": 100732.42196813226,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 471800000.19073486,
+      "nsPerOp": 115185.54692156613,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 408699999.80926514,
+      "nsPerOp": 99780.27339093387,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 134799999.23706055,
+      "nsPerOp": 8227.539015933871,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 134600000.38146973,
+      "nsPerOp": 8215.332054533064,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 134500000,
+      "nsPerOp": 8209.228515625,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 3478315312
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 111899999.61853027,
+      "nsPerOp": 6829.833961091936,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 111200000.76293945,
+      "nsPerOp": 6787.109421566129,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 111199999.80926514,
+      "nsPerOp": 6787.109363358468,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 3478315312
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 0,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 125099999.42779541,
+      "nsPerOp": 7635.498011950403,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 124399999.61853027,
+      "nsPerOp": 7592.773414216936,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 0,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 124300000.19073486,
+      "nsPerOp": 7586.669933516532,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 175843584
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 113842648,
+      "nsPerOp": 434.2752380371094,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 113458148.00000004,
+      "nsPerOp": 432.80848693847673,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 113659398.00000001,
+      "nsPerOp": 433.57619476318365,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2717567867
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 0,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 109102548.99999996,
+      "nsPerOp": 6659.0911254882785,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 109084597.00000003,
+      "nsPerOp": 6657.995422363283,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 0,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 108924851.0000001,
+      "nsPerOp": 6648.245300292975,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2786972176
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 32768,
+      "elapsedNs": 142605309.99999997,
+      "nsPerOp": 4351.968688964843,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 32768,
+      "elapsedNs": 142224425,
+      "nsPerOp": 4340.345001220703,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 32768,
+      "elapsedNs": 142342635.0000001,
+      "nsPerOp": 4343.952484130862,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 368434176
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 444199999.80926514,
+      "nsPerOp": 108447.26557843387,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 445100000.3814697,
+      "nsPerOp": 108666.99228063226,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 445400000.5722046,
+      "nsPerOp": 108740.23451469839,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 283879548,
+      "nsPerOp": 69306.5302734375,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 283181044.0000002,
+      "nsPerOp": 69135.99707031254,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 283064274.99999994,
+      "nsPerOp": 69107.48901367186,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 134799642,
+      "nsPerOp": 8227.517211914062,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 134296964,
+      "nsPerOp": 8196.836181640625,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 134127650.9999999,
+      "nsPerOp": 8186.502136230462,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 985160096
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 135099999.4277954,
+      "nsPerOp": 8245.849574450403,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 134800000.19073486,
+      "nsPerOp": 8227.539074141532,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 134699999.80926514,
+      "nsPerOp": 8221.435535233468,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 3478315312
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 109325991.99999993,
+      "nsPerOp": 6672.729003906245,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 109677899.00000003,
+      "nsPerOp": 6694.207702636721,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 109518681.00000001,
+      "nsPerOp": 6684.489807128907,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2786972176
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 111300000.19073486,
+      "nsPerOp": 6793.212902266532,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 110899999.61853027,
+      "nsPerOp": 6768.798804841936,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 110699999.80926514,
+      "nsPerOp": 6756.591785233468,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 985160096
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 112800000.19073486,
+      "nsPerOp": 430.29785229009576,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 112199999.80926514,
+      "nsPerOp": 428.00903247552924,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 112199999.80926514,
+      "nsPerOp": 428.00903247552924,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 1054564405
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 160800000.19073486,
+      "nsPerOp": 613.4033210400958,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 160300000.19073486,
+      "nsPerOp": 611.4959724072833,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 160199999.80926514,
+      "nsPerOp": 611.1145012255292,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 638138551
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 524288,
+      "elapsedNs": 148748080.00000006,
+      "nsPerOp": 283.7144470214845,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 524288,
+      "elapsedNs": 148827232.0000001,
+      "nsPerOp": 283.8654174804689,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 524288,
+      "elapsedNs": 148868817.00000003,
+      "nsPerOp": 283.9447345733643,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 373144272
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 108300000.19073486,
+      "nsPerOp": 413.13171459478326,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 107699999.80926514,
+      "nsPerOp": 410.84289478021674,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 107500000,
+      "nsPerOp": 410.0799560546875,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 182647056
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 548000000,
+      "nsPerOp": 133789.0625,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 540799999.2370605,
+      "nsPerOp": 132031.24981373549,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 540700000.7629395,
+      "nsPerOp": 132006.83612376451,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 538595697,
+      "nsPerOp": 131493.09008789062,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 537786151.9999999,
+      "nsPerOp": 131295.44726562497,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 538535599.9999998,
+      "nsPerOp": 131478.41796874994,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 102500000,
+      "nsPerOp": 6256.103515625,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 102300000.19073486,
+      "nsPerOp": 6243.896496016532,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 102300000.19073486,
+      "nsPerOp": 6243.896496016532,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 184217088
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 129299999.23706055,
+      "nsPerOp": 7891.845656558871,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 128400000.57220459,
+      "nsPerOp": 7836.914097424597,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 129000000,
+      "nsPerOp": 7873.53515625,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 175843584
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 32768,
+      "elapsedNs": 194780670.99999997,
+      "nsPerOp": 5944.234344482421,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 32768,
+      "elapsedNs": 194573404.99999997,
+      "nsPerOp": 5937.909088134765,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 32768,
+      "elapsedNs": 194842944,
+      "nsPerOp": 5946.134765625,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 360060672
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 158002995.99999994,
+      "nsPerOp": 602.7335968017576,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 157947506.99999997,
+      "nsPerOp": 602.5219230651854,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 158038659.99999994,
+      "nsPerOp": 602.8696441650388,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 1054564405
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 505500000,
+      "nsPerOp": 123413.0859375,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 556500000,
+      "nsPerOp": 135864.2578125,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 489100000.3814697,
+      "nsPerOp": 119409.17978063226,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 438770288.0000002,
+      "nsPerOp": 107121.65234375004,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 438118712.9999998,
+      "nsPerOp": 106962.57641601558,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 437934455.00000006,
+      "nsPerOp": 106917.59155273439,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 111624288.00000003,
+      "nsPerOp": 425.8128662109376,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 111341246.00000007,
+      "nsPerOp": 424.73314666748075,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 111508878.99999999,
+      "nsPerOp": 425.3726158142089,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 1401585950
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 408299999.23706055,
+      "nsPerOp": 99682.61700123549,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 469300000.19073486,
+      "nsPerOp": 114575.19535906613,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 404599999.4277954,
+      "nsPerOp": 98779.29673530161,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 125195890.99999996,
+      "nsPerOp": 477.5844230651854,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 124888000.00000003,
+      "nsPerOp": 476.4099121093751,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 124813311,
+      "nsPerOp": 476.12499618530273,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 189450528
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 1,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 156600000.38146973,
+      "nsPerOp": 597.3815932520665,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 156699999.80926514,
+      "nsPerOp": 597.7630607958417,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 1,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 156800000.19073486,
+      "nsPerOp": 598.1445319775958,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 176366928
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 1,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 380136826.0000002,
+      "nsPerOp": 92806.8422851563,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 382492355.00000006,
+      "nsPerOp": 93381.92260742189,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 1,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 379469153.9999999,
+      "nsPerOp": 92643.83642578122,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 524288,
+      "elapsedNs": 145465581.00000003,
+      "nsPerOp": 277.45357704162603,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 524288,
+      "elapsedNs": 145468125,
+      "nsPerOp": 277.45842933654785,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 524288,
+      "elapsedNs": 145570542.99999994,
+      "nsPerOp": 277.65377616882313,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 373144272
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 107300000.19073486,
+      "nsPerOp": 409.31701732915826,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 106599999.42779541,
+      "nsPerOp": 406.6467263328377,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 106899999.61853027,
+      "nsPerOp": 407.791136240121,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 176890272
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 126083467.99999999,
+      "nsPerOp": 480.97026062011713,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 125668951.99999999,
+      "nsPerOp": 479.3890075683593,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 125661255.99999999,
+      "nsPerOp": 479.35964965820307,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 188927184
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 515100000.3814697,
+      "nsPerOp": 125756.83603063226,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 569199999.8092651,
+      "nsPerOp": 138964.84370343387,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 501500000,
+      "nsPerOp": 122436.5234375,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 529339023,
+      "nsPerOp": 129233.15991210938,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 529238655.0000001,
+      "nsPerOp": 129208.6560058594,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 530107704,
+      "nsPerOp": 129420.826171875,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 135500000,
+      "nsPerOp": 8270.263671875,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 134900000.5722046,
+      "nsPerOp": 8233.642613049597,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 135500000,
+      "nsPerOp": 8270.263671875,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 3478315312
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 378384647,
+      "nsPerOp": 92379.06420898438,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 380475293.9999998,
+      "nsPerOp": 92889.4760742187,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 378028468.0000002,
+      "nsPerOp": 92292.10644531254,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 287947705.99999994,
+      "nsPerOp": 70299.73291015624,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 287452757,
+      "nsPerOp": 70178.89575195312,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 287725544.0000001,
+      "nsPerOp": 70245.49414062503,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 134004354.99999997,
+      "nsPerOp": 8178.976745605467,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 133338699.00000001,
+      "nsPerOp": 8138.34832763672,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 133284633.99999999,
+      "nsPerOp": 8135.048461914062,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 985160096
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 32768,
+      "elapsedNs": 141717829,
+      "nsPerOp": 4324.884918212891,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 32768,
+      "elapsedNs": 141937174.9999999,
+      "nsPerOp": 4331.578826904294,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 32768,
+      "elapsedNs": 141770966.00000003,
+      "nsPerOp": 4326.50653076172,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 368434176
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 541399999.6185303,
+      "nsPerOp": 132177.73428186774,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 537200000.7629395,
+      "nsPerOp": 131152.34393626451,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 537000000,
+      "nsPerOp": 131103.515625,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 156352691.00000006,
+      "nsPerOp": 596.4381828308108,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 156044847,
+      "nsPerOp": 595.2638511657715,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 156184801,
+      "nsPerOp": 595.7977333068848,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2509354940
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 109821646.00000004,
+      "nsPerOp": 6702.98132324219,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 109775852.99999999,
+      "nsPerOp": 6700.18634033203,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 109721164.99999993,
+      "nsPerOp": 6696.848449707027,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2786972176
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 102000000,
+      "nsPerOp": 6225.5859375,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 101399999.61853027,
+      "nsPerOp": 6188.964820466936,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 101800000.19073486,
+      "nsPerOp": 6213.378917891532,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 184217088
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 113300000.19073486,
+      "nsPerOp": 432.20520092290826,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 113099999.42779541,
+      "nsPerOp": 431.4422585594002,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 113500000,
+      "nsPerOp": 432.9681396484375,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 3894741166
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 112000000,
+      "nsPerOp": 6835.9375,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 111699999.80926514,
+      "nsPerOp": 6817.626941483468,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-16/decode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 111700000.76293945,
+      "nsPerOp": 6817.626999691129,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 985160096
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 16384,
+      "elapsedNs": 129800000.19073486,
+      "nsPerOp": 7922.363292891532,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 16384,
+      "elapsedNs": 128600000.38146973,
+      "nsPerOp": 7849.121117033064,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 16384,
+      "elapsedNs": 128899999.61853027,
+      "nsPerOp": 7867.431617341936,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 175843584
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 111071147.00000006,
+      "nsPerOp": 423.70280075073265,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 110725847.00000004,
+      "nsPerOp": 422.3855857849123,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 110571414,
+      "nsPerOp": 421.79647064208984,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 4241762711
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 159199999.80926514,
+      "nsPerOp": 607.2998039599042,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 159199999.80926514,
+      "nsPerOp": 607.2998039599042,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-1/decode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 158699999.80926514,
+      "nsPerOp": 605.3924553270917,
+      "checksum": 561943548387776
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 638138551
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 444899999.6185303,
+      "nsPerOp": 108618.16396936774,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 447000000,
+      "nsPerOp": 109130.859375,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 445899999.6185303,
+      "nsPerOp": 108862.30459436774,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 432904756,
+      "nsPerOp": 105689.6376953125,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 432369102.0000001,
+      "nsPerOp": 105558.86279296878,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-loop/batch-256/decode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 432185212.0000001,
+      "nsPerOp": 105513.96777343753,
+      "checksum": 2247774193551104
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 2411045632
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 0,
+      "iterations": 262144,
+      "elapsedNs": 159699999.80926514,
+      "nsPerOp": 609.2071525927167,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 1,
+      "iterations": 262144,
+      "elapsedNs": 160199999.80926514,
+      "nsPerOp": 611.1145012255292,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-batch/batch-1/encode",
+      "sampleIndex": 2,
+      "iterations": 262144,
+      "elapsedNs": 160000000,
+      "nsPerOp": 610.3515625,
+      "checksum": 33494016
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 174273552
+    },
+    {
+      "kind": "metadata",
+      "runtime": "chromium",
+      "round": 2,
+      "version": "153.0.8010.12",
+      "assets": [
+        {
+          "path": "/deps/niceware/browser/niceware.js",
+          "bytes": 874306
+        },
+        {
+          "path": "/package/src/web.js",
+          "bytes": 585
+        },
+        {
+          "path": "/package/src/load.js",
+          "bytes": 2557
+        },
+        {
+          "path": "/package/src/errors.js",
+          "bytes": 685
+        },
+        {
+          "path": "/package/src/api.js",
+          "bytes": 4815
+        },
+        {
+          "path": "/deps/unique-names-generator/dist/index.m.js",
+          "bytes": 68631
+        },
+        {
+          "path": "/suite.mjs",
+          "bytes": 6544
+        },
+        {
+          "path": "/package/wasm/nwords_js_bg.wasm",
+          "bytes": 147208
+        },
+        {
+          "path": "/package/wasm/nwords_js.js",
+          "bytes": 18043
+        }
+      ],
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 0,
+      "iterations": 4096,
+      "elapsedNs": 403800000.19073486,
+      "nsPerOp": 98583.98442156613,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 1,
+      "iterations": 4096,
+      "elapsedNs": 463199999.80926514,
+      "nsPerOp": 113085.93745343387,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sample",
+      "runtime": "chromium",
+      "round": 2,
+      "case": "nwords-loop/batch-256/encode",
+      "sampleIndex": 2,
+      "iterations": 4096,
+      "elapsedNs": 398000000,
+      "nsPerOp": 97167.96875,
+      "checksum": 133976064
+    },
+    {
+      "kind": "sink",
+      "runtime": "chromium",
+      "value": 669880320
+    },
+    {
+      "kind": "metadata",
+      "runtime": "node",
+      "round": 2,
+      "idsChecksum": 8780367943559,
+      "uniqueNamesDefaultCapacity": 426710,
+      "dictionarySizes": [
+        749,
+        333
+      ],
+      "u32Words": {
+        "nwords": 4,
+        "niceware": 2
+      },
+      "meanChars": {
+        "nwords": 28.458984375,
+        "niceware": 17.516357421875
+      },
+      "example": {
+        "nwords": "aardvark aardvark aardvark cardinal",
+        "niceware": "a according"
+      }
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 0,
+      "iterations": 32768,
+      "elapsedNs": 194657360.00000003,
+      "nsPerOp": 5940.471191406251,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 1,
+      "iterations": 32768,
+      "elapsedNs": 194795697.00000003,
+      "nsPerOp": 5944.692901611329,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sample",
+      "runtime": "node",
+      "round": 2,
+      "case": "nwords-batch/batch-16/encode",
+      "sampleIndex": 2,
+      "iterations": 32768,
+      "elapsedNs": 194802113.0000001,
+      "nsPerOp": 5944.888702392581,
+      "checksum": 66988032
+    },
+    {
+      "kind": "sink",
+      "runtime": "node",
+      "value": 360060672
+    }
+  ]
+}
