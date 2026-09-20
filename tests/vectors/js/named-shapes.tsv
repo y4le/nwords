@@ -1,0 +1,14 @@
+# Source commit: c63efb502f9ece8e6e1517c933e6ddc6b67a5adb
+# case	lists	range (- means full capacity)	id	phrase
+pair-first	adjective,animal	-	0	able aardvark
+pair-middle	adjective,animal	-	42	able cardinal
+pair-last	adjective,animal	-	249416	zippy zebra
+triple-first	adjective,color,animal	-	0	able amaranth aardvark
+triple-middle	adjective,color,animal	-	43842	absolute jade parrotfish
+triple-last	adjective,color,animal	-	12969683	zippy yellow zebra
+different-order	color,adjective,animal	-	43842	amaranth comparable parrotfish
+narrow-first	adjective,animal	100	0	able aardvark
+narrow-last	adjective,animal	100	99	able ferret
+precision	animal,animal,animal,animal,animal,animal,animal	-	9007199254740993	anaconda mule python sawfish ocelot ferret newt
+u128-first	animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal	340282366920938463463374607431768211455	0	aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark aardvark
+u128-last	animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal,animal	340282366920938463463374607431768211455	340282366920938463463374607431768211454	alpaca weasel louse guppy wildcat marten porpoise sparrow earwig lion moth butterfly rook mink eagle swan

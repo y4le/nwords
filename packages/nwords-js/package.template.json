@@ -1,0 +1,15 @@
+{
+  "name": "@y4le/nwords",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Rust-backed named-shape ID encoding for Node and browsers.",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "engines": { "node": ">=24.14.1 <25" },
+  "exports": {
+    "./node": { "types": "./src/node.d.ts", "import": "./src/node.js" },
+    "./web": { "types": "./src/web.d.ts", "import": "./src/web.js" },
+    "./wasm": "./wasm/nwords_js_bg.wasm"
+  },
+  "files": ["src/", "wasm/", "examples/", "notices/", "README.md", "NOTICE.md", "LICENSE-MIT", "LICENSE-APACHE", "build.json"]
+}

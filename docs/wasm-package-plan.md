@@ -1,8 +1,12 @@
 # Reusable JavaScript / WASM package
 
-Planning proposal, 2026-09-19. This document defines a small next feature, not an implemented or
-published package. The immediate consumer is Murmur, a Node/TypeScript application that wants
-readable collaborator names without requiring users to install Rust or a separate executable.
+Plan recorded 2026-09-19; all four implementation steps are now complete. See the
+[qualification report](wasm-package-report.md) for the clean artifact, tests, measurements
+and Murmur integration. The package remains private and has not been published to a registry.
+
+The sections below preserve the original plan and its pre-implementation evidence limits.
+The immediate consumer is Murmur, a Node/TypeScript application that wants readable collaborator
+names without requiring users to install Rust or a separate executable.
 
 ## Outcome and boundary
 

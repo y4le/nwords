@@ -1,0 +1,13 @@
+{
+  "name": "nwords-comparison",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.14.1"
+  },
+  "devDependencies": {
+    "unique-names-generator": "4.7.1",
+    "niceware": "4.0.0",
+    "playwright": "1.63.0"
+  }
+}

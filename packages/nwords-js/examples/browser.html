@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>nwords named-shape example</title>
+<output id="phrase">Loading…</output>
+<script type="module">
+  // Serve this packed example over HTTP, preserving its package-relative layout.
+  import { loadNwords } from '../src/web.js';
+  const words = await loadNwords();
+  document.querySelector('#phrase').textContent = words.encodeId(42n, {
+    lists: ['adjective', 'animal'],
+  });
+</script>

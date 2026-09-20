@@ -6,6 +6,10 @@ helpers for dictionary size, word count, capacity, and accepted ID range.
 
 The implementation is dependency-light and forbids unsafe code in every crate.
 
+[Rust, Node and browser benchmarks](benchmarks/README.md) compare readable-name
+generation and reversible IDs with alternatives, including reproducible results
+and the differences between their word formats.
+
 ## Examples
 
 ### CLI ID Phrases
@@ -252,6 +256,19 @@ uploads `site/` as the Pages artifact.
 `wasm-bindgen` is the only web-demo runtime bridge dependency; it is used to
 call the Rust library from the static browser app without reimplementing the
 codec in JavaScript.
+
+## JavaScript / WASM package
+
+A private local `@y4le/nwords` tarball provides named-shape ID encoding for Node
+24.14.1 and browser ESM. It includes compiled WASM and needs no Rust tools at
+installation or runtime. See the [package API and build instructions](packages/nwords-js/README.md)
+and [implementation plan](docs/wasm-package-plan.md).
+
+```js
+import { loadNwords } from '@y4le/nwords/node';
+const words = await loadNwords();
+words.encodeId(42n, { lists: ['adjective', 'animal'] }); // 'able cardinal'
+```
 
 ## `no_std + alloc`
 
