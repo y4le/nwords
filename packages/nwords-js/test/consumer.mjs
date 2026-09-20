@@ -7,6 +7,11 @@ const mode = process.argv[2];
 for (const command of ['cargo', 'rustc', 'wasm-pack']) {
   assert.equal(spawnSync(command, ['--version']).error?.code, 'ENOENT', `${command} must be absent from consumer PATH`);
 }
+if (mode === 'no-web-globals') {
+  for (const name of ['Request', 'Response']) {
+    Object.defineProperty(globalThis, name, { configurable: true, get() { throw new Error(`Unexpected ${name} access`); } });
+  }
+}
 const begin = performance.now();
 const node = await import('@y4le/nwords/node');
 const imported = performance.now();
@@ -21,6 +26,9 @@ if (mode === 'measure') {
   const end = performance.now();
   assert.equal(api.encodeId(42n, shape), 'able cardinal');
   console.log(JSON.stringify({ importMs: imported - begin, initializationMs: end - start, totalMs: end - begin }));
+} else if (mode === 'no-web-globals') {
+  const api = await node.loadNwords();
+  assert.equal(api.encodeId(42n, shape), 'able cardinal');
 } else if (mode === 'bytes') {
   await Promise.all([
     fails(web.loadNwords({ source: new Uint8Array([0, 1, 2]) }), 'LOAD_FAILED'),

@@ -131,6 +131,7 @@ def main():
         output(['node', '-e', ''])
         records.append({'kind': 'cold-baseline', 'runtime': 'node', 'processWallMs': (time.perf_counter() - started) * 1000})
         collect([str(rust), 'cold-mnemonic'])
+        collect(['node', str(BENCH / 'js/startup.mjs'), str(package)])
     checksums = {record['idsChecksum'] for record in records if record['kind'] == 'metadata'}
     if len(checksums) != 1: raise RuntimeError('Languages did not benchmark the same ID dataset')
     if digest(BENCH / 'ids-u32.txt') != metadata['fixtureSha256']: raise RuntimeError('Fixture changed during measurement')

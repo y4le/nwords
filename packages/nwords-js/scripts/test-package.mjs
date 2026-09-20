@@ -42,7 +42,7 @@ try {
   for (const file of ['consumer.mjs', 'contract.mjs', 'types.ts']) await cp(join(project, 'test', file), join(temporary, file));
   await cp(join(root, 'tests/vectors/js/named-shapes.tsv'), join(temporary, 'vectors.tsv'));
   const isolated = { env: { ...process.env, PATH: join(temporary, 'no-tools') } };
-  for (const mode of ['contract', 'bytes']) run(process.execPath, [join(temporary, 'consumer.mjs'), mode], isolated);
+  for (const mode of ['contract', 'bytes', 'no-web-globals']) run(process.execPath, [join(temporary, 'consumer.mjs'), mode], isolated);
   await writeFile(join(temporary, 'consumer.cjs'), "const assert = require('node:assert/strict'); import('@y4le/nwords/node').then(async ({loadNwords}) => { assert.equal((await loadNwords()).encodeId(42n, {lists:['adjective','animal']}), 'able cardinal'); }).catch(error => { console.error(error); process.exitCode = 1; });\n");
   run(process.execPath, [join(temporary, 'consumer.cjs')], isolated);
   const cold = Array.from({ length: 5 }, () => JSON.parse(run(process.execPath, [join(temporary, 'consumer.mjs'), 'measure'], isolated)));
@@ -125,7 +125,7 @@ try {
   await demo.fill('#text-input', '');
   await demo.click('#text-decode-button');
   assert.equal(await demo.inputValue('#text-input'), 'hello');
-  const qualification = { schema: 'nwords.qualification.v1', sourceCommit: report.sourceCommit, dirty: report.dirty, development: report.development, tarballSha256: report.tarballSha256, wasm: report.wasm, packedBytes: report.packedBytes, unpackedBytes: report.unpackedBytes, runtime: { node: process.version, platform: process.platform, arch: process.arch, chromium: browser.version() }, checks: ['installed ESM', 'CJS dynamic import', 'tool-free consumers', 'direct WASM ABI', 'NodeNext and Bundler declarations', 'Chromium contract and loader recovery', 'existing demo'], coldNodeSamples: cold };
+  const qualification = { schema: 'nwords.qualification.v1', sourceCommit: report.sourceCommit, dirty: report.dirty, development: report.development, tarballSha256: report.tarballSha256, wasm: report.wasm, packedBytes: report.packedBytes, unpackedBytes: report.unpackedBytes, runtime: { node: process.version, platform: process.platform, arch: process.arch, chromium: browser.version() }, checks: ['Node loader without lazy web globals', 'installed ESM', 'CJS dynamic import', 'tool-free consumers', 'direct WASM ABI', 'NodeNext and Bundler declarations', 'Chromium contract and loader recovery', 'existing demo'], coldNodeSamples: cold };
   assertSource();
   await writeFile(join(root, 'dist/package-qualification.json'), JSON.stringify(qualification, null, 2) + '\n');
   console.log(JSON.stringify(qualification, null, 2));

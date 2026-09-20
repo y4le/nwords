@@ -305,3 +305,15 @@ assets therefore do not accumulate module records; failures during finalization
 still require a fresh attempt. The loader retains sanitized messages rather than
 attaching native causes that can contain caller-selected asset paths or URLs.
 Murmur retains bounded reason codes for diagnosis without exposing those causes.
+
+### Performance: initialize the already-compiled module directly
+
+The shared asynchronous loader still reads and compiles before importing a fresh
+WASM glue module. It then uses the glue's synchronous initializer on that compiled
+module, avoiding its generic URL/Request/Response path and Node's lazy web-global
+initialization. This does not expose a synchronous public loader or change source
+identity, concurrent initialization, sanitized errors, or retry behavior. Packed
+Node tests make Request/Response access fail to guard this invariant.
+
+Instantiation itself now runs synchronously inside the asynchronous promise chain.
+Compilation remains asynchronous and always precedes the `initSync` call.

@@ -1,6 +1,6 @@
 """Checks for statistical mistakes that could change benchmark conclusions."""
 import unittest
-from report import host_description, summarize
+from report import host_description, summarize, startup_summary
 
 
 class ProcessSummaryTests(unittest.TestCase):
@@ -21,6 +21,14 @@ class ProcessSummaryTests(unittest.TestCase):
         with self.assertRaises(ValueError): summarize(data)
         data = self.fixture(); data['metadata']['rounds'] = 4
         with self.assertRaises(ValueError): summarize(data)
+
+    def test_startup_modes_and_incomplete_probes(self):
+        normal = [{'kind': 'startup-probe', 'mode': 'normal', 'phases': {'load': value}} for value in range(30)]
+        control = [{'kind': 'startup-probe', 'mode': 'prewarm-web', 'phases': {'load': 1000}} for _ in range(30)]
+        self.assertEqual(startup_summary(normal + control)['load'], 14.5)
+        self.assertEqual(startup_summary(normal)['Instance'], 0)
+        self.assertIsNone(startup_summary([]))
+        with self.assertRaises(ValueError): startup_summary(normal[:-1])
 
     def test_host_label_uses_recorded_identity(self):
         meta = {'host': {'platform': 'example OS', 'machine': 'test arch', 'cpuAffinity': 19,

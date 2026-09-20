@@ -29,6 +29,14 @@ def summarize(data):
         result[key] = summary(values)
     return result
 
+def startup_summary(records):
+    probes = [row for row in records if row['kind'] == 'startup-probe' and row['mode'] == 'normal']
+    if not probes: return None
+    if len(probes) != 30: raise ValueError('Expected 30 normal instrumented startup probes')
+    return {phase: statistics.median(row['phases'].get(phase, 0) for row in probes)
+            for phase in ['publicImport', 'load', 'compile', 'instantiate', 'Instance', 'firstOperation']}
+
+
 def host_description(meta):
     host = meta['host']
     return (f"{host['platform']} ({host['machine']}), CPU affinity {host['cpuAffinity']}, "
@@ -104,6 +112,15 @@ def main():
         lines.append(f'| {label} | {sum(size for name, size in assets.items() if name.startswith(prefix)):,} |')
     lines += ['', f"The nwords tarball is {meta['artifact']['packedBytes']:,} compressed bytes, including licenses. Installed comparator package bytes (excluding transitives): " + ', '.join(f'{name} {size:,}' for name, size in meta['npmPackageBytes'].items()) + '. These package sizes are not comparable to the served-byte column.', '',
               '## All warm diagnostics and variability', '', '| Runtime / operation | Median ns/op | IQR | Min–max process median |', '|---|---:|---:|---:|']
+    probes = startup_summary(data['records'])
+    if probes:
+        diagnostic = ['## Instrumented Node loader phases', '',
+                      'A separate fresh-process probe observes the actual public loader. These timings include instrumentation overhead; the uninstrumented startup table remains the primary measurement. Load includes its component phases, so do not sum these medians. Zero means a path was not invoked.', '',
+                      '| Phase | Median ms |', '|---|---:|']
+        for phase, value in probes.items():
+            diagnostic.append(f'| {phase} | {value:.3f} |')
+        position = lines.index('## All warm diagnostics and variability')
+        lines[position:position] = diagnostic + ['']
     for (runtime, name), row in sorted(result.items()):
         lines.append(f"| {runtime} / {name} | {row['median']:,.1f} | {row['q1']:,.1f}–{row['q3']:,.1f} | {row['min']:,.1f}–{row['max']:,.1f} |")
     noisy = [f'{runtime}/{name}' for (runtime, name), row in sorted(result.items()) if (row['q3'] - row['q1']) > 0.25 * row['median']]
