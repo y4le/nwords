@@ -1,9 +1,18 @@
 # Rust and JavaScript codec performance
 
-This branch measures and reduces work in the Rust codec and its Node/browser
-package while preserving word order, phrase bytes, accepted ranges, exact integer
-handling, and typed errors. The experiments are recorded separately so reviewers
-can distinguish individual changes from their cumulative effect.
+Repeated calls using the new prepared codec reduce Node u32 encoding from
+963 to 276 ns and decoding from 1,803 to 381 ns (3.5× and 4.7×). Chromium improves
+from 1,011/2,650 ns to 401/414 ns (2.5× and 6.4×). These prepared timings exclude
+one-time shape setup. The existing stateless API also improves, to 603/718 ns in
+Node and 687/705 ns in Chromium. Native English-list decoding improves 7.6×.
+
+The loader change reduces Node initialization from 17.2 to 1.48 ms in its isolated
+stage, while retaining an asynchronous public API. The final prepared artifact
+initializes in 1.58 ms (4.62 ms including import and its first operation). The compiler experiments did not
+justify a different default. Word order, phrase bytes, accepted ranges, exact
+integers and typed errors remain covered by tests.
+
+![Incremental public API timings](performance-progress.svg)
 
 ## Measurement method
 
@@ -40,10 +49,49 @@ BIP-39 wallet mnemonic. Detailed reports contain IQRs and all diagnostic cells.
 | [05-lean-results](../benchmarks/results/performance/05-lean-results.md) | 83.5 / 251.7 | 603.4 / 699.1 | 698.5 / 669.9 | 213.3 |
 | [06-prepared](../benchmarks/results/performance/06-prepared.md) | 82.5 / 252.0 | 602.8 / 718.0 | 686.6 / 705.3 | 212.5 |
 
+### Repeated calls and remaining comparator gaps
+
+These rows all come from the final prepared-codec artifact. Times are ns per ID
+(or per name/setup for those rows), with process-median IQRs. Setup creates and
+disposes a two-word codec; other prepared rows reuse a codec created before timing.
+
+| Operation | Node median [IQR] | Chromium median [IQR] |
+|---|---:|---:|
+| Prepared u32 encode | 276.2 [274.5–277.4] | 400.9 [399.0–402.1] |
+| Prepared u32 decode | 380.8 [380.5–382.9] | 413.5 [412.8–414.7] |
+| Prepared pair setup + dispose | 405.7 [404.1–407.4] | 305.9 [305.5–307.6] |
+| Prepared name + Math.random | 238.2 [237.1–239.3] | 851.4 [847.6–854.1] |
+| unique-names-generator, shared lists | 163.4 [162.5–164.1] | 102.0 [101.9–102.1] |
+| niceware u32 encode | 105.1 [104.8–105.6] | 123.3 [123.1–123.6] |
+| niceware u32 decode | 525.7 [525.4–528.0] | 527.6 [525.3–528.1] |
+
+Using the warm medians, pair setup plus disposal amortizes over three encodes in
+both runtimes. This is a two-word estimate; four-word setup was not measured.
+
+The optimized package is not uniformly faster than the alternatives. Niceware
+encodes u32 faster with two words from a larger dictionary; prepared nwords decodes
+faster here with four animal words. UNG remains faster for random names, especially
+in Chromium. Those differences include grammar, integer conversion, RNG adapter
+and validation costs; they do not isolate a WASM crossing.
+
+For repeated use:
+
+```js
+import { loadNwords } from '@y4le/nwords/node';
+const words = await loadNwords();
+const codec = words.prepare({ lists: Array(4).fill('animal'), range: 1n << 32n });
+try {
+  const phrase = codec.encodeId(42n);
+  codec.decodePhrase(phrase); // 42n
+} finally {
+  codec.dispose();
+}
+```
+
 ## Change log and review
 
 The initial performance triage was challenged by Opus through Parley in the original
-checkout. Fable then checked the reusable-codec and ABI design against the original
+checkout. A separate planning consultation checked the reusable-codec and ABI design against the original
 package's ownership and validation contracts (`req_consult_0106d921ffcab5ee`).
 Every substantive implementation diff receives Opus review; mechanical result
 records follow measurements from committed source.
@@ -114,10 +162,30 @@ The optional prepare(shape) API snapshots a shape into a Rust-owned codec. Singl
 Detailed [measurements](../benchmarks/results/performance/06-prepared.md) and
 [raw observations](../benchmarks/results/performance/06-prepared.json) include all rounds.
 
+### 07-batch-experiment: Reject bounded array batching
+
+A reviewed, qualified prototype batches arrays of 1, 16 or 256 IDs through
+wasm-bindgen externrefs. Three fresh-process rounds per cell compare it with a
+prepared loop that materializes and consumes the same outputs. At 256 IDs,
+encoding is 34% slower in Node and 24% slower in Chromium; decoding is 22% and
+20% slower. The public API therefore keeps the prepared single-call methods.
+The [pilot report](../benchmarks/results/performance/07-batch-experiment.md) includes
+the raw measurements, exact prototype patch, qualification evidence and reproduction
+steps. Opus review: `req_review_diff_56d053ec890dfc67`.
+
+## Scope left for separate experiments
+
+Checked JsValue/BigInt input transport and a standalone pure-JavaScript codec were
+conditional follow-ups, and are not implemented or benchmarked here. The decimal
+input boundary still validates the complete u128 domain without wrapping. A second
+codec implementation would duplicate parsing and frozen-list contracts. The current
+results establish the useful prepared baseline and the remaining comparator gaps;
+they do not claim that either unmeasured alternative would be slower.
+
 ## Validation
 
-Required checks cover workspace formatting, Clippy, all-feature tests, the
-no-default-feature alloc build, and frozen vector checksums. Package qualification
+Workspace formatting, Clippy, all-feature tests, the no-default-feature alloc
+build, frozen vector checksums and report aggregation checks all pass. Package qualification
 installs the actual tarball and tests Node, CommonJS dynamic import, TypeScript
 NodeNext/Bundler declarations, Chromium, loader recovery and the existing demo.
 New tests accompany each changed contract or optimization invariant.
@@ -131,3 +199,18 @@ original linear-lookup description. The report script hash changes from
 Binary search is scoped to adjective, animal, color and English BIP-39; other named
 lists and the older AdjectiveAnimal adapter are separate paths, and Japanese remains
 linear because its frozen order is not byte-sorted.
+
+The startup stage adds the instrumented-phase table and mode filtering; its report
+hash is `ccb3cf6e1f338e931eeb901c1452b8bf1ede99f7e422116f87bbc4e17efed2e1`
+through stage 06. Every raw stage records the exact report and harness hashes.
+
+The [chart generator](../benchmarks/progress.py) reads the full stage JSON files
+00, 01, 02, 03, 05 and 06, with final prepared rows from 06. It embeds the input
+filenames and SHA-256 hashes in the SVG. Run `python3 benchmarks/progress.py` in
+the separate plotting environment from `benchmarks/requirements-plot.txt`.
+
+Final Opus review (`req_review_diff_ad0a1b36a1991483`) verified every comparator
+table value and chart bar/whisker. Its generator, provenance, chart-label and
+rounding findings are incorporated. Historical pilot runners retain their measured
+bytes; their report/patch/summary sidecars supply reproduction and variability
+evidence rather than silently changing a runner after measuring it.
