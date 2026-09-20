@@ -54,12 +54,12 @@ pub enum NamedWordList {
     Plant,
     /// Authored food/ingredient/dish head-noun list.
     Food,
-    /// EFF long dictionary in original dice-roll order (7,776 words).
-    #[cfg(feature = "eff-long")]
-    EffLong,
     /// English BIP-39 wordlist used as a positional dictionary.
     #[cfg(feature = "bip39-english")]
     Bip39English,
+    /// EFF long dictionary in original dice-roll order (7,776 words).
+    #[cfg(feature = "eff-long")]
+    EffLong,
 }
 
 impl NamedWordList {
@@ -607,7 +607,7 @@ mod tests {
     #[cfg(feature = "eff-long")]
     #[test]
     fn eff_long_matches_frozen_source_and_order() {
-        let source = include_str!("../../../tests/vectors/eff-long/eff_large_wordlist.txt");
+        let source = include_str!("../fixtures/eff_large_wordlist.txt");
         let list = NamedWordList::EffLong;
         assert_eq!(list.len(), 7776);
         for (index, row) in source.lines().enumerate() {

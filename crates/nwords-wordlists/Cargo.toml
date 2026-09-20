@@ -4,6 +4,7 @@ description = "Built-in wordlists for nwords."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+# The package archive includes EFF data even when its feature is disabled.
 license = "(MIT OR Apache-2.0) AND CC-BY-4.0"
 repository.workspace = true
 homepage.workspace = true

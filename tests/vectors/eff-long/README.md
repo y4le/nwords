@@ -3,6 +3,7 @@
 Source: Electronic Frontier Foundation, Joseph Bonneau.
 https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt
 Retrieved 2026-09-20. The dated source URL and SHA256SUMS pin this snapshot.
+The source snapshot is packaged at crates/nwords-wordlists/fixtures/eff_large_wordlist.txt.
 
 The EFF website copyright policy (https://www.eff.org/copyright), retrieved
 2026-09-20, licenses original material under CC BY 4.0 unless otherwise noted.
