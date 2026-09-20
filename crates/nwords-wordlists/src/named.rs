@@ -54,6 +54,9 @@ pub enum NamedWordList {
     Plant,
     /// Authored food/ingredient/dish head-noun list.
     Food,
+    /// EFF long dictionary in original dice-roll order (7,776 words).
+    #[cfg(feature = "eff-long")]
+    EffLong,
     /// English BIP-39 wordlist used as a positional dictionary.
     #[cfg(feature = "bip39-english")]
     Bip39English,
@@ -76,6 +79,8 @@ impl NamedWordList {
             "weather" => Some(Self::Weather),
             "plant" | "plants" => Some(Self::Plant),
             "food" | "foods" => Some(Self::Food),
+            #[cfg(feature = "eff-long")]
+            "eff-long" => Some(Self::EffLong),
             #[cfg(feature = "bip39-english")]
             "bip39-en" | "bip39-english" | "bip39-en-positional" => Some(Self::Bip39English),
             _ => None,
@@ -96,6 +101,8 @@ impl NamedWordList {
             Self::Weather => "weather",
             Self::Plant => "plant",
             Self::Food => "food",
+            #[cfg(feature = "eff-long")]
+            Self::EffLong => "eff-long",
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => "bip39-en",
         }
@@ -109,6 +116,8 @@ impl NamedWordList {
             }
             Self::Animal | Self::Object | Self::Plant | Self::Food => WordListRole::Head,
             Self::Material | Self::Shape => WordListRole::Either,
+            #[cfg(feature = "eff-long")]
+            Self::EffLong => WordListRole::Either,
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => WordListRole::Either,
         }
@@ -128,6 +137,8 @@ impl NamedWordList {
             Self::Weather => semantic_weather::WEATHER.len(),
             Self::Plant => semantic_plants::PLANTS.len(),
             Self::Food => semantic_foods::FOODS.len(),
+            #[cfg(feature = "eff-long")]
+            Self::EffLong => crate::eff_long::WORDS.len(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.len(0),
         }
@@ -152,6 +163,8 @@ impl NamedWordList {
             Self::Weather => semantic_weather::WEATHER.get(index).copied(),
             Self::Plant => semantic_plants::PLANTS.get(index).copied(),
             Self::Food => semantic_foods::FOODS.get(index).copied(),
+            #[cfg(feature = "eff-long")]
+            Self::EffLong => crate::eff_long::WORDS.get(index).copied(),
             #[cfg(feature = "bip39-english")]
             Self::Bip39English => crate::bip39::English.word(index, 0),
         }
@@ -160,6 +173,8 @@ impl NamedWordList {
     /// Returns the index for `word`.
     pub fn index_of(self, word: &str) -> Option<usize> {
         match self {
+            #[cfg(feature = "eff-long")]
+            Self::EffLong => crate::eff_long::WORDS.binary_search(&word).ok(),
             Self::Adjective => adjective_animal_adjectives::ADJECTIVES
                 .binary_search(&word)
                 .ok(),
@@ -587,6 +602,27 @@ mod tests {
         assert_eq!(NamedWordList::Food.len(), 128);
         assert_eq!(NamedWordList::Food.word(0), Some("almond"));
         assert_eq!(NamedWordList::Food.word(127), Some("zucchini"));
+    }
+
+    #[cfg(feature = "eff-long")]
+    #[test]
+    fn eff_long_matches_frozen_source_and_order() {
+        let source = include_str!("../../../tests/vectors/eff-long/eff_large_wordlist.txt");
+        let list = NamedWordList::EffLong;
+        assert_eq!(list.len(), 7776);
+        for (index, row) in source.lines().enumerate() {
+            let word = row.split_whitespace().nth(1).expect("source word");
+            assert_eq!(list.word(index), Some(word));
+            assert_eq!(list.index_of(word), Some(index));
+            if index > 0 {
+                assert!(list.word(index - 1) < list.word(index));
+            }
+        }
+        assert_eq!(list.word(0), Some("abacus"));
+        assert_eq!(list.word(7775), Some("zoom"));
+        assert_eq!(list.word(7776), None);
+        assert_eq!(list.index_of("Abacus"), None);
+        assert_eq!(NamedWordList::parse("eff-long"), Some(list));
     }
 
     #[test]

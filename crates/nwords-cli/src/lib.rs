@@ -121,6 +121,7 @@ const BUILTIN_WORD_LISTS: &[NamedWordList] = &[
     NamedWordList::Weather,
     NamedWordList::Plant,
     NamedWordList::Food,
+    NamedWordList::EffLong,
     NamedWordList::Bip39English,
 ];
 
@@ -1553,6 +1554,7 @@ fn word_list_aliases(list: NamedWordList) -> &'static str {
         NamedWordList::Weather => "-",
         NamedWordList::Plant => "plants",
         NamedWordList::Food => "foods",
+        NamedWordList::EffLong => "-",
         NamedWordList::Bip39English => "bip39-english,bip39-en-positional",
     }
 }

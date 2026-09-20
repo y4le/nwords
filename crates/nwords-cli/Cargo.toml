@@ -15,4 +15,4 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "=4.5.61", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
-nwords = { version = "0.1.0", path = "../nwords", default-features = false, features = ["std", "adjective-animal", "named", "bip39", "positional", "stats", "word-bytes"] }
+nwords = { version = "0.1.0", path = "../nwords", default-features = false, features = ["std", "adjective-animal", "named", "eff-long", "bip39", "positional", "stats", "word-bytes"] }

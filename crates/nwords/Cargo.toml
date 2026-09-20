@@ -15,6 +15,7 @@ default = [
     "alloc",
     "adjective-animal",
     "named",
+    "eff-long",
     "bip39",
     "positional",
     "stats",
@@ -36,6 +37,7 @@ alloc = [
 stats = ["nwords-core/stats"]
 adjective-animal = ["named", "nwords-wordlists/adjective-animal"]
 named = ["dep:nwords-wordlists", "nwords-wordlists/named"]
+eff-long = ["named", "nwords-wordlists/eff-long"]
 bip39 = ["bip39-english"]
 bip39-english = [
     "alloc",
