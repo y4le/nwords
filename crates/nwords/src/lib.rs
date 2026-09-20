@@ -78,3 +78,7 @@ pub mod prelude {
     #[cfg(feature = "word-bytes")]
     pub use crate::word_bytes::WordBytes;
 }
+
+/// Variable-length leading-repeat integer encodings.
+#[cfg(feature = "positional")]
+pub use nwords_schemes::variable;
