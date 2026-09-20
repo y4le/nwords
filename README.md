@@ -227,7 +227,7 @@ assert_eq!(bip39.word_count, 18);
 | `bip39-japanese` | no | Japanese wordlist, U+3000 display, and Unicode parsing. |
 | `bip39-seed` | no | PBKDF2-HMAC-SHA512 seed derivation. |
 | `positional` | yes | Positional N-word ID codec. |
-| `word-bytes` | yes | `word-bytes-v1` arbitrary byte and UTF-8 text codec. |
+| `word-bytes` | yes | Legacy `word-bytes-v1` and arbitrary-cycle `radix-bytes-v1` bytes/text. |
 
 ## Static Web Demo
 
@@ -309,3 +309,10 @@ capacity math.
 EFF's 7,776-word long list is available as `eff-long` (Rust feature `eff-long`,
 enabled by default). Example: `nwords encode 42 --shape eff-long,eff-long,eff-long --range 4294967296`.
 Its original dice-roll order is frozen; see [provenance and attribution](tests/vectors/eff-long/README.md).
+
+The [Node/browser API](packages/nwords-js/README.md) supports every named list,
+inline custom Unicode dictionaries, fixed shapes, growing `variable-v1` IDs,
+and `radix-bytes-v1` byte/text encoding. Use `prepare` or `prepareBytes` for
+repeated work with one format. Rust exposes `nwords::variable::VariablePositional`,
+`nwords::radix_bytes::RadixBytes`, and `OwnedWordList::from_tokens` for these
+same mappings. See the [contracts](docs/research/flexible-wordsets-plan.md).

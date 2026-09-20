@@ -37,8 +37,11 @@ promise of an isolated instance per call. Operations are synchronous after load.
 CommonJS callers can use dynamic `import('@y4le/nwords/node')`; synchronous
 `require()` is not supported. See the packed `examples/` directory.
 
-Shapes have 1–32 ordered canonical list names: `adjective`, `animal`, and `color`.
-Repetitions are allowed; aliases and other Rust lists are not part of this API.
+Shapes have 1–32 ordered list sources. Built-ins are `adjective`, `animal`,
+`color`, `object`, `descriptor`, `mood`, `material`, `shape`, `weather`, `plant`,
+`food`, `eff-long`, and `bip39-en`. Repetitions and arbitrary combinations are
+allowed. `bip39-en` is a positional dictionary here, not a wallet mnemonic.
+Custom sources are `{name, words, role?}` objects (see below). Aliases are rejected.
 IDs and optional ranges accept `bigint` or canonical decimal strings (`0` or
 digits without a leading zero). JavaScript numbers, signs, whitespace, exponent
 notation, fractions, and values above `u128::MAX` are rejected. A range is a
@@ -53,14 +56,15 @@ JSON users explicitly convert bigint values to decimal strings.
 
 Output uses ASCII spaces. Decode uses Rust `split_whitespace` followed by exact,
 case-sensitive lookup, with no case folding, hyphen splitting, or Unicode
-normalization. Phrase input is limited to 4096 UTF-8 bytes. Persist the package
-version, ordered lists, and resolved range when storing reversible encodings.
+normalization. Integer phrase input is limited to 4096 UTF-8 bytes. Persist the package
+version, scheme, exact ordered dictionaries, pattern, and acceptance bounds when storing reversible encodings.
 Display aliases can instead be persisted literally. Capacity is not security
 entropy, and encoding does not allocate unique names or provide encryption.
 
 `NwordsError` has a stable `code`, optional `field`, and zero-based `position`
 where available. Codes are `INVALID_INPUT`, `UNKNOWN_LIST`, `INVALID_SHAPE`,
-`CAPACITY_OVERFLOW`, `OUT_OF_RANGE`, `INVALID_PHRASE`, `DISPOSED`, and `INTERNAL_ERROR`.
+`CAPACITY_OVERFLOW`, `OUT_OF_RANGE`, `INVALID_PHRASE`, `DISPOSED`, `NUMERIC_OVERFLOW`,
+`INVALID_UTF8`, `RANDOM_UNAVAILABLE`, and `INTERNAL_ERROR`.
 Messages do not echo input phrases or words. `NwordsLoadError` separately uses
 `LOAD_FAILED` or `ASSET_CONFLICT`. Error classes are exported from both entries.
 
@@ -111,3 +115,93 @@ FinalizationRegistry; garbage collection and cleanup timing are not guaranteed. 
 idempotent. Runtimes without FinalizationRegistry require explicit disposal.
 After disposal, encode/decode throw `NwordsError` with code `DISPOSED` and field
 `codec`, before inspecting the operation's input. Ordinary codec errors leave it usable.
+
+## Custom lists and growing IDs
+
+```js
+const pets = { name: 'pets', words: ['猫', 'dog', '🦊'] };
+const fixed = words.prepare({ lists: ['mood', pets, 'eff-long'] });
+const phrase = fixed.encodeId(12345n);
+fixed.decodePhrase(phrase); // 12345n
+fixed.dispose();
+
+const growing = words.prepare({
+  scheme: 'variable-v1',
+  pattern: [{ list: 'adjective', repeat: { min: 0 } }, pets],
+  range: 1_000_000n,
+});
+growing.encodeId(0n); // '猫'
+growing.encodeId(3n); // 'able 猫'
+growing.describe(); // range, unbounded capacity, requiredWords, frozen pattern
+growing.dispose();
+```
+
+A custom list has at least two unique exact tokens. Tokens may contain Unicode,
+case and punctuation, but no whitespace, controls or BOM; each is at most 64
+UTF-8 bytes. Names use `[a-z][a-z0-9_-]*`, at most 64 characters, and cannot
+collide with built-in names or aliases. The default role is `either`. Order is
+never sorted or normalized. A repeated custom list name must have an identical
+definition. The total budget across unique custom definitions is 65,536 entries
+and 1 MiB of token bytes. Prepared codecs snapshot all names and words; mutating
+caller arrays cannot change their mapping. JSON-compatible descriptors can use
+decimal strings instead of bigint ranges.
+
+Variable formats require a nonempty fixed suffix and exactly one leading repeat
+with explicit `min: 0` or `min: 1`. Set `range`, `maxWords`, or both. `maxWords`
+counts the entire phrase, including the suffix, and cannot exceed 32. All
+shorter phrases precede longer ones, with ordinary mixed-radix order inside each
+length. Increasing either bound preserves existing IDs and phrases; changing
+minimum repetitions or dictionaries changes the mapping. `describeShape(format)`
+reports cumulative capacity for a word-bounded pattern, or `unbounded` when only
+a range is supplied. Repeated words are valid. Decode never guesses the scheme.
+
+## Bytes, UTF-8 text, and random phrases
+
+```js
+const format = {
+  scheme: 'radix-bytes-v1',
+  lists: ['eff-long'],
+};
+const bytes = words.prepareBytes(format);
+const phrase = bytes.encodeBytes(new Uint8Array([0, 255, 0]));
+bytes.decodeBytes(phrase); // Uint8Array [0, 255, 0]
+bytes.decodeText(bytes.encodeText('hello 世界')); // 'hello 世界'
+bytes.describe(); // blockBytes: 8, minBlockWords: 5, maxBlockWords: 5, maxBytes: 4096
+const randomPhrase = bytes.generatePassphrase(16); // encodes 16 random bytes
+bytes.decodeBytes(randomPhrase).length; // 16
+bytes.dispose();
+
+words.encodeText('hello', format); // equivalent stateless methods
+words.generatePassphrase(16, format);
+words.generatePhrase({ lists: ['mood', 'animal'] }); // uniformly sampled ID
+```
+
+Byte formats can use any built-in/custom combination. Word positions cycle
+through that ordered template continuously. Full blocks carry eight bytes,
+using the fewest words whose mixed capacity covers 2^64; block word count can
+vary with the cycle position. A mandatory variable-length tail encodes the
+remaining 0–7 bytes. `describe()` reports block byte size and minimum/maximum
+block word counts. Repeating an identical list in the cycle preserves the mapping.
+
+Empty payloads use one word. With EFF long, sixteen bytes use eleven words;
+with a 65,536-entry custom list, sixteen bytes use nine. Exact multiples of
+eight bytes end with an index-zero tail word. Leading zeros and odd lengths
+round-trip exactly. Decode rejects unused full-block and tail values. This is
+not Niceware wire-compatible and does not alter the older `word-bytes-v1` CLI
+format. It has no checksum or encryption; valid substitutions or deletions can
+change the decoded bytes. Save the scheme and exact ordered cycle to decode later.
+
+JS byte/text payloads are limited to 4096 bytes. Byte phrase inputs are limited
+to 8 MiB and the maximum word count for that template's frame; integer limits
+remain 32 words/4096 phrase bytes. Text preserves UTF-8 exactly and rejects lone
+UTF-16 surrogates; decoding invalid UTF-8 throws `INVALID_UTF8`.
+
+Random generation uses platform `crypto.getRandomValues`, with rejection sampling
+for integer ranges and no `Math.random` fallback. Random-byte phrases carry
+8 × byteLength bits of uniform-sample entropy; the mandatory tail marker adds none.
+Assigned IDs do not gain entropy by being encoded. `generatePhrase` samples IDs
+uniformly, not phrase lengths; larger variable tiers receive more samples.
+These functions do not reserve names or check for collisions.
+
+EFF attribution and bundled license are in `NOTICE.md` and
+`notices/wordlists/eff-long/README.md`.

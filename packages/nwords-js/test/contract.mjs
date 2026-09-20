@@ -2,7 +2,7 @@ export function check(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-export function verifyApi(api, NwordsError, vectors) {
+export function verifyApi(api, NwordsError, vectors, variableVectors = []) {
   const shape = { lists: ['adjective', 'animal'] };
   const fails = (fn, code, field, position) => {
     let error;
@@ -14,7 +14,7 @@ export function verifyApi(api, NwordsError, vectors) {
     return error;
   };
   const lists = api.lists();
-  check(lists.length === 3, 'Only the supported lists are advertised');
+  check(lists.length === 13, 'Only the supported lists are advertised');
   for (const [index, name, size, role] of [[0, 'adjective', 749n, 'modifier'], [1, 'animal', 333n, 'head'], [2, 'color', 52n, 'modifier']]) {
     check(lists[index].name === name && lists[index].size === size && lists[index].role === role, 'List metadata mismatch');
   }
@@ -83,7 +83,7 @@ export function verifyApi(api, NwordsError, vectors) {
     fails(() => api.describeShape({ lists }), 'INVALID_SHAPE', 'shape');
   }
   for (const invalid of [null, undefined, 42]) fails(() => api.describeShape(invalid), 'INVALID_SHAPE');
-  for (const name of ['animals', 'Animal', 'bip39-en', 'descriptor', 'animal,color', '', null]) {
+  for (const name of ['animals', 'Animal', 'missing', 'invalid', 'animal,color', '', null]) {
     fails(() => api.describeShape({ lists: ['adjective', name] }), 'UNKNOWN_LIST', 'shape', 1);
   }
   for (const phrase of ['Able aardvark', '\ufeffable aardvark', 'able-aardvark', 'aardvark', '', 'a'.repeat(4097), '\u2003'.repeat(2000), null, 42]) {
@@ -100,4 +100,112 @@ export function verifyApi(api, NwordsError, vectors) {
   const error = fails(() => api.decodePhrase('able secret-token', shape), 'INVALID_PHRASE', 'phrase', 1);
   check(!error.message.includes('secret-token') && !JSON.stringify(error).includes('secret-token'), 'Never echo raw input');
   check(api.encodeId(42n, shape) === 'able cardinal', 'Ordinary codec errors do not poison the instance');
+  for (const name of ['eff-long', 'object', 'descriptor', 'mood', 'material', 'shape', 'weather', 'plant', 'food', 'bip39-en']) {
+    const format = {lists: [name, 'animal']};
+    check(api.decodePhrase(api.encodeId(42n, format), format) === 42n, `Expanded catalog: ${name}`);
+  }
+  const mods = {name: 'mods', words: ['calm', 'wild']};
+  const pets = {name: 'pets', words: ['cat', 'dog']};
+  const variable = {scheme: 'variable-v1', pattern: [{list: mods, repeat: {min: 0}}, pets], maxWords: 3};
+  const tier = api.prepare(variable);
+  const expected = ['cat', 'dog', 'calm cat', 'calm dog', 'wild cat', 'wild dog', 'calm calm cat', 'calm calm dog', 'calm wild cat', 'calm wild dog', 'wild calm cat', 'wild calm dog', 'wild wild cat', 'wild wild dog'];
+  expected.forEach((phrase, id) => {
+    check(tier.encodeId(BigInt(id)) === phrase, `Variable vector ${id}`);
+    check(api.decodePhrase(phrase, variable) === BigInt(id), `Variable decode ${id}`);
+  });
+  check(tier.describe().capacity.value === 14n && tier.describe().range === 14n, 'Cumulative capacity');
+  fails(() => tier.encodeId(14n), 'OUT_OF_RANGE');
+  const narrowedVariable = {...variable, range: 7n};
+  fails(() => api.decodePhrase('calm calm dog', narrowedVariable), 'OUT_OF_RANGE');
+  check(api.describeShape({...variable, maxWords: undefined, range: 1000n}).capacity.kind === 'unbounded', 'Range is not capacity');
+  const plus = {...variable, pattern: [{list: mods, repeat: {min: 1}}, pets]};
+  check(api.encodeId(0n, plus) === 'calm cat' && api.encodeId(4n, plus) === 'calm calm cat', 'Minimum changes mapping');
+  for (const [id, zero, one] of variableVectors) {
+    const unbounded = {...variable, range: 1000n, maxWords: undefined};
+    check(api.encodeId(id, unbounded) === zero, 'Shared variable-v1 zero vector');
+    check(api.encodeId(id, {...unbounded, pattern:[{list:mods,repeat:{min:1}},pets]}) === one, 'Shared variable-v1 one vector');
+  }
+  mods.words.reverse(); pets.words[0] = 'changed';
+  check(tier.encodeId(2n) === 'calm cat', 'Variable snapshot owns custom dictionaries');
+  check(Object.isFrozen(tier.describe().pattern[0].list.words), 'Snapshot metadata is immutable');
+  tier.dispose(); fails(() => tier.describe(), 'DISPOSED');
+  const tokens = {name: 'unicode', words: ['🦊', '猫', 'é', 'e\u0301', '"quote"', 'back\\slash']};
+  const arbitrary = {lists: [tokens, 'mood', tokens]};
+  for (const id of [0n, 1n, 6n, 100n, 2303n]) check(api.decodePhrase(api.encodeId(id, arbitrary), arbitrary) === id, 'Exact Unicode and punctuation tokens');
+  const snapshotTokens = api.prepare(arbitrary);
+  const saved = snapshotTokens.encodeId(0n); tokens.words.reverse();
+  check(snapshotTokens.encodeId(0n) === saved, 'Fixed custom snapshot'); snapshotTokens.dispose();
+  for (const words of [[], ['one'], ['one', 'one'], ['a b', 'c'], ['a\t', 'b'], ['\ufeff', 'b'], ['\u0000', 'b'], ['\ud800', 'b'], ['x'.repeat(65), 'b']]) fails(() => api.prepare({lists: [{name: 'bad', words}]}), 'INVALID_SHAPE');
+  fails(() => api.prepare({lists: [{name: 'animals', words: ['a', 'b']}]}), 'INVALID_SHAPE', 'shape');
+  fails(() => api.prepare({lists: [{name: 'bad', words: ['a']}], range: 'oops'}), 'INVALID_SHAPE', 'shape');
+  fails(() => api.prepare({lists: [{name: 'pets', words: ['a','b']}, {name: 'pets', words: ['b','a']}]}), 'INVALID_SHAPE');
+  for (const invalid of [
+    {scheme:'variable-v1',pattern:[{list:'animal',repeat:{min:0}},'animal']},
+    {...variable,lists:['animal']}, {...variable,maxWords:33}, {...variable,maxWords:1,range:10n},
+    {...variable,pattern:[{list:'animal',repeat:{min:2}},'animal']},
+    {...variable,pattern:['animal',{list:'animal',repeat:{min:0}}]},
+    {...variable,pattern:[{list:'animal',repeat:{min:0}},{list:'animal',repeat:{min:0}}]},
+    {lists:['animal'],scheme:'guessed'}, {lists:['animal'],maxWords:2},
+  ]) fails(() => api.prepare(invalid),'INVALID_SHAPE');
+  const replacement = {lists:[{name:'replacement',words:['�','ok']}]};
+  fails(() => api.decodePhrase('\ud800',replacement),'INVALID_PHRASE');
+  const phased = api.prepareBytes({scheme:'radix-bytes-v1',lists:[
+    {name:'three',words:['a','b','c']},
+    {name:'threehundred',words:Array.from({length:300},(_,i)=>`word${i}`)},
+  ]});
+  check(phased.describe().minBlockWords === 13 && phased.describe().maxBlockWords === 14, 'Expose phase-dependent block widths');
+  phased.dispose();
+  const effBytes = {scheme:'radix-bytes-v1',lists:['eff-long']};
+  for (const [input, phrase] of [[[], 'abacus'], [[0], 'abdomen'], [[255], 'appealing'], [[102,111], 'abdominal harddisk'], [[104,101,108,108,111], 'ventricle reference fester']]) check(api.encodeBytes(new Uint8Array(input), effBytes) === phrase, 'Independent byte oracle');
+  const formats = [
+    {scheme:'radix-bytes-v1',lists:['eff-long']},
+    {scheme:'radix-bytes-v1',lists:['adjective','animal']},
+    {scheme:'radix-bytes-v1',lists:[{name:'binary',words:['zero','one']}]},
+    {scheme:'radix-bytes-v1',lists:[tokens,'food']},
+  ];
+  for (const format of formats) {
+    const codec = api.prepareBytes(format);
+    for (const bytes of [new Uint8Array(),new Uint8Array([0]),new Uint8Array([255]),new Uint8Array([0,255,0]),new Uint8Array(128).map((_,i)=>i)]) {
+      const phrase=codec.encodeBytes(bytes), recovered=codec.decodeBytes(phrase);
+      check(recovered instanceof Uint8Array && String(recovered)===String(bytes),'Byte frame round trip');
+      check(api.encodeBytes(bytes,format)===phrase && String(api.decodeBytes(phrase,format))===String(bytes),'Stateless byte parity');
+      fails(()=>codec.decodeBytes(phrase+' not-in-list'),'INVALID_PHRASE');
+    }
+    for (const text of ['', 'hello 世界 🦊', 'é', 'e\u0301']) check(codec.decodeText(codec.encodeText(text))===text,'UTF-8 exact');
+    fails(()=>codec.decodeText(codec.encodeBytes(new Uint8Array([255]))),'INVALID_UTF8');
+    fails(()=>codec.encodeText('\ud800'),'INVALID_INPUT');
+    fails(()=>codec.encodeBytes(new Uint8Array(4097)),'INVALID_INPUT');
+    fails(()=>codec.encodeBytes([0]),'INVALID_INPUT');
+    for (const length of [-1,1.5,4097,NaN]) fails(()=>codec.generatePassphrase(length),'INVALID_INPUT');
+    check(codec.decodeBytes(codec.generatePassphrase(16)).length===16,'Cryptographic byte generation');
+    codec.dispose(); codec.dispose(); fails(()=>codec.encodeBytes(new Uint8Array()),'DISPOSED');
+  }
+  const single = {lists:[{name:'tiny',words:['a','b','c']}],range:1n};
+  check(api.generatePhrase(single)==='a','Singleton random domain');
+  fails(() => api.generatePhrase({...single, range:0n}), 'INVALID_SHAPE', 'range');
+  for(let i=0;i<50;i++) {const format={...single,range:3n};check(api.decodePhrase(api.generatePhrase(format),format)<3n,'Random accepted IDs');}
+
+  const enormous = {scheme:'variable-v1',pattern:[{list:'adjective',repeat:{min:0}},'animal'],range:max,maxWords:32};
+  const highest = api.encodeId(max-1n,enormous);
+  check(api.decodePhrase(highest,enormous)===max-1n,'Variable u128 boundary');
+  check(api.describeShape(enormous).capacity.kind==='beyond-u128','Variable capacity exceeds range');
+  fails(()=>api.decodePhrase([...Array(31).fill('zippy'),'zebra'].join(' '),enormous),'NUMERIC_OVERFLOW');
+  const customBound = {name:'wide',words:Array.from({length:65536},(_,i)=>`w${i}`)};
+  const wide = api.prepareBytes({scheme:'radix-bytes-v1',lists:[customBound]});
+  check(wide.encodeBytes(new Uint8Array([0,255]))==='w512','16-bit dictionary independent byte vector');
+  fails(()=>wide.decodeBytes('w65535 w65535 w65535 w65535'),'INVALID_PHRASE');
+  wide.dispose();
+  fails(()=>api.prepare({lists:[{name:'excess',words:Array(65537).fill('a')}]}),'INVALID_SHAPE');
+
+  const originalCrypto = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+  let draws = 0;
+  try {
+    Object.defineProperty(globalThis, 'crypto', {configurable:true,value:{getRandomValues(bytes){bytes.fill(draws++ === 0 ? 255 : 0);return bytes;}}});
+    check(api.generatePhrase({lists:[{name:'three',words:['a','b','c']}]}) === 'a' && draws === 2, 'Rejection sampling excludes masked slack');
+    Object.defineProperty(globalThis, 'crypto', {configurable:true,value:undefined});
+    fails(()=>api.generatePassphrase(1,effBytes),'RANDOM_UNAVAILABLE');
+  } finally {
+    if(originalCrypto)Object.defineProperty(globalThis,'crypto',originalCrypto);else delete globalThis.crypto;
+  }
+
 }

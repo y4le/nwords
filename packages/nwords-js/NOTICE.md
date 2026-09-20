@@ -1,6 +1,6 @@
 # Packaged content and provenance
 
-nwords is MIT OR Apache-2.0; both license texts are included. This package is
+nwords code is MIT OR Apache-2.0; both license texts are included. This package is
 built from the source commit and tool versions in `build.json`. A development
 build can be marked dirty; it is not a qualification/release artifact.
 
@@ -26,3 +26,9 @@ Unicode data license, LLVM exception, and `rust-1.94.0-stdlib.txt` conservativel
 retain the installed toolchain's notices for all dependencies marked as used
 in libstd, including other platforms. The notice file records its extraction
 source and method; it is not a list of which platform-specific code was linked.
+
+EFF long is Copyright Electronic Frontier Foundation, Joseph Bonneau, licensed
+under CC BY 4.0. Source: https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt.
+The dice-roll column was removed; every word and its original order are retained.
+See notices/wordlists/eff-long/README.md and the bundled CC BY 4.0 license.
+BIP-39 English is sourced from Trezor python-mnemonic; see the bundled MIT license.

@@ -61,7 +61,8 @@ if (mode === 'measure') {
   await fails(web.loadNwords({ source: new URL('./different.wasm', asset) }), 'ASSET_CONFLICT');
   await fails(node.loadNwords({ source: asset }), 'LOAD_FAILED');
   const vectors = (await readFile(new URL('./vectors.tsv', import.meta.url), 'utf8')).trim().split('\n').filter(row => !row.startsWith('#')).map(row => row.split('\t'));
-  verifyApi(apis[0], node.NwordsError, vectors);
+  const variableVectors = (await readFile(new URL('./variable-vectors.tsv', import.meta.url), 'utf8')).trim().split('\n').filter(row => !row.startsWith('#')).map(row => row.split('\t'));
+  verifyApi(apis[0], node.NwordsError, vectors, variableVectors);
   await assert.rejects(import('@y4le/nwords/src/api.js'), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
   const raw = await import(new URL('./nwords_js.js', asset));
   await raw.default({ module_or_path: await readFile(asset) });

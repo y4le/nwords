@@ -325,3 +325,9 @@ Documentation cleanup:
   Collaborator: Claude.
   Result: consensus.
   Transcript: `/tmp/parley/682705f93766/runs/workflow-architecture-plan-753f44d3/transcript.md`.
+
+## Post-V1 flexible wordsets
+
+The authorized extension follows [flexible-wordsets-plan.md](flexible-wordsets-plan.md):
+EFF long, Rust variable IDs, arbitrary mixed byte blocks, exact custom tokens,
+then JS adapters and package qualification. Variable CLI grammar remains deferred.

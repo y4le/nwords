@@ -1,0 +1,14 @@
+# id	minimum zero	minimum one
+0	cat	calm cat
+1	dog	calm dog
+2	calm cat	wild cat
+3	calm dog	wild dog
+4	wild cat	calm calm cat
+5	wild dog	calm calm dog
+6	calm calm cat	calm wild cat
+7	calm calm dog	calm wild dog
+8	calm wild cat	wild calm cat
+9	calm wild dog	wild calm dog
+12	wild wild cat	calm calm calm cat
+13	wild wild dog	calm calm calm dog
+14	calm calm calm cat	calm calm wild cat

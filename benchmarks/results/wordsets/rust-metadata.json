@@ -1,0 +1,25 @@
+{
+  "schema": "nwords.wordsets-native-benchmark.v1",
+  "date": "2026-09-20T05:17:01.582379+00:00",
+  "sourceCommit": "5a2638d6125d405d958509425c246ef5bb2e84ef",
+  "dirty": true,
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "arch": "aarch64",
+  "cpuAffinity": [
+    19
+  ],
+  "profile": "release, thin LTO, codegen-units=1",
+  "binarySha256": "5cabb311ce9ece3dd5323328ad6dd11d0bc9e90c53348460542723f156618be4",
+  "sourceSha256": {
+    "benchmarks/rust/src/bin/wordsets.rs": "cf086b407e3232d0fb3fca6618246fd49c1b0351221a9dd392acacc62dd545f2",
+    "benchmarks/rust/Cargo.toml": "52b9f4d7b347c0ea3d07d336fef06735ef28959c19a64f72e1f0f15c358c40cf",
+    "benchmarks/rust/Cargo.lock": "29e4819959aa4f57ff001207b814b08dea32c427be21fc82718cd5622661c626",
+    "crates/nwords-schemes/src/variable.rs": "e05d54bed3068e5752ab42ec2c007128c0658928ef1214c992b01e18557170ed",
+    "crates/nwords-schemes/src/radix_bytes.rs": "cbf160a034ad10573046ad5add064a958c9f7f42f69714750833eccd56d9c57e",
+    "crates/nwords-wordlists/src/named.rs": "05ac6e4c4704e9bc484f4686cd753540d8307856004ee2dc958ab361aba7e619",
+    "crates/nwords-wordlists/src/eff_long.rs": "4bf39bcbc8f984e64ac2ada0838bfdfcfb4c52b19f5780d2491718ff43f15f3e"
+  },
+  "iterationsPerBatch": 20000,
+  "batches": 9,
+  "warmupIterations": 5000
+}

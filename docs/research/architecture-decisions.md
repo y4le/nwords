@@ -346,3 +346,10 @@ feature (default in the umbrella crate) and the named-list CLI. It is a
 general positional dictionary; no passphrase security claim follows from
 encoding assigned IDs. Attribution and the original snapshot are under
 `tests/vectors/eff-long/`. Existing lists and mappings remain unchanged.
+
+## Flexible wordsets (post-V1)
+
+The user authorized `variable-v1`, `radix-bytes-v1`, and Node/browser custom
+wordsets. The mapping, framing, limits and descriptor contracts are recorded in
+[flexible-wordsets-plan.md](flexible-wordsets-plan.md). Fixed IDs and
+`word-bytes-v1` are unchanged. EFF long is an immutable optional dictionary.

@@ -10,12 +10,24 @@ use nwords::{
 };
 use wasm_bindgen::prelude::wasm_bindgen;
 
+mod flexible;
+
 const MAX_POSITIONS: usize = 32;
 const MAX_PHRASE_BYTES: usize = 4096;
 const SUPPORTED: &[NamedWordList] = &[
     NamedWordList::Adjective,
     NamedWordList::Animal,
     NamedWordList::Color,
+    NamedWordList::Object,
+    NamedWordList::Descriptor,
+    NamedWordList::Mood,
+    NamedWordList::Material,
+    NamedWordList::Shape,
+    NamedWordList::Weather,
+    NamedWordList::Plant,
+    NamedWordList::Food,
+    NamedWordList::EffLong,
+    NamedWordList::Bip39English,
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -27,6 +39,8 @@ enum Code {
     OutOfRange,
     InvalidPhrase,
     Internal,
+    NumericOverflow,
+    InvalidUtf8,
 }
 
 impl Code {
@@ -39,6 +53,8 @@ impl Code {
             Self::OutOfRange => "OUT_OF_RANGE",
             Self::InvalidPhrase => "INVALID_PHRASE",
             Self::Internal => "INTERNAL_ERROR",
+            Self::NumericOverflow => "NUMERIC_OVERFLOW",
+            Self::InvalidUtf8 => "INVALID_UTF8",
         }
     }
 
@@ -53,6 +69,8 @@ impl Code {
             Self::OutOfRange => "Value is outside the accepted range.",
             Self::InvalidPhrase => "Phrase is invalid for the selected shape.",
             Self::Internal => "Unexpected codec error.",
+            Self::NumericOverflow => "Decoded integer exceeds u128.",
+            Self::InvalidUtf8 => "Decoded bytes are not valid UTF-8.",
         }
     }
 }
@@ -190,7 +208,7 @@ impl Shape {
     }
 }
 
-/// Returns metadata for the three supported canonical lists.
+/// Returns metadata for the supported canonical lists.
 #[wasm_bindgen]
 pub fn lists_json() -> String {
     let lists = SUPPORTED
@@ -494,7 +512,7 @@ mod tests {
         for shape in ["", &vec!["animal"; 33].join(",")] {
             assert!(describe_shape_json(shape, None).contains("INVALID_SHAPE"));
         }
-        for name in ["animals", "bip39-en", "descriptor", "secret\"list"] {
+        for name in ["animals", "missing", "invalid", "secret\"list"] {
             let shape = format!("animal,{name}");
             let error = describe_shape_json(&shape, None);
             assert!(error.contains("UNKNOWN_LIST"));
