@@ -54,14 +54,18 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 // Disable wasm-pack downloads; an explicitly selected, verified optimizer runs below.
 run('wasm-pack', ['build', 'crates/nwords-js', '--target', 'web', ...profileArgs, '--no-opt', '--no-pack', '--out-dir', output + '/wasm', '--locked']);
+run('wasm-pack', ['build', 'crates/nwords-js-bip39', '--target', 'web', ...profileArgs, '--no-opt', '--no-pack', '--out-dir', output + '/wasm/bip39', '--locked']);
 if (optimizerInfo) {
-  const input = join(output, 'wasm/nwords_js_bg.wasm');
-  const optimized = join(output, 'wasm/optimized.wasm');
-  run(optimizer, [input, ...optimizationFlags, '-o', optimized]);
-  await rename(optimized, input);
+  for (const asset of ['wasm/nwords_js_bg.wasm', 'wasm/bip39/nwords_js_bip39_bg.wasm']) {
+    const input = join(output, asset);
+    const optimized = join(dirname(input), 'optimized.wasm');
+    run(optimizer, [input, ...optimizationFlags, '-o', optimized]);
+    await rename(optimized, input);
+  }
 }
 // wasm-pack writes an ignore-all file that npm otherwise applies recursively.
 await rm(join(output, 'wasm/.gitignore'));
+await rm(join(output, 'wasm/bip39/.gitignore'));
 for (const name of ['src', 'examples', 'notices']) await cp(join(project, name), join(output, name), { recursive: true });
 for (const name of ['README.md', 'NOTICE.md']) await cp(join(project, name), join(output, name));
 for (const name of ['LICENSE-MIT', 'LICENSE-APACHE']) await cp(join(root, name), join(output, name));
@@ -81,8 +85,9 @@ for (const name of ['unique-names-generator-MIT.LICENSE', 'glitch-friendly-words
 
 // cargo tree selects this crate's actual feature graph; workspace metadata by
 // itself can include other members' optional BIP-39 dependencies.
-const graph = new Set(run('cargo', ['tree', '--locked', '-p', 'nwords-js', '--target', 'wasm32-unknown-unknown', '--edges', 'normal', '--prefix', 'none', '--format', '{p}'])
-  .split('\n').map(line => line.split(' ').slice(0, 2).join(' ')));
+const graph = new Set(['nwords-js', 'nwords-js-bip39'].flatMap(name =>
+  run('cargo', ['tree', '--locked', '-p', name, '--target', 'wasm32-unknown-unknown', '--edges', 'normal', '--prefix', 'none', '--format', '{p}'])
+    .split('\n').map(line => line.split(' ').slice(0, 2).join(' '))));
 const metadata = JSON.parse(run('cargo', ['metadata', '--locked', '--format-version', '1']));
 const binding = metadata.packages.find(pkg => pkg.name === 'nwords-js');
 const dependencies = [];
@@ -103,11 +108,13 @@ if (template.version !== binding?.version) throw new Error('Package and binding 
 if (template.private !== true || template.scripts) throw new Error('Development package must be private with no lifecycle scripts.');
 template.repository = { type: 'git', url: 'https://github.com/y4le/nwords.git' };
 const wasm = await readFile(join(output, 'wasm/nwords_js_bg.wasm'));
+const bip39Wasm = await readFile(join(output, 'wasm/bip39/nwords_js_bip39_bg.wasm'));
 const provenance = {
   schema: 'nwords.build.v1', sourceCommit: commit, dirty: Boolean(status), development: dev,
   tools: { rustc, cargo, wasmPack, wasmBindgen: '0.2.120', node: process.version, npm: run('npm', ['--version']) },
   rustflags: ['--remap-path-prefix=<workspace>/=/nwords/', '--remap-path-prefix=<cargo-home>=/cargo'],
   wasm: { target: 'web', optimization: `rustc-${profile === 'baseline' ? 'release' : 'wasm-' + profile}; ${optimizerInfo ? optimizerInfo.version + ' -O3' : 'wasm-opt disabled'}`, profile, optimizer: optimizerInfo ?? null, bytes: wasm.length, sha256: sha256(wasm) },
+  bip39Wasm: { target: 'web', optimization: `rustc-${profile === 'baseline' ? 'release' : 'wasm-' + profile}; ${optimizerInfo ? optimizerInfo.version + ' -O3' : 'wasm-opt disabled'}`, profile, optimizer: optimizerInfo ?? null, bytes: bip39Wasm.length, sha256: sha256(bip39Wasm) },
   cargoLockSha256: sha256(lock),
 };
 await writeFile(join(output, 'build.json'), JSON.stringify(provenance, null, 2) + '\n');

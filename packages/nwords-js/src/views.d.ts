@@ -1,0 +1,13 @@
+import type { VariableCodec } from './variable.js';
+export function bitsToId(bits: string): bigint;
+export function idToBits(id: bigint): string;
+export function bytesToBits(bytes: Uint8Array): string;
+export function bitsToBytes(bits: string): Uint8Array;
+export function textToBits(text: string): string;
+export function bitsToText(bits: string): string;
+export function encodeBits(codec: VariableCodec, bits: string): string;
+export function decodeBits(codec: VariableCodec, phrase: string): string;
+export function encodeBytes(codec: VariableCodec, bytes: Uint8Array): string;
+export function decodeBytes(codec: VariableCodec, phrase: string): Uint8Array;
+export function encodeText(codec: VariableCodec, text: string): string;
+export function decodeText(codec: VariableCodec, phrase: string): string;

@@ -3,124 +3,62 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>nwords demo</title>
+    <title>nwords · phrases with a reversible definition</title>
+    <meta name="description" content="Try reversible word names and English BIP-39 mnemonics alongside the JavaScript definition.">
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">nwords</p>
-          <h1>Turn IDs and text into reversible word phrases.</h1>
-          <p class="lede">
-            A static WebAssembly demo of the Rust codec, with capacity and
-            range evidence shown next to each conversion.
-          </p>
-        </div>
-        <a class="repo-link" href="https://github.com/y4le/nwords">GitHub</a>
+    <main class="shell">
+      <header class="masthead">
+        <div class="brand"><span class="brand-mark">n<span>·</span></span><span>nwords</span></div>
+        <a href="https://github.com/y4le/nwords" class="source-link">Source ↗</a>
       </header>
-
-      <section class="notice-grid" aria-label="Important caveats">
-        <p id="positional-caveat">BIP-39 words are used as a positional dictionary, not wallet mnemonics.</p>
-        <p id="spread-caveat">Spread presets reduce visual adjacency only; they are not encryption.</p>
-        <p id="text-caveat">Text uses byte-exact UTF-8 with no Unicode normalization.</p>
+      <section class="intro">
+        <p class="kicker">WORD PHRASES, DEFINED IN CODE</p>
+        <h1>Make an ID you can say.</h1>
+        <p>Choose a format, edit either side, and see the exact JavaScript that defines the conversion.</p>
       </section>
-
-      <section class="workspace" aria-label="nwords demo tools">
-        <div class="tool-panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">Numeric IDs</p>
-              <h2>Encode and decode</h2>
-            </div>
-            <select id="preset-select" aria-label="Preset"></select>
-          </div>
-
-          <div class="control-grid">
-            <label>
-              <span>ID</span>
-              <input id="id-input" inputmode="numeric" autocomplete="off" value="42">
-            </label>
-            <button id="encode-button" type="button">Encode</button>
-          </div>
-
-          <label>
-            <span>Phrase</span>
-            <textarea id="phrase-input" rows="3" spellcheck="false"></textarea>
-          </label>
-
-          <div class="button-row">
-            <button id="decode-button" type="button">Decode</button>
-            <button id="compare-button" type="button">Compare nearby IDs</button>
-          </div>
-
-          <output id="id-output" class="result" aria-live="polite"></output>
+      <div class="tabs" role="tablist" aria-label="Demos">
+        <button id="names-tab" class="tab active" role="tab" aria-selected="true" aria-controls="names-panel">Adjective + animal</button>
+        <button id="bitcoin-tab" class="tab" role="tab" aria-selected="false" aria-controls="bitcoin-panel">Bitcoin mnemonic</button>
+      </div>
+      <section id="names-panel" role="tabpanel" aria-labelledby="names-tab" class="demo-grid">
+        <div class="instrument">
+          <div class="section-heading"><div><p class="eyebrow">VARIABLE-V1</p><h2>Adjective<sup>+</sup>, animal</h2></div><span class="badge">reversible</span></div>
+          <p class="helper">One or more adjectives, then one animal. The phrase is the same ID in every view.</p>
+          <label for="names-view">Interpret the value as</label>
+          <select id="names-view"><option value="number">Number</option><option value="bits">Exact bits</option><option value="hex">Hex bytes</option><option value="text">UTF-8 text</option></select>
+          <label for="names-value" id="names-value-label">Number</label>
+          <textarea id="names-value" rows="2" spellcheck="false" autocomplete="off" autocapitalize="off">42</textarea>
+          <div class="connector" aria-hidden="true">⇄</div>
+          <label for="names-phrase">Phrase</label>
+          <textarea id="names-phrase" rows="3" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+          <p id="names-status" class="status" role="status" aria-live="polite"></p>
+          <p class="fine-print">Exact bits preserve leading zeros. Hex and text require whole bytes. Decoding never guesses the original view.</p>
         </div>
-
-        <aside class="stats-panel" aria-label="Preset report">
-          <p class="eyebrow">Shape</p>
-          <dl id="stats-list" class="stats-list"></dl>
-        </aside>
+        <aside class="code-panel"><div class="code-header"><span>JAVASCRIPT</span><button id="copy-code" type="button">Copy</button></div><pre><code id="names-code"></code></pre><div class="code-foot">Import only the wordsets your format uses. <span id="names-capacity"></span></div></aside>
       </section>
-
-      <section class="workspace two-column" aria-label="planning and text tools">
-        <div class="tool-panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">Plan</p>
-              <h2>Pick a word count</h2>
-            </div>
-          </div>
-
-          <div class="control-grid">
-            <label>
-              <span>Accepted range</span>
-              <input id="range-input" inputmode="numeric" autocomplete="off" value="1000000">
-            </label>
-            <label>
-              <span>Words</span>
-              <input id="words-input" inputmode="numeric" autocomplete="off" placeholder="auto">
-            </label>
-          </div>
-
-          <button id="plan-button" type="button">Plan shape</button>
-          <output id="plan-output" class="result" aria-live="polite"></output>
+      <section id="bitcoin-panel" role="tabpanel" aria-labelledby="bitcoin-tab" class="demo-grid" hidden>
+        <div class="instrument">
+          <div class="section-heading"><div><p class="eyebrow">BIP-39 · ENGLISH</p><h2>Entropy to mnemonic</h2></div><span class="badge">checksum</span></div>
+          <p class="helper">A standards-compliant wallet mnemonic from entropy. Edit either side to check the checksum and recover the bytes.</p>
+          <label for="entropy-value">Entropy · hex</label>
+          <textarea id="entropy-value" rows="3" spellcheck="false" autocomplete="off" autocapitalize="off">00000000000000000000000000000000</textarea>
+          <div class="connector" aria-hidden="true">⇄</div>
+          <label for="mnemonic-value">English mnemonic</label>
+          <textarea id="mnemonic-value" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+          <p id="bitcoin-status" class="status" role="status" aria-live="polite">Open this demo to load the BIP-39 codec.</p>
+          <p class="fine-print">Accepts 16, 20, 24, 28, or 32 bytes (12–24 words). This educational page is not a wallet. Do not use its sample phrases to protect funds.</p>
         </div>
+        <aside class="code-panel"><div class="code-header"><span>JAVASCRIPT</span><button id="copy-bitcoin-code" type="button">Copy</button></div><pre><code id="bitcoin-code">import { loadBip39 } from '@y4le/nwords/bip39/web';
 
-        <div class="tool-panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">Text</p>
-              <h2>word-bytes-v1</h2>
-            </div>
-          </div>
-
-          <label>
-            <span>Text</span>
-            <textarea id="text-input" rows="3">hello</textarea>
-          </label>
-          <button id="text-encode-button" type="button">Encode text</button>
-
-          <label>
-            <span>Words</span>
-            <textarea id="text-phrase-input" rows="3" spellcheck="false"></textarea>
-          </label>
-          <button id="text-decode-button" type="button">Decode text</button>
-          <output id="text-output" class="result" aria-live="polite"></output>
-        </div>
+const bip39 = await loadBip39();
+const entropy = new Uint8Array(16); // public test vector
+const phrase = bip39.encodeEntropy(entropy);
+const original = bip39.decodeMnemonic(phrase);</code></pre><div class="code-foot">The English wordlist and checksum code load when this tab opens.</div></aside>
       </section>
-
-      <section class="compare-panel" aria-label="Nearby ID comparison">
-        <div class="panel-title">
-          <div>
-            <p class="eyebrow">Spread</p>
-            <h2>Nearby assigned IDs</h2>
-          </div>
-        </div>
-        <div id="compare-grid" class="compare-grid"></div>
-      </section>
+      <footer>nwords · <a href="https://github.com/y4le/nwords">GitHub</a> · All conversion runs in this browser.</footer>
     </main>
-
     <script type="module" src="./app.js"></script>
   </body>
 </html>

@@ -103,8 +103,11 @@ export interface Nwords {
 }
 export type ErrorCode = 'INVALID_INPUT' | 'UNKNOWN_LIST' | 'INVALID_SHAPE' |
   'CAPACITY_OVERFLOW' | 'OUT_OF_RANGE' | 'INVALID_PHRASE' | 'INTERNAL_ERROR' |
-  'DISPOSED' | 'NUMERIC_OVERFLOW' | 'INVALID_UTF8' | 'RANDOM_UNAVAILABLE';
-export type ErrorField = 'id' | 'range' | 'shape' | 'phrase' | 'codec' | 'bytes' | 'text';
+  'DISPOSED' | 'NUMERIC_OVERFLOW' | 'INVALID_UTF8' | 'RANDOM_UNAVAILABLE' |
+  'INVALID_ENTROPY_LENGTH' | 'INVALID_WORD_COUNT' | 'UNKNOWN_WORD' | 'INVALID_CHECKSUM' |
+  'NOT_BYTE_ALIGNED';
+export type ErrorField = 'id' | 'range' | 'shape' | 'phrase' | 'codec' | 'bytes' | 'text' |
+  'entropy' | 'mnemonic' | 'bits';
 export class NwordsError extends Error {
   readonly code: ErrorCode;
   readonly field?: ErrorField;
