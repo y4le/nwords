@@ -19,3 +19,4 @@ overlap between the authored plant and food lists.
 
 The harness validates syntax and reproducibility. It does not decide whether a
 word is friendly or phrase-appropriate; that remains a human review gate.
+Input list files contain one token per line with no blank or comment lines.

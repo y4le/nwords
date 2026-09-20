@@ -575,6 +575,8 @@ fn presets() -> Result<String, CliError> {
     let mut output = String::new();
     output.push_str(PRESETS_CAVEAT);
     output.push('\n');
+    output.push_str(BIP39_POSITIONAL_CAVEAT);
+    output.push('\n');
     output.push_str("name\tshape\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio\n");
     for preset in PRESETS {
         let resolved = resolve_builtin_lists(preset.shape)?;
@@ -650,11 +652,15 @@ fn plan(args: PlanArgs) -> Result<String, CliError> {
             let resolved = resolve_custom_lists(&parsed, false, 1)?;
             return format_shape_report(&resolved);
         }
+        if parsed.dictionary.is_some() || parsed.words.is_some() {
+            let resolved = resolve_custom_lists(&parsed, false, 1)?;
+            return format_shape_report(&resolved);
+        }
         if !parsed.list_specs.is_empty() {
             return Err(CliError::usage("--list requires --shape <lists>"));
         }
         return Err(CliError::usage(
-            "plan requires --range <R> or --shape <lists>",
+            "plan requires --range <R>, --shape <lists>, --words <N>, or --dict <name>",
         ));
     };
     if range == 0 {
@@ -1228,6 +1234,9 @@ fn parse_scientific_range_u128(value: &str) -> Result<u128, CliError> {
 
     let (significand, fractional_digits) = parse_range_mantissa(mantissa)?;
     let exponent = parse_range_exponent(exponent)?;
+    if significand == 0 {
+        return Err(CliError::usage("range must be greater than zero"));
+    }
 
     if exponent >= fractional_digits {
         checked_mul_pow10(significand, exponent - fractional_digits)
@@ -1426,8 +1435,9 @@ fn resolve_legacy_dictionary_shape(
 ) -> Result<Vec<NamedWordList>, CliError> {
     match dictionary {
         DEFAULT_DICTIONARY | DEFAULT_LIST_NAME | "bip39-english" => {
-            let words = words
-                .ok_or_else(|| CliError::usage("dictionary `bip39-en` requires --words <N>"))?;
+            let words = words.ok_or_else(|| {
+                CliError::usage(format!("dictionary `{dictionary}` requires --words <N>"))
+            })?;
             repeat_list(NamedWordList::Bip39English, words)
         }
         ADJECTIVE_ANIMAL_DICTIONARY => {
@@ -1922,7 +1932,11 @@ const PLAN_HELP: &str = "\
 nwords plan: show capacity and range statistics
 
 USAGE:
-    nwords plan (--preset <name> | --shape <lists> [--list NAME=PATH]... | --range <R> [--shape <lists> [--list NAME=PATH]... | --words <N>])
+    nwords plan --preset <name>
+    nwords plan --shape <lists> [--list NAME=PATH]... [--range <R>]
+    nwords plan --dict <name> [--words <N>] [--range <R>]
+    nwords plan --words <N> [--range <R>]
+    nwords plan --range <R>
 
 DESCRIPTION:
     Reports phrase-shape capacity and, when a range is provided, whether the
@@ -1948,6 +1962,9 @@ EXAMPLES:
 
     nwords plan --shape descriptor,object
         Show list sizes and total capacity for the descriptor-object shape.
+
+    nwords plan --dict adjective-animal
+        Show the legacy two-word dictionary's full capacity.
 
     nwords plan --shape material,shape,object
         Show list sizes and total capacity for the material-shape-object shape.
@@ -1998,6 +2015,9 @@ DESCRIPTION:
 EXAMPLES:
     nwords bytes encode --text \"hello\"
         Encode UTF-8 text bytes.
+
+    nwords bytes encode --text -- \"-h\"
+        Encode text that resembles a help flag.
 
     nwords bytes encode --hex deadbeef
         Encode raw bytes from hexadecimal input.
@@ -2056,6 +2076,9 @@ DESCRIPTION:
 EXAMPLES:
     nwords text encode \"hello, world\"
         Encode text into a word phrase.
+
+    nwords text encode -- \"-h\"
+        Encode text that resembles a help flag.
 ";
 
 const TEXT_DECODE_HELP: &str = "\

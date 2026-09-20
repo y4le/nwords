@@ -189,6 +189,9 @@ fn presets_lists_stable_rows_and_caveat() {
     let text = stdout(&output);
     assert!(text.contains("Presets encode deterministic positional ID phrases"));
     assert!(
+        text.contains("BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.")
+    );
+    assert!(
         text.contains("name\tshape\tpermutation\twords\trange\tcapacity\tslack\tacceptance_ratio")
     );
     assert!(text.contains("dec6\tbip39-en,bip39-en\tidentity\t2\t1000000\t4194304\t3194304"));
@@ -293,6 +296,18 @@ fn plan_reports_capacity_and_unrepresentable_shapes() {
     assert!(text.contains("words: 2\n"));
     assert!(text.contains("capacity: 249417\n"));
     assert!(text.contains("slack: 149417\n"));
+
+    let full_dictionary = nwords(&["plan", "--dict", "adjective-animal"]);
+    assert!(full_dictionary.status.success());
+    assert!(stdout(&full_dictionary).contains("capacity: 249417\n"));
+
+    let full_words = nwords(&["plan", "--words", "2"]);
+    assert!(full_words.status.success());
+    assert!(stdout(&full_words).contains("capacity: 4194304\n"));
+
+    let missing_words = nwords(&["plan", "--dict", "bip39-english"]);
+    assert_eq!(missing_words.status.code(), Some(2));
+    assert!(stderr(&missing_words).contains("dictionary `bip39-english` requires --words"));
 }
 
 #[test]
@@ -717,6 +732,16 @@ fn range_accepts_exact_scientific_shorthand() {
     let fractional = nwords(&["plan", "--range", "1.5e0", "--shape", "adjective,animal"]);
     assert_eq!(fractional.status.code(), Some(2));
     assert!(stderr(&fractional).contains("must expand to an integer"));
+
+    let zero = nwords(&[
+        "plan",
+        "--range",
+        "0e999999999999999999",
+        "--shape",
+        "animal",
+    ]);
+    assert_eq!(zero.status.code(), Some(2));
+    assert!(stderr(&zero).contains("range must be greater than zero"));
 }
 
 #[test]
