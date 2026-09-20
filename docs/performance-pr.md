@@ -35,6 +35,7 @@ BIP-39 wallet mnemonic. Detailed reports contain IQRs and all diagnostic cells.
 |---|---:|---:|---:|---:|
 | [00-baseline](../benchmarks/results/performance/00-baseline.md) | 83.4 / 394.0 | 962.9 / 1,802.5 | 1,010.9 / 2,650.5 | 1,612.8 |
 | [01-redundant-work](../benchmarks/results/performance/01-redundant-work.md) | 84.7 / 392.3 | 909.5 / 1,364.5 | 936.9 / 1,310.7 | 1,613.4 |
+| [02-sorted-lookup](../benchmarks/results/performance/02-sorted-lookup.md) | 82.9 / 252.4 | 904.8 / 1,180.9 | 945.3 / 1,197.8 | 213.2 |
 
 ## Change log and review
 
@@ -52,6 +53,15 @@ The Rust binding constructs the codec once per call. Short phrases skip UTF-8 al
 
 Detailed [measurements](../benchmarks/results/performance/01-redundant-work.md) and
 [raw observations](../benchmarks/results/performance/01-redundant-work.json) include all rounds.
+
+### 02-sorted-lookup: Binary-search frozen sorted lists
+
+Implementation source: `a8bf2a23e7067b6b065b33729db3e53d1253bb61`. Opus review: `req_review_diff_f9c27f1dbcf28b0d`.
+
+Binary search replaces linear lookup for the measured adjective, animal, color and English BIP-39 paths. Every frozen index is checked, including strict sortedness and misses. Other named lists, the legacy AdjectiveAnimal adapter and Japanese remain unchanged. This stage also records lookup metadata so report prose remains accurate without changing the timing loops.
+
+Detailed [measurements](../benchmarks/results/performance/02-sorted-lookup.md) and
+[raw observations](../benchmarks/results/performance/02-sorted-lookup.json) include all rounds.
 
 ## Validation
 
