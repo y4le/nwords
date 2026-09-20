@@ -18,10 +18,10 @@ mod wordmap;
 pub use bitframe::{BitFrame, BitView};
 pub use error::{Error, Result};
 pub use permutation::{AffinePermutation, IdentityPermutation};
-#[cfg(all(feature = "alloc", feature = "stats"))]
-pub use symbol::BaseN;
 #[cfg(feature = "alloc")]
 pub use symbol::BigEndian11Bit;
+#[cfg(all(feature = "alloc", feature = "stats"))]
+pub use symbol::{BaseN, MixedRadix};
 pub use traits::{Permutation, WordMap};
 pub use wordmap::{Linear, Sorted};
 
@@ -41,5 +41,5 @@ pub mod prelude {
     };
 
     #[cfg(all(feature = "alloc", feature = "stats"))]
-    pub use crate::BaseN;
+    pub use crate::{BaseN, MixedRadix};
 }

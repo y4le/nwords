@@ -51,6 +51,83 @@ surface. Use property tests:
 4. If a permutation is configured, `invert(permute(id)) == id` over the domain.
 5. The encoder never emits a symbol index outside the wordlist length for the
    current position.
+6. Mixed-radix codecs round-trip boundary IDs over non-uniform per-position
+   dictionary sizes and reject the first slack representation.
+
+### Named word-list shapes
+
+Named word-list shapes are curated built-in positional dictionaries, not random
+name generators.
+
+Required checks:
+
+1. `WordListSequence` dispatches position `i` to the named list at `shape[i]`.
+2. Position 0 is adjectives and position 1 is animals for the compatibility
+   adjective-animal shape.
+3. Counts and capacity are stable: 749 adjectives, 333 animals, 52 colors,
+   1,437 descriptors, 3,051 objects, 64 moods, 64 materials, 40 shapes,
+   40 weather terms, 128 plants, 128 foods, 249,417 adjective-animal phrase
+   states, 12,969,684 color-adjective-animal phrase states, 4,384,287
+   descriptor-object phrase states, 227,982,924 color-descriptor-object phrase
+   states, 280,594,368 mood-descriptor-object phrase states, 7,810,560
+   material-shape-object phrase states, 15,962,688 mood-adjective-animal phrase
+   states, 183,936 descriptor-plant phrase states, 7,357,440
+   weather-descriptor-plant phrase states, 11,771,904 mood-descriptor-food
+   phrase states, and 327,680 material-shape-food phrase states.
+4. Boundary words are stable (`able`/`zippy`, `aardvark`/`zebra`,
+   `amaranth`/`yellow`, `abalone`/`zircon`, `aardvark`/`zydeco`,
+   `alert`/`zestful`, `acrylic`/`zinc`, `angular`/`zigzag`, and
+   `balmy`/`wintry`, `abelia`/`zinnia`, and `almond`/`zucchini`) because
+   word order is an encoding contract.
+5. CLI `aa` preset maps `0` to the first adjective-animal pair and
+   `capacity - 1` to the last pair.
+6. CLI `descriptor-object` preset maps `0` to the first descriptor-object pair
+   and `capacity - 1` to the last pair.
+7. CLI authored semantic presets map `0` to first words and `capacity - 1` to
+   last words, including plant and food presets.
+8. CLI `plan --shape color,adjective,animal`,
+   `plan --shape descriptor,object`, and
+   `plan --shape material,shape,object`, and
+   `plan --shape weather,descriptor,plant` report per-position list sizes and
+   total capacity without requiring a range.
+9. CLI `--shape color,adjective,animal` and `--shape descriptor,object`
+   round-trip custom ranges.
+10. CLI custom `--shape`, `--words`, and legacy `--dict` encode/decode without
+   `--range` use exact full capacity as the accepted range when capacity fits
+   in `u128`.
+11. CLI custom encode/decode without `--range` rejects `BeyondU128` shapes with
+   a clear message requiring `--range`.
+12. CLI narrowed custom ranges still reject slack phrase states during decode.
+13. CLI range parsing accepts exact shorthand such as `1e6` and rejects
+   non-integer shorthand expansions.
+14. CLI rejects the generic `word` list name and suggests `bip39-en`.
+15. SHA256SUMS covers upstream snapshots, blocklists, curated snapshots,
+   authored snapshots, source READMEs, and upstream licenses.
+16. CLI `lists` reports built-in shape-list canonical names, aliases, advisory
+   roles, word counts, and sample words.
+17. `plant` and `food` authored word lists are disjoint.
+
+### User-defined word-list files
+
+User-defined wordlists are owned runtime lists used only through explicit
+`--list name=path` CLI options and ordered `--shape` entries.
+
+Required checks:
+
+1. `--list` is rejected unless `--shape` is present, and is rejected with
+   `--preset`, `--dict`, or `--words`.
+2. Files must be valid UTF-8, lowercase ASCII, one word per accepted line.
+3. Blank lines and full-line `#` comments are ignored.
+4. File order is preserved as encoding order.
+5. Duplicate words report the duplicate line and first-seen line.
+6. Invalid words report the source line.
+7. Invalid names, built-in name collisions, duplicate list names, unreferenced
+   user lists, too-few words, excessive file size, excessive line length, and
+   excessive accepted word count are rejected.
+8. Mixed built-in/user-defined shapes round-trip encode and decode.
+9. `plan` and `--explain` report user-list word counts and non-security
+   `fnv1a64` drift fingerprints.
+10. Any shape containing a user-defined list reports `preset: custom`.
 
 ### Affine spread permutations
 

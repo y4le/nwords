@@ -9,10 +9,13 @@ repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["std", "bip39-english"]
-std = ["nwords-core/std"]
-bip39-english = []
+default = ["std", "bip39-english", "adjective-animal", "named"]
+std = ["alloc", "nwords-core/std"]
+alloc = ["nwords-core/alloc"]
+adjective-animal = ["named"]
+named = ["alloc"]
+bip39-english = ["alloc"]
 bip39-japanese = ["bip39-english"]
 
 [dependencies]
-nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false, features = ["alloc"] }
+nwords-core = { version = "0.1.0", path = "../nwords-core", default-features = false }

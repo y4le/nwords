@@ -15,28 +15,86 @@ The workspace includes a small `nwords` binary for positional ID phrases:
 ```sh
 cargo run -p nwords-cli -- encode 42 --preset u32
 cargo run -p nwords-cli -- decode "<phrase>" --preset u32
+cargo run -p nwords-cli -- encode 42 --preset aa
+cargo run -p nwords-cli -- encode 42 --preset descriptor-object
+cargo run -p nwords-cli -- encode 42 --preset mood-descriptor-object
+cargo run -p nwords-cli -- encode 42 --preset weather-descriptor-plant
+cargo run -p nwords-cli -- encode 4384286 --shape descriptor,object
+cargo run -p nwords-cli -- encode 1337 --range 1e6 --shape color,adjective,animal
 cargo run -p nwords-cli -- encode 42 --preset dec6-spread
+cargo run -p nwords-cli -- encode 5 --range 12 --shape project,animal --list project=words.txt
 cargo run -p nwords-cli -- text encode "hello"
 cargo run -p nwords-cli -- bytes encode --hex deadbeef
 cargo run -p nwords-cli -- presets
+cargo run -p nwords-cli -- lists
 cargo run -p nwords-cli -- plan --preset u32
-cargo run -p nwords-cli -- plan --range 1000000
+cargo run -p nwords-cli -- plan --range 1e6
+cargo run -p nwords-cli -- plan --shape descriptor,object
+cargo run -p nwords-cli -- plan --shape material,shape,object
+cargo run -p nwords-cli -- plan --shape mood,descriptor,food
+cargo run -p nwords-cli -- plan --shape project,animal --list project=words.txt
+cargo run -p nwords-cli -- plan --shape color,adjective,animal
+cargo run -p nwords-cli -- help encode
 ```
 
 `*-spread` presets apply a deterministic reversible permutation before
 positional encoding, so nearby assigned IDs usually produce less visually
 similar phrases. They are not encryption and do not add entropy.
 
+For custom `--shape`, `--words`, or legacy `--dict` encoding, omit `--range`
+to use the exact full phrase capacity as the accepted ID range. Provide
+`--range` to narrow the accepted domain and reject slack phrase states. Shapes
+whose full capacity exceeds `u128` require an explicit `--range`.
+
 `text` and `bytes` commands use `word-bytes-v1`: a 32-bit big-endian byte
 length, payload bytes, and zero padding to an 11-bit word boundary. Text is
 encoded as byte-exact UTF-8 with no default Unicode normalization.
 
-The CLI uses the BIP-39 English wordlist as a positional dictionary. It does
-not produce BIP-39 wallet mnemonics:
+The CLI includes BIP-39 English positional presets and named word-list shapes
+such as `adjective,animal`, `descriptor,object`, and
+`weather,descriptor,plant` and `mood,descriptor,food`. BIP-39 positional
+presets do not produce BIP-39 wallet mnemonics:
 
 ```text
 BIP-39 wordlist used as a positional dictionary, not a BIP-39 mnemonic.
 ```
+
+Named-list presets use ordered word maps derived from MIT-licensed source
+lists: `unique-names-generator` for adjective, animal, and color, and
+`glitchdotcom/friendly-words` for descriptor and object. Mood, material, shape,
+weather, plant, and food are authored in-repo from permissive seed references.
+They are deterministic ID encodings, not random names:
+
+```sh
+cargo run -p nwords-cli -- encode 0 --preset aa
+# able aardvark
+cargo run -p nwords-cli -- encode 249416 --preset aa
+# zippy zebra
+cargo run -p nwords-cli -- encode 0 --preset color-aa
+# amaranth able aardvark
+cargo run -p nwords-cli -- encode 0 --preset descriptor-object
+# abalone aardvark
+cargo run -p nwords-cli -- encode 0 --preset color-descriptor-object
+# amaranth abalone aardvark
+cargo run -p nwords-cli -- encode 0 --preset mood-descriptor-object
+# alert abalone aardvark
+cargo run -p nwords-cli -- encode 0 --preset material-shape-object
+# acrylic angular aardvark
+cargo run -p nwords-cli -- encode 0 --preset weather-descriptor-plant
+# balmy abalone abelia
+cargo run -p nwords-cli -- encode 0 --preset mood-descriptor-food
+# alert abalone almond
+```
+
+User-defined lists can be mixed with built-ins by passing repeatable
+`--list name=path` entries and referencing `name` inside `--shape`. Files use
+one lowercase ASCII word per line; blank lines and full-line `#` comments are
+ignored, with only outer ASCII whitespace trimmed. Pin and share the same list
+files for reproducible decoding. The CLI reports an `fnv1a64:<hex>` drift
+fingerprint for user lists; it is not a security hash.
+
+Run `nwords lists` to see built-in shape word-list names, aliases, roles,
+sizes, and sample words.
 
 ### BIP-39 English
 
@@ -87,6 +145,50 @@ assert_eq!(
 );
 ```
 
+### Adjective-Animal IDs
+
+```rust
+use nwords::{
+    positional::MixedPositional,
+    wordlists::adjective_animal::{AdjectiveAnimal, CAPACITY, WORD_COUNT},
+};
+
+let codec = MixedPositional::new(AdjectiveAnimal, WORD_COUNT, CAPACITY)
+    .expect("valid adjective-animal shape");
+
+assert_eq!(codec.encode(0).expect("in range"), "able aardvark");
+assert_eq!(
+    codec.decode_words(&["zippy", "zebra"]).expect("valid phrase"),
+    CAPACITY - 1
+);
+```
+
+### Named Word-List Shapes
+
+```rust
+use nwords::{
+    positional::MixedPositional,
+    wordlists::named::{NamedWordList, WordListSequence},
+};
+
+let lists = [
+    NamedWordList::Color,
+    NamedWordList::Adjective,
+    NamedWordList::Animal,
+];
+let shape = WordListSequence::new(&lists);
+let codec = MixedPositional::new(shape, shape.word_count(), 12_969_684)
+    .expect("valid named shape");
+
+assert_eq!(codec.encode(0).expect("in range"), "amaranth able aardvark");
+assert_eq!(
+    codec
+        .decode_words(&["yellow", "zippy", "zebra"])
+        .expect("valid phrase"),
+    12_969_683
+);
+```
+
 ### Stats Planning
 
 ```rust
@@ -114,6 +216,8 @@ assert_eq!(bip39.word_count, 18);
 | `std` | yes | Standard-library support; enables `alloc`. |
 | `alloc` | yes | `String`, `Vec`, and phrase-facing APIs in `no_std` builds. |
 | `stats` | yes | Exact capacity and planning helpers under `nwords::stats`. |
+| `adjective-animal` | yes | Compatibility adjective-animal word map. |
+| `named` | yes | Named word lists and ordered phrase shapes. |
 | `bip39` | yes | BIP-39 English phrase codec. |
 | `bip39-japanese` | no | Japanese wordlist, U+3000 display, and Unicode parsing. |
 | `bip39-seed` | no | PBKDF2-HMAC-SHA512 seed derivation. |
@@ -121,6 +225,9 @@ assert_eq!(bip39.word_count, 18);
 | `word-bytes` | yes | `word-bytes-v1` arbitrary byte and UTF-8 text codec. |
 
 ## Static Web Demo
+
+For reusable Node/browser output and the Murmur naming use case, see the
+[JavaScript / WASM package plan](docs/wasm-package-plan.md).
 
 The repository includes a small browser demo under `site/` backed by the Rust
 implementation compiled to WebAssembly from `crates/nwords-web`.
@@ -166,10 +273,16 @@ V1 ships:
 - `word-bytes-v1` CLI/library support for arbitrary bytes and UTF-8 text.
 - BIP-39 English and Japanese entropy, mnemonic, checksum, and seed-vector
   compatibility.
-- Positional N-word codecs over user-provided dictionaries.
+- Uniform and mixed-radix positional N-word codecs over user-provided and
+  built-in dictionaries.
+- Curated English named word lists, ordered phrase shapes, and CLI presets.
 - Exact `u128` capacity/range math plus log-domain estimates beyond `u128`.
 - `Linear` and `Sorted` word maps.
 - Identity and affine spread permutations.
+
+Built-in word-list names, contents, and order are compatibility surfaces.
+Changing a shipped list requires a new list name or version rather than an
+in-place edit.
 
 V1 intentionally defers SLIP-39, Niceware, Proquint, PGP word lists,
 non-identity permutations, BIP-32/xprv derivation, and BigInt-backed exact

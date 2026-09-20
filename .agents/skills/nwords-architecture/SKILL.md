@@ -41,6 +41,9 @@ and `execution-plan.md` for sequencing.
      `nwords::stats::bip39` helpers when the umbrella `stats` and `bip39`
      features are enabled.
    - Positional N-word: use stats helper calculations.
+   - Ordered named word-list shapes: use `named::WordListSequence` over
+     `MixedPositional`; the shape order is part of the encoding contract.
+     Do not add a new core trait for single-position word lists.
    - Spread positional IDs: use the `Permutation` layer over the accepted ID
      range; do not rely on dictionary shuffling for diffusion.
    - Arbitrary text: encode bytes first; text is a UTF-8 adapter over byte
@@ -52,7 +55,8 @@ and `execution-plan.md` for sequencing.
    - ID range or desired decimal digit count.
    - Dictionary size.
    - Word count.
-   - Mixed per-position dictionary sizes, if applicable.
+   - Mixed per-position dictionary sizes or named word-list sequence, if
+     applicable.
 3. Use `nwords::stats` once implemented. Before implementation, use the formulas
    in `docs/research/stats-helper-notes.md`.
 4. Record outputs using precise terms:

@@ -10,7 +10,16 @@ homepage.workspace = true
 readme.workspace = true
 
 [features]
-default = ["std", "alloc", "bip39", "positional", "stats", "word-bytes"]
+default = [
+    "std",
+    "alloc",
+    "adjective-animal",
+    "named",
+    "bip39",
+    "positional",
+    "stats",
+    "word-bytes",
+]
 std = [
     "alloc",
     "nwords-core/std",
@@ -21,9 +30,12 @@ std = [
 alloc = [
     "nwords-core/alloc",
     "nwords-schemes/alloc",
+    "nwords-wordlists?/alloc",
     "nwords-bip39-seed?/alloc",
 ]
 stats = ["nwords-core/stats"]
+adjective-animal = ["named", "nwords-wordlists/adjective-animal"]
+named = ["dep:nwords-wordlists", "nwords-wordlists/named"]
 bip39 = ["bip39-english"]
 bip39-english = [
     "alloc",

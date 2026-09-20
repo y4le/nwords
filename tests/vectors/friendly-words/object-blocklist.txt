@@ -1,0 +1,13 @@
+actress
+author
+child
+dead
+driver
+farmer
+king
+knife
+pilot
+poison
+sword
+teacher
+writer

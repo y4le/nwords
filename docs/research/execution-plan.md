@@ -8,7 +8,8 @@ architecture decisions and Claude/Codex Parley planning consensus.
 V1 ships:
 
 - BIP-39 English and Japanese.
-- Positional N-word codecs.
+- Uniform and mixed-radix positional N-word codecs.
+- Curated English named word lists, ordered phrase shapes, and CLI presets.
 - Stats helpers for capacity, word-count, dictionary-size, and ID-range
   planning.
 - `Linear` and `Sorted` word maps.
@@ -97,7 +98,8 @@ Implement:
 
 - `BigEndian11Bit`
 - `BaseN` positional codec
-- positional facade in `nwords-schemes`
+- `MixedRadix` positional codec for per-position dictionary sizes
+- uniform and mixed positional facades in `nwords-schemes`
 
 Acceptance gate:
 
@@ -106,6 +108,7 @@ Acceptance gate:
 - Boundary IDs `0` and `range - 1` round-trip.
 - First rejected representation is rejected.
 - No emitted symbol index is outside `WordMap::len(position)`.
+- Mixed-radix boundary IDs round-trip across non-uniform position sizes.
 
 ## Phase 2A: Stats Helper Kernel And Planner
 
@@ -257,6 +260,8 @@ Finish:
 - Feature matrix.
 - `no_std + alloc` documentation.
 - `nwords::stats` re-exports.
+- Curated named-list provenance, default feature wiring, ordered CLI `--shape`
+  support, and CLI presets.
 - `std`-gated advisory stats formatting if included.
 - Repo-local agent skill for architecture decisions:
   `.agents/skills/nwords-architecture/SKILL.md`.

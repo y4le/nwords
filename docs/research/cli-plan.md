@@ -63,7 +63,7 @@ No CLI dependency should pull complexity into the library crates.
 
 The CLI wraps `nwords::positional::Positional`.
 
-For a uniform dictionary:
+For a uniform shape:
 
 ```text
 capacity = dictionary_size ^ word_count
@@ -78,6 +78,21 @@ map into slack. These are positional-codec errors, not BIP-39 mnemonic errors.
 Exact CLI planning remains bounded by the existing `u128` range model. Do not
 ship a `u128` preset for now because a full `[0, 2^128)` domain cannot be
 represented as an exclusive `u128` upper bound.
+
+For ordered named-list shapes such as `adjective,animal`, the CLI wraps
+`nwords::positional::MixedPositional` over
+`nwords::wordlists::named::WordListSequence`. These shapes have intrinsic
+position counts; users provide `--shape` and omit `--words`. If `--range` is
+omitted for explicit custom `--shape`, `--words`, or legacy `--dict` inputs,
+the CLI uses the exact full phrase capacity as the accepted ID range. If that
+capacity is `BeyondU128`, encode/decode reject omitted `--range` and require an
+explicit finite accepted range. Providing `--range` narrows the accepted domain
+and keeps slack rejection semantics. The older `--dict adjective-animal` form
+remains a compatibility alias.
+
+Preset names keep their configured ranges. For example, `--preset dec6` means
+range `[0, 1_000_000)`, not the full capacity of its underlying two-word
+BIP-39 positional shape.
 
 Do not describe preset capacity as security entropy unless the input IDs are
 uniformly sampled from the stated range.
@@ -97,9 +112,9 @@ Phase-1 preset:
 
 | Preset | Range | Dictionary | Words | Capacity | Slack | Acceptance |
 |---|---:|---|---:|---:|---:|---:|
-| `u32` | `2^32` | `bip39-en-positional` | 3 | `8_589_934_592` | `4_294_967_296` | `1/2` |
+| `u32` | `2^32` | `bip39-en,bip39-en,bip39-en` | 3 | `8_589_934_592` | `4_294_967_296` | `1/2` |
 
-Dictionary identifier:
+Legacy dictionary identifier:
 
 ```text
 bip39-en-positional
@@ -147,11 +162,14 @@ Add:
 
 ```sh
 nwords presets
+nwords lists
 nwords plan --preset u32
 nwords plan --range <range>
+nwords plan --shape <lists>
+nwords help <command>
 ```
 
-Recommended presets, all using `bip39-en-positional`:
+Recommended presets, all using repeated `bip39-en` shapes:
 
 | Preset | Range | Words | Capacity | Slack | Acceptance |
 |---|---:|---:|---:|---:|---:|
@@ -164,7 +182,7 @@ Recommended presets, all using `bip39-en-positional`:
 `presets` should print:
 
 - preset name;
-- dictionary;
+- shape;
 - word count;
 - accepted range;
 - capacity;
@@ -173,9 +191,14 @@ Recommended presets, all using `bip39-en-positional`:
 
 `plan --preset <name>` should report the same precise terms for one preset.
 `plan --range <range>` should use `nwords::stats` to choose the required word
-count for the default dictionary size. If `--words <N>` is supplied, it should
-report whether that word count can represent the range. It should use precise
-terms: capacity, range, slack, and acceptance ratio.
+count for the default BIP-39 English list size. If `--words <N>` is supplied, it
+should report whether that word count can represent the range. It should use
+precise terms: capacity, range, slack, and acceptance ratio.
+`plan --shape <lists>` should report shape-only stats without requiring a
+range: ordered list names, per-position list sizes, word count, and total
+capacity.
+`help <command>` should print detailed command help with usage, options,
+example commands, and one-line descriptions for those examples.
 
 README updates belong in this phase, including the BIP-39-positional caveat.
 
@@ -184,31 +207,54 @@ README updates belong in this phase, including the BIP-39-positional caveat.
 Add:
 
 ```sh
-nwords encode 123 --range 1000000 --words 2 --dict bip39-en-positional
-nwords decode <words...> --range 1000000 --words 2 --dict bip39-en-positional
+nwords encode 123 --range 1000000 --words 2
+nwords decode <words...> --range 1000000 --words 2
+nwords encode 4194303 --words 2
+nwords decode "zoo zoo" --words 2
 nwords encode 123 --preset dec6 --explain
+nwords encode 123 --range 100000 --shape adjective,animal
+nwords encode 249416 --shape adjective,animal
+nwords encode 1337 --range 1e6 --shape color,adjective,animal
 ```
 
 Custom flags:
 
 | Flag | Meaning |
 |---|---|
-| `--range <R>` | accepted exclusive ID range `[0, R)` |
+| `--range <R>` | optional accepted exclusive ID range `[0, R)`; accepts decimal digits or exact scientific shorthand such as `1e6`; omit with explicit custom shapes to use exact full capacity |
 | `--words <N>` | fixed output word count |
-| `--dict <name>` | named dictionary |
-| `--preset <name>` | named range/dictionary/word-count bundle |
+| `--shape <lists>` | comma-separated ordered named word lists |
+| `--dict <name>` | legacy named dictionary alias |
+| `--preset <name>` | named range/shape/permutation bundle |
 | `--explain` | print planning data along with encode/decode output |
 
-Initial dictionary choices:
+Initial shape/list choices:
 
 | Name | Meaning |
 |---|---|
-| `bip39-en-positional` | BIP-39 English wordlist used as a positional dictionary |
+| `bip39-en` | BIP-39 English wordlist used as a positional dictionary |
+| `adjective` | Curated adjective list |
+| `animal` | Curated animal list |
+| `color` | Upstream color list |
+| `adjective,animal` | Curated two-position adjective-animal shape |
 
-Potential later dictionary choices:
+Potential later choices:
 
 - `bip39-ja-positional`, only after separator/display behavior is settled;
-- user-provided dictionary files, only after the built-in CLI surface is stable.
+- user-provided word-list files, only after the built-in CLI surface is stable.
+
+Additive adjective-animal presets:
+
+| Preset | Range | Dictionary | Words | Capacity | Slack |
+|---|---:|---|---:|---:|---:|
+| `aa` | `249_417` | `adjective,animal` | 2 | `249_417` | 0 |
+| `dec5-aa` | `100_000` | `adjective,animal` | 2 | `249_417` | `149_417` |
+| `color-aa` | `12_969_684` | `color,adjective,animal` | 3 | `12_969_684` | 0 |
+
+Preset definitions are kept as Rust constants in V1 using fields equivalent to
+`name`, `range`, `shape`, and `permutation`. A separate YAML copy is deferred
+because it would drift unless it drives code generation, and a YAML parser
+dependency is not justified for the built-in table.
 
 Parser dependency decision:
 
@@ -237,7 +283,7 @@ or:
 ```text
 phrase: abandon ability ...
 preset: u32
-dictionary: bip39-en-positional
+shape: bip39-en,bip39-en,bip39-en
 words: 3
 range: 4294967296
 capacity: 8589934592
@@ -270,19 +316,27 @@ Required Phase-2 tests:
 - each preset round-trips boundary IDs `0` and `range - 1`.
 - `plan --range` returns the same word count as `nwords::stats::required_words`.
 - `plan --range --words` reports range/capacity/slack accurately.
+- `--range` accepts exact shorthand such as `1e6` and rejects non-integer
+  shorthand expansions.
+- `help <command>` and nested help such as `help bytes encode` print detailed
+  usage examples.
 
 Required Phase-3 tests:
 
 - custom `--range` and `--words` round-trip.
+- custom encode/decode without `--range` uses exact full capacity when capacity
+  fits in `u128`.
+- custom encode/decode without `--range` rejects `BeyondU128` shapes with a
+  clear message requiring `--range`.
 - `--explain` reports capacity, range, slack, and acceptance ratio.
-- alternate dictionary names either work or fail with a usage error.
+- alternate shape/list names either work or fail with a usage error.
 
 ## Deferred Questions
 
 - Full `u128` domain support. This needs a representation for exclusive
   `2^128` or a separate inclusive-domain path.
 - Non-BIP-39 dictionaries.
-- User-provided dictionary files.
+- User-provided word-list files.
 - JSON output.
 - Shell completions.
 - Security recommendation policy such as "choose at least N bits".
