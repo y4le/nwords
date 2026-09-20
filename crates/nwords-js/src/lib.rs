@@ -173,13 +173,11 @@ impl Shape {
                 }
             },
         };
-        let shape = Self {
+        Ok(Self {
             lists,
             range,
             capacity,
-        };
-        shape.codec()?; // Keep construction/range validation authoritative in the Rust codec.
-        Ok(shape)
+        })
     }
 
     fn codec(&self) -> Result<MixedPositional<WordListSequence<'_>>, BindingError> {
@@ -219,6 +217,7 @@ pub fn lists_json() -> String {
 pub fn describe_shape_json(lists: &str, range: Option<String>) -> String {
     envelope((|| {
         let shape = Shape::resolve(lists, range.as_deref())?;
+        shape.codec()?; // Description must validate the range without encoding an ID.
         let lists = shape
             .lists
             .iter()

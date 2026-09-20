@@ -2,6 +2,7 @@ import { NwordsError } from './errors.js';
 
 const MAX_U128 = (1n << 128n) - 1n;
 const names = new Set(['adjective', 'animal', 'color']);
+let utf8;
 
 function fail(code, message, field, position) {
   throw new NwordsError(code, message, { field, position });
@@ -64,7 +65,10 @@ export function createApi(wasm) {
       return result(wasm.encode_id_json(decimal(id, 'id'), ...shapeInput(shape)));
     },
     decodePhrase(phrase, shape) {
-      if (typeof phrase !== 'string' || phrase.length > 4096 || new TextEncoder().encode(phrase).length > 4096) {
+      // At most three UTF-8 bytes per UTF-16 code unit, including lone surrogates.
+      // Retain the byte check for longer strings and its precedence over shape errors.
+      if (typeof phrase !== 'string' || phrase.length > 4096 ||
+          (phrase.length > 1365 && (utf8 ??= new TextEncoder()).encode(phrase).length > 4096)) {
         fail('INVALID_PHRASE', 'Phrase must be a string of at most 4096 UTF-8 bytes.', 'phrase');
       }
       return BigInt(result(wasm.decode_phrase_json(phrase, ...shapeInput(shape))));

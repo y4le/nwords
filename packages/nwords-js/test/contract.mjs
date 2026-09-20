@@ -62,6 +62,13 @@ export function verifyApi(api, NwordsError, vectors) {
     fails(() => api.decodePhrase(phrase, shape), 'INVALID_PHRASE', 'phrase');
   }
   check(api.decodePhrase('\t able\u2003aardvark\n', shape) === 0n, 'Rust Unicode whitespace parsing');
+  check(api.decodePhrase('\u2003'.repeat(1352) + 'able aardvark', shape) === 0n, 'Short UTF-16 bound admits valid Unicode');
+  check(api.decodePhrase('\u2003'.repeat(1361) + 'able aardvark', shape) === 0n, 'Exactly 4096 UTF-8 bytes');
+  fails(() => api.decodePhrase('\u2003'.repeat(1361) + 'able aardvark ', shape), 'INVALID_PHRASE', 'phrase');
+  fails(() => api.decodePhrase('\u2003'.repeat(1361) + 'able aardvark ', null), 'INVALID_PHRASE', 'phrase');
+  fails(() => api.decodePhrase('able aardvark', { ...shape, range: 0n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.encodeId(0n, { ...shape, range: 0n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.encodeId(0n, { ...shape, range: 249418n }), 'INVALID_SHAPE', 'range');
   const error = fails(() => api.decodePhrase('able secret-token', shape), 'INVALID_PHRASE', 'phrase', 1);
   check(!error.message.includes('secret-token') && !JSON.stringify(error).includes('secret-token'), 'Never echo raw input');
   check(api.encodeId(42n, shape) === 'able cardinal', 'Ordinary codec errors do not poison the instance');
