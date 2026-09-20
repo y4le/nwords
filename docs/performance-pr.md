@@ -37,6 +37,7 @@ BIP-39 wallet mnemonic. Detailed reports contain IQRs and all diagnostic cells.
 | [01-redundant-work](../benchmarks/results/performance/01-redundant-work.md) | 84.7 / 392.3 | 909.5 / 1,364.5 | 936.9 / 1,310.7 | 1,613.4 |
 | [02-sorted-lookup](../benchmarks/results/performance/02-sorted-lookup.md) | 82.9 / 252.4 | 904.8 / 1,180.9 | 945.3 / 1,197.8 | 213.2 |
 | [03-startup](../benchmarks/results/performance/03-startup.md) | 82.5 / 252.3 | 902.1 / 1,181.4 | 918.6 / 1,198.6 | 213.3 |
+| [05-lean-results](../benchmarks/results/performance/05-lean-results.md) | 83.5 / 251.7 | 603.4 / 699.1 | 698.5 / 669.9 | 213.3 |
 
 ## Change log and review
 
@@ -78,6 +79,15 @@ uses 30 fresh processes per mode on CPU 19 with the stage-02 artifact. Normal
 instrumented load is 17.905 ms; prewarming Request/Response costs 16.916 ms and
 leaves 1.543 ms for load. These overlapping instrumented medians establish the
 source of the cost; they are not subtracted from the ordinary cold measurements.
+
+### 05-lean-results: Return phrases and BigInts directly on success
+
+Implementation source: `18ce12c249394359f87b096c961824cebc7308a8`. Opus review: `req_review_diff_9992816c862a50df`.
+
+Encode/decode success paths no longer serialize and parse JSON. Rust still validates canonical decimal inputs, including raw ABI calls; decode returns exact BigInt through wasm-bindgen. Errors, metadata and legacy diagnostic exports retain their envelopes. Raw and public vector checks include the full-u128 boundary.
+
+Detailed [measurements](../benchmarks/results/performance/05-lean-results.md) and
+[raw observations](../benchmarks/results/performance/05-lean-results.json) include all rounds.
 
 ## Validation
 
