@@ -1,9 +1,40 @@
-export type ListName = 'adjective' | 'animal' | 'color';
+export type ListName = 'adjective' | 'animal' | 'color' | 'object' | 'descriptor' |
+  'mood' | 'material' | 'shape' | 'weather' | 'plant' | 'food' | 'eff-long' | 'bip39-en';
+/** Exact ordered Unicode vocabulary; tokens have 1–64 UTF-8 bytes, no whitespace or controls. */
+export interface CustomWordList {
+  readonly name: string;
+  readonly words: readonly string[];
+  readonly role?: 'modifier' | 'head' | 'either';
+}
+export type ListSource = ListName | CustomWordList;
 /** Strings must be canonical unsigned decimal integers within u128 at runtime. */
 export type IntegerInput = bigint | string;
 export interface Shape {
-  readonly lists: readonly ListName[];
+  readonly scheme?: 'positional-v1';
+  readonly lists: readonly ListSource[];
   readonly range?: IntegerInput;
+  readonly pattern?: never;
+  readonly maxWords?: never;
+}
+export interface RepeatSlot {
+  readonly list: ListSource;
+  readonly repeat: { readonly min: 0 | 1 };
+}
+/** One leading repeat and a nonempty fixed suffix; at least one bound is required. */
+export type VariableFormat = {
+  readonly scheme: 'variable-v1';
+  readonly pattern: readonly [RepeatSlot, ListSource, ...ListSource[]];
+  readonly lists?: never;
+} & ({ readonly range: IntegerInput; readonly maxWords?: number } |
+     { readonly range?: IntegerInput; readonly maxWords: number });
+export type IdFormat = Shape | VariableFormat;
+/** Length-framed mixed-radix bytes; distinct from legacy word-bytes-v1. */
+export interface ByteFormat {
+  readonly scheme: 'radix-bytes-v1';
+  readonly lists: readonly ListSource[];
+  readonly range?: never;
+  readonly pattern?: never;
+  readonly maxWords?: never;
 }
 export interface ListInfo {
   readonly name: ListName;
@@ -14,33 +45,71 @@ export type Capacity =
   | { readonly kind: 'exact'; readonly value: bigint }
   | { readonly kind: 'beyond-u128'; readonly log2: { readonly lower: number; readonly upper: number } };
 export interface ShapeInfo {
-  readonly lists: readonly ListName[];
+  readonly lists: readonly ListSource[];
   readonly range: bigint;
   readonly capacity: Capacity;
 }
-/** Immutable shape snapshot. FinalizationRegistry cleanup is best effort; dispose releases it promptly. */
+export interface VariableInfo {
+  readonly scheme: 'variable-v1';
+  readonly pattern: readonly [RepeatSlot, ListSource, ...ListSource[]];
+  readonly range: bigint;
+  readonly maxWords?: number;
+  readonly requiredWords: number;
+  readonly capacity: Capacity | { readonly kind: 'unbounded' };
+}
+export type FormatInfo = ShapeInfo | VariableInfo;
+export interface ByteInfo {
+  readonly scheme: 'radix-bytes-v1';
+  readonly lists: readonly ListSource[];
+  readonly minBlockWords: number;
+  readonly maxBlockWords: number;
+  readonly blockBytes: number;
+  readonly maxBytes: number;
+}
+/** Immutable snapshot. Dispose releases WASM storage promptly; finalization is best effort. */
 export interface PreparedCodec {
   encodeId(id: IntegerInput): string;
   decodePhrase(phrase: string): bigint;
-  /** Idempotent. Subsequent encode/decode calls throw DISPOSED. */
+  describe(): FormatInfo;
+  /** Uniformly samples an accepted ID using platform cryptographic randomness. */
+  generatePhrase(): string;
+  dispose(): void;
+}
+export interface PreparedBytes {
+  encodeBytes(bytes: Uint8Array): string;
+  decodeBytes(phrase: string): Uint8Array;
+  encodeText(text: string): string;
+  decodeText(phrase: string): string;
+  /** Encodes byteLength cryptographically random bytes. Maximum 4096 bytes. */
+  generatePassphrase(byteLength: number): string;
+  describe(): ByteInfo;
   dispose(): void;
 }
 export interface Nwords {
-  prepare(shape: Shape): PreparedCodec;
+  prepare(format: IdFormat): PreparedCodec;
+  prepareBytes(format: ByteFormat): PreparedBytes;
   lists(): readonly ListInfo[];
   describeShape(shape: Shape): ShapeInfo;
-  encodeId(id: IntegerInput, shape: Shape): string;
-  decodePhrase(phrase: string, shape: Shape): bigint;
+  describeShape(format: VariableFormat): VariableInfo;
+  describeShape(format: IdFormat): FormatInfo;
+  encodeId(id: IntegerInput, format: IdFormat): string;
+  decodePhrase(phrase: string, format: IdFormat): bigint;
+  generatePhrase(format: IdFormat): string;
+  encodeBytes(bytes: Uint8Array, format: ByteFormat): string;
+  decodeBytes(phrase: string, format: ByteFormat): Uint8Array;
+  encodeText(text: string, format: ByteFormat): string;
+  decodeText(phrase: string, format: ByteFormat): string;
+  generatePassphrase(byteLength: number, format: ByteFormat): string;
 }
 export type ErrorCode = 'INVALID_INPUT' | 'UNKNOWN_LIST' | 'INVALID_SHAPE' |
-  'CAPACITY_OVERFLOW' | 'OUT_OF_RANGE' | 'INVALID_PHRASE' | 'INTERNAL_ERROR' | 'DISPOSED';
+  'CAPACITY_OVERFLOW' | 'OUT_OF_RANGE' | 'INVALID_PHRASE' | 'INTERNAL_ERROR' |
+  'DISPOSED' | 'NUMERIC_OVERFLOW' | 'INVALID_UTF8' | 'RANDOM_UNAVAILABLE';
+export type ErrorField = 'id' | 'range' | 'shape' | 'phrase' | 'codec' | 'bytes' | 'text';
 export class NwordsError extends Error {
   readonly code: ErrorCode;
-  readonly field?: 'id' | 'range' | 'shape' | 'phrase' | 'codec';
+  readonly field?: ErrorField;
   readonly position?: number;
-  constructor(code: ErrorCode, message: string, details?: {
-    field?: 'id' | 'range' | 'shape' | 'phrase' | 'codec'; position?: number;
-  });
+  constructor(code: ErrorCode, message: string, details?: { field?: ErrorField; position?: number });
 }
 export class NwordsLoadError extends Error {
   readonly code: 'LOAD_FAILED' | 'ASSET_CONFLICT';

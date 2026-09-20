@@ -67,15 +67,15 @@ for (const name of ['README.md', 'NOTICE.md']) await cp(join(project, name), joi
 for (const name of ['LICENSE-MIT', 'LICENSE-APACHE']) await cp(join(root, name), join(output, name));
 
 // Include conservative notices for every named list compiled by the feature,
-// even when optimization removes data unreachable through our three-name API.
+// even when optimization removes data unreachable through the selected package API.
 const wordNotices = join(output, 'notices/wordlists');
-for (const group of ['adjective-animal', 'friendly-words', 'semantic-wordlists/mood', 'semantic-wordlists/material', 'semantic-wordlists/shape', 'semantic-wordlists/weather', 'semantic-wordlists/plant', 'semantic-wordlists/food']) {
+for (const group of ['eff-long', 'adjective-animal', 'friendly-words', 'semantic-wordlists/mood', 'semantic-wordlists/material', 'semantic-wordlists/shape', 'semantic-wordlists/weather', 'semantic-wordlists/plant', 'semantic-wordlists/food']) {
   const target = join(wordNotices, group);
   await mkdir(target, { recursive: true });
   await cp(join(root, 'tests/vectors', group, 'README.md'), join(target, 'README.md'));
 }
 await mkdir(join(wordNotices, 'licenses'), { recursive: true });
-for (const name of ['unique-names-generator-MIT.LICENSE', 'glitch-friendly-words-MIT.LICENSE']) {
+for (const name of ['unique-names-generator-MIT.LICENSE', 'glitch-friendly-words-MIT.LICENSE', 'eff-CC-BY-4.0.LICENSE', 'python-mnemonic-MIT.LICENSE']) {
   await cp(join(root, 'tests/vectors/licenses', name), join(wordNotices, 'licenses', name));
 }
 

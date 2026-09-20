@@ -38,3 +38,22 @@ const wrongPrepared: number = prepared.decodePhrase(preparedPhrase);
 void wrongPrepared;
 prepared.dispose();
 void preparedId;
+
+const custom = { name: 'pets', words: ['猫', 'dog', '🦊'] } as const;
+words.encodeId(1n, { lists: ['mood', custom, 'eff-long'] });
+const variable = { scheme: 'variable-v1', pattern: [{ list: 'adjective', repeat: { min: 0 } }, custom], maxWords: 3 } as const;
+const variableInfo = words.describeShape(variable);
+if (variableInfo.capacity.kind === 'unbounded') void variableInfo.requiredWords;
+words.prepare(variable).dispose();
+const byteFormat = { scheme: 'radix-bytes-v1', lists: ['eff-long', custom] } as const;
+const encodedBytes: string = words.encodeBytes(new Uint8Array([0, 1]), byteFormat);
+const decodedBytes: Uint8Array = words.decodeBytes(encodedBytes, byteFormat);
+const byteCodec = words.prepareBytes(byteFormat);
+byteCodec.encodeText('hello 世界'); byteCodec.generatePassphrase(16); byteCodec.dispose();
+words.generatePhrase({ lists: ['mood', custom] });
+// @ts-expect-error Variable patterns need a range or word bound.
+words.encodeId(0n, { scheme: 'variable-v1', pattern: [{list: 'adjective', repeat: {min: 0}}, 'animal'] });
+// @ts-expect-error Fixed and variable descriptors are mutually exclusive.
+words.encodeId(0n, {...variable, lists: ['animal']});
+// @ts-expect-error Byte codecs require their explicit versioned scheme.
+words.encodeBytes(decodedBytes, {lists: ['eff-long']});

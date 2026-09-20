@@ -30,6 +30,8 @@ Read these files first:
 - `docs/research/spread-and-byte-encoding-plan.md` for spread permutations and
   arbitrary byte/text word encoding.
 - `docs/code_standards.md` for implementation rules.
+- `docs/research/flexible-wordsets-plan.md` for variable-v1 IDs, arbitrary
+  wordset byte blocks, Unicode custom tokens, and Node/browser descriptors.
 
 If these files conflict, prefer `architecture-decisions.md` for API contracts
 and `execution-plan.md` for sequencing.
@@ -49,6 +51,10 @@ and `execution-plan.md` for sequencing.
    - Arbitrary text: encode bytes first; text is a UTF-8 adapter over byte
      encoding, with no default Unicode normalization. `word-bytes-v1` uses a
      fixed 32-bit big-endian byte length prefix.
+   - Variable IDs: use `VariablePositional`, with one leading repeat and fixed
+     suffix. `range`/`maxWords` restrict acceptance and never change mapping.
+   - Arbitrary wordset bytes: use `RadixBytes` / `radix-bytes-v1`; preserve the
+     eight-byte blocks, mandatory variable tail, and strict block/tail range checks. It is not Niceware wire format.
    - Niceware, Proquint, PGP, SLIP-39: post-V1 unless the plan explicitly says
      otherwise.
 2. State which inputs are fixed:

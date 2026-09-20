@@ -38,9 +38,10 @@ try {
   assert.equal(JSON.parse(await readFile(join(packed, 'build.json'), 'utf8')).sourceCommit, report.sourceCommit);
   const wasm = await readFile(join(packed, 'wasm/nwords_js_bg.wasm'));
   assert.equal(hash(wasm), report.wasm.sha256);
-  for (const name of ['LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE.md', 'notices/rust-1.94.0-stdlib.txt', 'notices/dependencies.json', 'notices/wordlists/licenses/unique-names-generator-MIT.LICENSE', 'notices/wordlists/licenses/glitch-friendly-words-MIT.LICENSE', 'examples/node.mjs', 'examples/browser.html']) assert((await readFile(join(packed, name))).length > 0, name);
+  for (const name of ['LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE.md', 'notices/rust-1.94.0-stdlib.txt', 'notices/dependencies.json', 'notices/wordlists/licenses/unique-names-generator-MIT.LICENSE', 'notices/wordlists/licenses/glitch-friendly-words-MIT.LICENSE', 'notices/wordlists/licenses/eff-CC-BY-4.0.LICENSE', 'notices/wordlists/eff-long/README.md', 'notices/wordlists/licenses/python-mnemonic-MIT.LICENSE', 'examples/node.mjs', 'examples/browser.html']) assert((await readFile(join(packed, name))).length > 0, name);
   for (const file of ['consumer.mjs', 'contract.mjs', 'types.ts']) await cp(join(project, 'test', file), join(temporary, file));
   await cp(join(root, 'tests/vectors/js/named-shapes.tsv'), join(temporary, 'vectors.tsv'));
+  await cp(join(root, 'tests/vectors/variable/variable-v1.tsv'), join(temporary, 'variable-vectors.tsv'));
   const isolated = { env: { ...process.env, PATH: join(temporary, 'no-tools') } };
   for (const mode of ['contract', 'bytes', 'no-web-globals']) run(process.execPath, [join(temporary, 'consumer.mjs'), mode], isolated);
   await writeFile(join(temporary, 'consumer.cjs'), "const assert = require('node:assert/strict'); import('@y4le/nwords/node').then(async ({loadNwords}) => { assert.equal((await loadNwords()).encodeId(42n, {lists:['adjective','animal']}), 'able cardinal'); }).catch(error => { console.error(error); process.exitCode = 1; });\n");
@@ -71,6 +72,7 @@ try {
   const origin = `http://127.0.0.1:${server.address().port}`;
   browser = await chromium.launch({ headless: true });
   const vectors = (await readFile(join(temporary, 'vectors.tsv'), 'utf8')).trim().split('\n').filter(row => !row.startsWith('#')).map(row => row.split('\t'));
+  const variableVectors = (await readFile(join(temporary, 'variable-vectors.tsv'), 'utf8')).trim().split('\n').filter(row => !row.startsWith('#')).map(row => row.split('\t'));
   const warnings = [];
   for (const mode of ['contract', 'retry', 'bytes']) {
     const page = await browser.newPage();
@@ -79,7 +81,7 @@ try {
     const beforeImport = requests;
     await page.evaluate(() => import('/package/src/web.js'));
     assert.equal(requests, beforeImport, 'Import must not fetch WASM');
-    await page.evaluate(async ({ mode, vectors }) => {
+    await page.evaluate(async ({ mode, vectors, variableVectors }) => {
       const { loadNwords, NwordsError, NwordsLoadError } = await import('/package/src/web.js');
       const { check, verifyApi } = await import('/contract.mjs');
       const fails = async (promise, code) => {
@@ -106,8 +108,8 @@ try {
       }
       check(await loadNwords() === api, 'Omitted source reuses instance');
       await fails(loadNwords({ source: '/different.wasm' }), 'ASSET_CONFLICT');
-      verifyApi(api, NwordsError, vectors);
-    }, { mode, vectors });
+      verifyApi(api, NwordsError, vectors, variableVectors);
+    }, { mode, vectors, variableVectors });
     await page.close();
   }
   assert.deepEqual(warnings, [], 'Generated initialization must not emit deprecated-argument warnings');
