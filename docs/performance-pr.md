@@ -36,6 +36,7 @@ BIP-39 wallet mnemonic. Detailed reports contain IQRs and all diagnostic cells.
 | [00-baseline](../benchmarks/results/performance/00-baseline.md) | 83.4 / 394.0 | 962.9 / 1,802.5 | 1,010.9 / 2,650.5 | 1,612.8 |
 | [01-redundant-work](../benchmarks/results/performance/01-redundant-work.md) | 84.7 / 392.3 | 909.5 / 1,364.5 | 936.9 / 1,310.7 | 1,613.4 |
 | [02-sorted-lookup](../benchmarks/results/performance/02-sorted-lookup.md) | 82.9 / 252.4 | 904.8 / 1,180.9 | 945.3 / 1,197.8 | 213.2 |
+| [03-startup](../benchmarks/results/performance/03-startup.md) | 82.5 / 252.3 | 902.1 / 1,181.4 | 918.6 / 1,198.6 | 213.3 |
 
 ## Change log and review
 
@@ -62,6 +63,21 @@ Binary search replaces linear lookup for the measured adjective, animal, color a
 
 Detailed [measurements](../benchmarks/results/performance/02-sorted-lookup.md) and
 [raw observations](../benchmarks/results/performance/02-sorted-lookup.json) include all rounds.
+
+### 03-startup: Avoid lazy Node web globals during initialization
+
+Implementation source: `2b18dfcda3fece6aa0bbc1ad830cd034c93e4708`. Opus review: `req_review_diff_1924821ffec30449`.
+
+The public loader remains asynchronous, compiling bytes before synchronously instantiating the compiled module. This avoids generic Request/Response checks in generated glue. Opus verified that the new Node guard fails with the original loader; retry, concurrency and source identity remain covered. Thirty separate instrumented probes report actual loader phases; normal uninstrumented cold results are authoritative.
+
+Detailed [measurements](../benchmarks/results/performance/03-startup.md) and
+[raw observations](../benchmarks/results/performance/03-startup.json) include all rounds.
+
+The separate [before-change control](../benchmarks/results/performance/startup-before-probes.json)
+uses 30 fresh processes per mode on CPU 19 with the stage-02 artifact. Normal
+instrumented load is 17.905 ms; prewarming Request/Response costs 16.916 ms and
+leaves 1.543 ms for load. These overlapping instrumented medians establish the
+source of the cost; they are not subtracted from the ordinary cold measurements.
 
 ## Validation
 

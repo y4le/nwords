@@ -1,0 +1,1290 @@
+{
+  "artifact": {
+    "schema": "nwords.build.v1",
+    "sourceCommit": "a8bf2a23e7067b6b065b33729db3e53d1253bb61",
+    "dirty": false,
+    "development": false,
+    "tools": {
+      "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+      "cargo": "cargo 1.94.0 (85eff7c80 2026-01-15)",
+      "wasmPack": "wasm-pack 0.14.0",
+      "wasmBindgen": "0.2.120",
+      "node": "v24.14.1",
+      "npm": "11.11.0"
+    },
+    "rustflags": [
+      "--remap-path-prefix=<workspace>/=/nwords/",
+      "--remap-path-prefix=<cargo-home>=/cargo"
+    ],
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-release; wasm-opt disabled",
+      "bytes": 130663,
+      "sha256": "771976ee2e959cc17f0cf97166bcea2a6e7abfa6cf2262c9f81583f4068744b9"
+    },
+    "cargoLockSha256": "ca3425a79ecc37e8fb025059632fa1e4f59b38aaa9c7d12d1187cc9d7c8bc1ef"
+  },
+  "cpu": 19,
+  "records": [
+    {
+      "round": 0,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 1.8358610000000013,
+        "compile": 0.3693640000000009,
+        "instantiate": 0.09115300000000559,
+        "load": 18.176589999999997,
+        "firstOperation": 1.094973000000003
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 0,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.706141000000002,
+        "publicImport": 1.6468349999999994,
+        "compile": 0.39315699999999865,
+        "instantiate": 0.07971300000000525,
+        "load": 1.6435069999999996,
+        "firstOperation": 0.9419949999999986
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 1,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 1.781460000000001,
+        "compile": 0.4183090000000007,
+        "instantiate": 0.09494499999999562,
+        "load": 18.588003,
+        "firstOperation": 0.9172429999999991
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 1,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.827771000000002,
+        "publicImport": 1.800819999999998,
+        "compile": 0.3713160000000002,
+        "instantiate": 0.10404900000000339,
+        "load": 1.5857619999999955,
+        "firstOperation": 0.8975940000000051
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 2,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.0765949999999993,
+        "compile": 0.4019250000000021,
+        "instantiate": 0.09334499999999935,
+        "load": 17.836523,
+        "firstOperation": 0.9067140000000009
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 2,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.736894,
+        "publicImport": 1.6043220000000034,
+        "compile": 0.38590899999999806,
+        "instantiate": 0.07500900000000144,
+        "load": 1.6480829999999997,
+        "firstOperation": 0.9164109999999965
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 3,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 1.5652819999999998,
+        "compile": 0.3873810000000013,
+        "instantiate": 0.08854500000000343,
+        "load": 18.451986,
+        "firstOperation": 0.9068260000000024
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 3,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.140050000000002,
+        "publicImport": 1.663539,
+        "compile": 0.36390799999999857,
+        "instantiate": 0.06972899999999882,
+        "load": 1.5005450000000025,
+        "firstOperation": 0.9359789999999997
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 4,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.1767450000000004,
+        "compile": 0.36952400000000196,
+        "instantiate": 0.0810730000000035,
+        "load": 16.932624,
+        "firstOperation": 0.9042659999999998
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 4,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.636909000000003,
+        "publicImport": 1.780740999999999,
+        "compile": 0.36107599999999707,
+        "instantiate": 0.07636899999999969,
+        "load": 1.5466250000000024,
+        "firstOperation": 0.898457999999998
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 5,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.007510999999999,
+        "compile": 0.3730760000000011,
+        "instantiate": 0.09587299999999743,
+        "load": 17.761082000000002,
+        "firstOperation": 0.9159780000000026
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 5,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.353557000000002,
+        "publicImport": 1.6498899999999992,
+        "compile": 0.4176689999999965,
+        "instantiate": 0.07742499999999808,
+        "load": 1.6357309999999998,
+        "firstOperation": 0.8971459999999993
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 6,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 1.6468509999999998,
+        "compile": 0.36283599999999794,
+        "instantiate": 0.08308900000000108,
+        "load": 18.109022,
+        "firstOperation": 0.9039779999999951
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 6,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 18.195726999999998,
+        "publicImport": 1.8685009999999984,
+        "compile": 0.3796040000000005,
+        "instantiate": 0.07990499999999656,
+        "load": 1.5402410000000017,
+        "firstOperation": 0.9496430000000018
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 7,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.9814740000000004,
+        "compile": 0.3922599999999985,
+        "instantiate": 0.09006500000000273,
+        "load": 17.440071000000003,
+        "firstOperation": 0.9223619999999997
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 7,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.382730000000002,
+        "publicImport": 1.7407400000000024,
+        "compile": 0.3697000000000017,
+        "instantiate": 0.07340899999999806,
+        "load": 1.6115540000000017,
+        "firstOperation": 0.995083000000001
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 8,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.7030230000000017,
+        "compile": 0.42858099999999766,
+        "instantiate": 0.09532899999999955,
+        "load": 17.860186999999996,
+        "firstOperation": 0.9249870000000016
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 8,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.583356000000002,
+        "publicImport": 1.7063400000000009,
+        "compile": 0.38611600000000124,
+        "instantiate": 0.07089700000000221,
+        "load": 1.4048800000000021,
+        "firstOperation": 0.9076579999999979
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 9,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.9297129999999996,
+        "compile": 0.37886800000000065,
+        "instantiate": 0.09028900000000561,
+        "load": 17.502487000000002,
+        "firstOperation": 0.9138510000000011
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 9,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.668317000000002,
+        "publicImport": 1.801956999999998,
+        "compile": 0.39682100000000275,
+        "instantiate": 0.06918499999999739,
+        "load": 1.6036020000000022,
+        "firstOperation": 0.8965540000000018
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 10,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.122211,
+        "compile": 0.39114000000000004,
+        "instantiate": 0.0904650000000018,
+        "load": 17.931916,
+        "firstOperation": 0.9312910000000016
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 10,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.337784999999997,
+        "publicImport": 1.7471079999999972,
+        "compile": 0.3877960000000016,
+        "instantiate": 0.07086499999999774,
+        "load": 1.4011679999999984,
+        "firstOperation": 0.9130350000000007
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 11,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.00981,
+        "compile": 0.39894800000000075,
+        "instantiate": 0.08057700000000168,
+        "load": 17.368325000000002,
+        "firstOperation": 0.9194669999999974
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 11,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.888128000000002,
+        "publicImport": 1.8141810000000014,
+        "compile": 0.3813489999999966,
+        "instantiate": 0.07592100000000102,
+        "load": 1.4074079999999967,
+        "firstOperation": 0.9469220000000007
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 12,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.2791940000000004,
+        "compile": 0.3888039999999968,
+        "instantiate": 0.08988899999999944,
+        "load": 17.877275,
+        "firstOperation": 0.9007300000000029
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 12,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.687774,
+        "publicImport": 1.7167549999999991,
+        "compile": 0.3694929999999985,
+        "instantiate": 0.07518499999999761,
+        "load": 1.4988329999999976,
+        "firstOperation": 0.9062979999999996
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 13,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.310217999999999,
+        "compile": 0.3794600000000017,
+        "instantiate": 0.08852900000000119,
+        "load": 17.970204000000003,
+        "firstOperation": 0.9157229999999998
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 13,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.863435000000003,
+        "publicImport": 1.2470219999999976,
+        "compile": 0.3967889999999983,
+        "instantiate": 0.08020899999999642,
+        "load": 1.9414469999999966,
+        "firstOperation": 0.9211780000000047
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 14,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.323034,
+        "compile": 0.39413300000000007,
+        "instantiate": 0.08459200000000067,
+        "load": 17.792634,
+        "firstOperation": 0.8869060000000033
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 14,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.663612999999998,
+        "publicImport": 1.7417959999999972,
+        "compile": 0.4667570000000012,
+        "instantiate": 0.07851300000000094,
+        "load": 1.5013930000000002,
+        "firstOperation": 0.9226829999999993
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 15,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.033890999999999,
+        "compile": 0.42403699999999844,
+        "instantiate": 0.09288099999999844,
+        "load": 18.269118999999996,
+        "firstOperation": 0.9238349999999969
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 15,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.334596999999995,
+        "publicImport": 1.8126439999999988,
+        "compile": 0.39806899999999956,
+        "instantiate": 0.08108899999999863,
+        "load": 1.6128989999999988,
+        "firstOperation": 0.9106020000000044
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 16,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.1774120000000003,
+        "compile": 0.37126899999999985,
+        "instantiate": 0.09481699999999904,
+        "load": 17.517815000000002,
+        "firstOperation": 0.925099000000003
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 16,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 18.511971000000003,
+        "publicImport": 1.7895079999999979,
+        "compile": 0.392004,
+        "instantiate": 0.08598500000000087,
+        "load": 1.576433999999999,
+        "firstOperation": 0.9128100000000003
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 17,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.2102489999999992,
+        "compile": 0.3884839999999983,
+        "instantiate": 0.08585699999999719,
+        "load": 17.946124,
+        "firstOperation": 0.9594349999999991
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 17,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.349257,
+        "publicImport": 1.689668000000001,
+        "compile": 0.3630759999999995,
+        "instantiate": 0.07078500000000076,
+        "load": 1.3251509999999982,
+        "firstOperation": 0.913802000000004
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 18,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.0480670000000014,
+        "compile": 0.3845959999999984,
+        "instantiate": 0.08937699999999893,
+        "load": 18.010299999999997,
+        "firstOperation": 0.905738999999997
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 18,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.617708,
+        "publicImport": 1.7201319999999996,
+        "compile": 0.3744040000000055,
+        "instantiate": 0.07638499999999482,
+        "load": 1.349615,
+        "firstOperation": 0.9022989999999993
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 19,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.1835769999999997,
+        "compile": 0.43922099999999986,
+        "instantiate": 0.08910499999999644,
+        "load": 18.077613,
+        "firstOperation": 0.9006499999999988
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 19,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.49727,
+        "publicImport": 1.655507,
+        "compile": 0.38859599999999617,
+        "instantiate": 0.08769699999999858,
+        "load": 1.400976,
+        "firstOperation": 0.9150510000000054
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 20,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 1.9921509999999998,
+        "compile": 0.3662919999999996,
+        "instantiate": 0.07628899999999916,
+        "load": 17.139442000000003,
+        "firstOperation": 0.9029710000000009
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 20,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.449302,
+        "publicImport": 1.6797789999999964,
+        "compile": 0.38035599999999903,
+        "instantiate": 0.07899299999999698,
+        "load": 1.5230889999999988,
+        "firstOperation": 0.910154999999996
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 21,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 1.763796000000001,
+        "compile": 0.3752679999999984,
+        "instantiate": 0.09859300000000104,
+        "load": 18.445296999999997,
+        "firstOperation": 0.9012109999999964
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 21,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.482006,
+        "publicImport": 1.7606760000000001,
+        "compile": 0.37130000000000507,
+        "instantiate": 0.07644899999999666,
+        "load": 1.368815999999999,
+        "firstOperation": 0.9032899999999984
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 22,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.15348,
+        "compile": 0.3919399999999982,
+        "instantiate": 0.09260899999999594,
+        "load": 18.022221,
+        "firstOperation": 0.8959299999999999
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 22,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.064994,
+        "publicImport": 1.7827560000000027,
+        "compile": 0.4033010000000061,
+        "instantiate": 0.08124899999999968,
+        "load": 1.452016999999998,
+        "firstOperation": 0.9453069999999997
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 23,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.0626149999999974,
+        "compile": 0.397396999999998,
+        "instantiate": 0.08771300000000082,
+        "load": 18.018765000000002,
+        "firstOperation": 0.924906
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 23,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 17.065474,
+        "publicImport": 1.7828050000000033,
+        "compile": 0.38221199999999556,
+        "instantiate": 0.08110499999999377,
+        "load": 1.5934899999999956,
+        "firstOperation": 0.9459950000000035
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 24,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.194649,
+        "compile": 0.3735079999999993,
+        "instantiate": 0.08516899999999694,
+        "load": 17.216611,
+        "firstOperation": 0.8978660000000005
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 24,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.435851,
+        "publicImport": 1.7083399999999962,
+        "compile": 0.40194100000000077,
+        "instantiate": 0.07094500000000181,
+        "load": 1.5679060000000007,
+        "firstOperation": 0.8961380000000005
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 25,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.1580890000000004,
+        "compile": 0.37816399999999994,
+        "instantiate": 0.08124899999999968,
+        "load": 17.652073,
+        "firstOperation": 0.9404260000000022
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 25,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.958353000000002,
+        "publicImport": 1.804948000000003,
+        "compile": 0.40616500000000144,
+        "instantiate": 0.08243300000000175,
+        "load": 1.6006749999999954,
+        "firstOperation": 0.9041380000000032
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 26,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.732574999999999,
+        "compile": 0.38032400000000166,
+        "instantiate": 0.0887209999999996,
+        "load": 18.179774,
+        "firstOperation": 0.9196910000000003
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 26,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.731341999999998,
+        "publicImport": 1.839348000000001,
+        "compile": 0.369092000000002,
+        "instantiate": 0.08635300000000257,
+        "load": 1.3845919999999978,
+        "firstOperation": 0.914555
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 27,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.108536000000001,
+        "compile": 0.38760500000000064,
+        "instantiate": 0.08992099999999681,
+        "load": 18.365808,
+        "firstOperation": 0.9178659999999965
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 27,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.429082,
+        "publicImport": 1.7498599999999982,
+        "compile": 0.39350800000000064,
+        "instantiate": 0.07369700000000279,
+        "load": 1.5394899999999971,
+        "firstOperation": 0.8928419999999946
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 28,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 2.3048900000000003,
+        "compile": 0.3695560000000011,
+        "instantiate": 0.08942499999999853,
+        "load": 17.793978000000003,
+        "firstOperation": 0.8949870000000004
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 28,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 18.436929,
+        "publicImport": 1.753459999999997,
+        "compile": 0.3878120000000038,
+        "instantiate": 0.08156900000000178,
+        "load": 1.5800179999999955,
+        "firstOperation": 0.9026190000000014
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 29,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "normal",
+      "phases": {
+        "publicImport": 3.0348179999999996,
+        "compile": 0.38278899999999894,
+        "instantiate": 0.09902500000000458,
+        "load": 17.828443000000004,
+        "firstOperation": 0.9135780000000011
+      },
+      "counts": {
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    },
+    {
+      "round": 29,
+      "kind": "startup-probe",
+      "runtime": "node",
+      "mode": "prewarm-web",
+      "phases": {
+        "webGlobals": 16.944593,
+        "publicImport": 1.7080990000000007,
+        "compile": 0.383892000000003,
+        "instantiate": 0.07764900000000097,
+        "load": 1.5672500000000014,
+        "firstOperation": 0.973275000000001
+      },
+      "counts": {
+        "webGlobals": 1,
+        "publicImport": 1,
+        "compile": 1,
+        "instantiate": 1,
+        "load": 1,
+        "firstOperation": 1
+      }
+    }
+  ]
+}
