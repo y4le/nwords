@@ -337,3 +337,12 @@ uses its FinalizationRegistry cleanup on supported runtimes, and offers idempote
 entering WASM. No cache can evict a live prepared codec, and the object is neither
 cloneable nor transferable across instances/workers. Prepared methods retain all
 numeric, phrase, range and error contracts of the stateless methods.
+
+## EFF long dictionary
+
+`eff-long` freezes all 7,776 entries of the original EFF long list in dice-roll
+order, including its four hyphenated words. It is exposed by the `eff-long`
+feature (default in the umbrella crate) and the named-list CLI. It is a
+general positional dictionary; no passphrase security claim follows from
+encoding assigned IDs. Attribution and the original snapshot are under
+`tests/vectors/eff-long/`. Existing lists and mappings remain unchanged.

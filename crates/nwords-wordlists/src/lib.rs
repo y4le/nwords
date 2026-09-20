@@ -50,6 +50,9 @@ pub(crate) mod semantic_plants;
 #[path = "semantic_foods.rs"]
 pub(crate) mod semantic_foods;
 
+#[cfg(feature = "eff-long")]
+mod eff_long;
+
 /// Curated English adjective-animal wordlists.
 #[cfg(feature = "adjective-animal")]
 pub mod adjective_animal;

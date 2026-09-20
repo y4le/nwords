@@ -222,6 +222,7 @@ assert_eq!(bip39.word_count, 18);
 | `stats` | yes | Exact capacity and planning helpers under `nwords::stats`. |
 | `adjective-animal` | yes | Compatibility adjective-animal word map. |
 | `named` | yes | Named word lists and ordered phrase shapes. |
+| `eff-long` | yes | Original EFF long dictionary (7,776 words, CC BY 4.0). |
 | `bip39` | yes | BIP-39 English phrase codec. |
 | `bip39-japanese` | no | Japanese wordlist, U+3000 display, and Unicode parsing. |
 | `bip39-seed` | no | PBKDF2-HMAC-SHA512 seed derivation. |
@@ -304,3 +305,7 @@ in-place edit.
 V1 intentionally defers SLIP-39, Niceware, Proquint, PGP word lists,
 non-identity permutations, BIP-32/xprv derivation, and BigInt-backed exact
 capacity math.
+
+EFF's 7,776-word long list is available as `eff-long` (Rust feature `eff-long`,
+enabled by default). Example: `nwords encode 42 --shape eff-long,eff-long,eff-long --range 4294967296`.
+Its original dice-roll order is frozen; see [provenance and attribution](tests/vectors/eff-long/README.md).

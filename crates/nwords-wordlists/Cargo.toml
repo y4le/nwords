@@ -4,16 +4,18 @@ description = "Built-in wordlists for nwords."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-license.workspace = true
+# The package archive includes EFF data even when its feature is disabled.
+license = "(MIT OR Apache-2.0) AND CC-BY-4.0"
 repository.workspace = true
 homepage.workspace = true
 
 [features]
-default = ["std", "bip39-english", "adjective-animal", "named"]
+default = ["std", "bip39-english", "adjective-animal", "named", "eff-long"]
 std = ["alloc", "nwords-core/std"]
 alloc = ["nwords-core/alloc"]
 adjective-animal = ["named"]
 named = ["alloc"]
+eff-long = ["named"]
 bip39-english = ["alloc"]
 bip39-japanese = ["bip39-english"]
 

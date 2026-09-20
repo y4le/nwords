@@ -884,7 +884,7 @@ fn lists_reports_shape_options_with_examples() {
         text.contains("Built-in word-list names and order are decoding compatibility surfaces.")
     );
     assert!(text.contains("name\taliases\trole\twords\texamples\n"));
-    assert_eq!(text.lines().count(), 14);
+    assert_eq!(text.lines().count(), 15);
     assert!(text.contains("adjective\tadjectives\tmodifier\t749\table,"));
     assert!(text.contains(",zippy\n"));
     assert!(text.contains("animal\tanimals\thead\t333\taardvark,"));
@@ -898,6 +898,7 @@ fn lists_reports_shape_options_with_examples() {
     assert!(text.contains("weather\t-\tmodifier\t40\tbalmy,"));
     assert!(text.contains("plant\tplants\thead\t128\tabelia,"));
     assert!(text.contains("food\tfoods\thead\t128\talmond,"));
+    assert!(text.contains("eff-long\t-\teither\t7776\tabacus,"));
     assert!(text.contains("bip39-en\tbip39-english,bip39-en-positional\teither\t2048\tabandon,"));
     assert!(text.contains(",zoo\n"));
 
@@ -1135,4 +1136,33 @@ fn bytes_usage_and_decode_errors_are_sanitized() {
     assert_eq!(invalid_word.status.code(), Some(1));
     assert!(stderr(&invalid_word).contains("unknown word at position 1"));
     assert!(!stderr(&invalid_word).contains("zzzzz"));
+}
+
+#[test]
+fn eff_long_round_trips_u32_and_hyphenated_words() {
+    let shape = "eff-long,eff-long,eff-long";
+    let output = nwords(&[
+        "encode",
+        "4294967295",
+        "--shape",
+        shape,
+        "--range",
+        "4294967296",
+    ]);
+    assert!(output.status.success());
+    let decoded = nwords(&[
+        "decode",
+        stdout(&output).trim(),
+        "--shape",
+        shape,
+        "--range",
+        "4294967296",
+    ]);
+    assert_eq!(stdout(&decoded), "4294967295\n");
+    for word in ["drop-down", "felt-tip", "t-shirt", "yo-yo"] {
+        let decoded = nwords(&["decode", word, "--shape", "eff-long"]);
+        assert!(decoded.status.success());
+        let encoded = nwords(&["encode", stdout(&decoded).trim(), "--shape", "eff-long"]);
+        assert_eq!(stdout(&encoded).trim(), word);
+    }
 }
