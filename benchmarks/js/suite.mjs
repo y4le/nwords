@@ -30,6 +30,27 @@ export function workloads({ words, ung, niceware, Buffer, dictionaries, values, 
     ['rng/math-random/one-draw', () => Math.floor(Math.random() * 249417)],
     ['rng/math-random/two-draws', () => Math.floor(Math.random() * 749) + Math.floor(Math.random() * 333)],
   ];
+  if (words.prepare) {
+    const preparedPair = words.prepare(pair);
+    const preparedFour = words.prepare(four);
+    if (preparedPair.encodeId(42n) !== 'able cardinal') throw new Error('Prepared pair vector changed');
+    for (let i = 0; i < values.length; i++) {
+      const pairPhrase = words.encodeId(pairIds[i], pair);
+      if (preparedPair.encodeId(pairIds[i]) !== pairPhrase || preparedPair.decodePhrase(pairPhrase) !== pairIds[i]) {
+        throw new Error(`Prepared pair parity failed at ${i}`);
+      }
+      if (preparedFour.encodeId(big[i]) !== phrases[i] || preparedFour.decodePhrase(phrases[i]) !== big[i]) {
+        throw new Error(`Prepared parity failed at ${i}`);
+      }
+    }
+    cases.push(
+      ['nwords-prepared/name/shared-math-random', () => preparedPair.encodeId(BigInt(Math.floor(Math.random() * 249417)))],
+      ['nwords-prepared/pair/encode', i => preparedPair.encodeId(pairIds[i])],
+      ['nwords-prepared/u32/encode', i => preparedFour.encodeId(big[i])],
+      ['nwords-prepared/u32/decode', i => Number(preparedFour.decodePhrase(phrases[i]))],
+      ['nwords-prepared/setup/pair', () => { const codec = words.prepare(pair); codec.dispose(); return 0; }],
+    );
+  }
   if (cryptoRandomInt) cases.push(['nwords/name/shared-crypto', () => words.encodeId(BigInt(cryptoRandomInt(249417)), pair)]);
   return { cases, metadata: { idsChecksum: values.reduce((sum, value) => sum + value, 0), uniqueNamesDefaultCapacity: ung.adjectives.length * ung.animals.length,
     dictionarySizes: dictionaries.map(list => list.length), u32Words: { nwords: 4, niceware: 2 }, meanChars: { nwords: phrases.reduce((n, s) => n + s.length, 0) / values.length, niceware: nicePhrases.reduce((n, s) => n + s.length, 0) / values.length }, example: { nwords: phrases[2], niceware: nicePhrases[2] } } };

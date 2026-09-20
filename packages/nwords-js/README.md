@@ -60,7 +60,7 @@ entropy, and encoding does not allocate unique names or provide encryption.
 
 `NwordsError` has a stable `code`, optional `field`, and zero-based `position`
 where available. Codes are `INVALID_INPUT`, `UNKNOWN_LIST`, `INVALID_SHAPE`,
-`CAPACITY_OVERFLOW`, `OUT_OF_RANGE`, `INVALID_PHRASE`, and `INTERNAL_ERROR`.
+`CAPACITY_OVERFLOW`, `OUT_OF_RANGE`, `INVALID_PHRASE`, `DISPOSED`, and `INTERNAL_ERROR`.
 Messages do not echo input phrases or words. `NwordsLoadError` separately uses
 `LOAD_FAILED` or `ASSET_CONFLICT`. Error classes are exported from both entries.
 
@@ -83,3 +83,26 @@ to test that development artifact. Build output lives under `dist/`, separate
 from the static demo's `site/pkg/`. `dist/package-build.json` records packed
 size and integrity. The template enforces `private: true` and has no lifecycle
 scripts. Rust release optimization is enabled; unpinned wasm-opt is disabled.
+
+## Repeated calls with one shape
+
+`words.prepare(shape)` validates an immutable snapshot once and reuses the Rust codec:
+
+```js
+const codec = words.prepare({ lists: ['adjective', 'animal'] });
+codec.encodeId(42n);                 // 'able cardinal'
+codec.decodePhrase('able cardinal'); // 42n
+codec.dispose();                    // optional prompt release
+```
+
+The same bigint/canonical-string inputs, exact-case parsing, Unicode whitespace,
+range checks and 4096-byte phrase bound apply. Later changes to `shape` do not
+change this codec; stateless calls continue to read their supplied shape each time.
+Prepared codecs are local to their loaded WASM instance and cannot be cloned or
+transferred to a worker. Create a separate codec in that worker.
+
+Node 24 and the tested Chromium runtime support best-effort reclamation through
+FinalizationRegistry; garbage collection and cleanup timing are not guaranteed. `dispose()` releases the Rust allocation promptly and is
+idempotent. Runtimes without FinalizationRegistry require explicit disposal.
+After disposal, encode/decode throw `NwordsError` with code `DISPOSED` and field
+`codec`, before inspecting the operation's input. Ordinary codec errors leave it usable.

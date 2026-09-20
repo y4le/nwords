@@ -78,6 +78,12 @@ if (mode === 'measure') {
     assert.equal(JSON.parse(raw.encode_id_json(id, lists, range === '-' ? undefined : range)).value, phrase, name);
     assert.equal(raw.encode_id(id, lists, range === '-' ? undefined : range), phrase, name);
     assert.equal(raw.decode_phrase(phrase, lists, range === '-' ? undefined : range), BigInt(id), name);
+    const prepared = new raw.PreparedCodec(lists, range === '-' ? undefined : range);
+    try {
+      assert.equal(prepared.encode_id(id), phrase, name);
+      assert.equal(prepared.decode_phrase(phrase), BigInt(id), name);
+      assert.throws(() => prepared.encode_id('-1'), error => typeof error === 'string' && JSON.parse(error).error.code === 'INVALID_INPUT');
+    } finally { prepared.free(); }
   }
   assert.equal(JSON.parse(raw.describe_shape_json('animal,,color')).error.code, 'INVALID_SHAPE');
 } else {

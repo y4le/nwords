@@ -326,3 +326,14 @@ at the raw ABI. Successful encode calls now return the phrase directly and decod
 calls return a wasm-bindgen u128/BigInt. Only errors carry the structured JSON
 envelope; metadata and legacy diagnostic exports retain JSON. Primitive u128
 inputs remain excluded because their generated conversion wraps invalid values.
+
+### Performance: prepared JavaScript codecs
+
+`prepare(shape)` snapshots validated list order and range into a private Rust-owned
+word map and MixedPositional codec. Existing stateless calls retain their current
+shape-mutation semantics. The frozen JS facade hides the generated WASM handle,
+uses its FinalizationRegistry cleanup on supported runtimes, and offers idempotent
+`dispose()` for prompt release. Use after disposal fails with DISPOSED/codec before
+entering WASM. No cache can evict a live prepared codec, and the object is neither
+cloneable nor transferable across instances/workers. Prepared methods retain all
+numeric, phrase, range and error contracts of the stateless methods.
