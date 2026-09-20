@@ -32,7 +32,8 @@ def main():
         inputs.append({'file': path.name, 'sha256': hashlib.sha256(raw).hexdigest()})
     if not data:
         raise ValueError('No completed full-stage measurements')
-    if all((runtime, 'nwords-prepared/u32/encode') in data[-1] for runtime in ['node', 'chromium']):
+    if all((runtime, f'nwords-prepared/u32/{op}') in data[-1]
+           for runtime in ['node', 'chromium'] for op in ['encode', 'decode']):
         labels.append('prepared API (opt-in)')
         data.append({(runtime, f'nwords/u32/{op}'): data[-1][runtime, f'nwords-prepared/u32/{op}']
                      for runtime in ['node', 'chromium'] for op in ['encode', 'decode']})

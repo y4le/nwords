@@ -51,6 +51,7 @@ export function verifyApi(api, NwordsError, vectors) {
   snapshot.dispose();
   fails(() => snapshot.encodeId('invalid'), 'DISPOSED', 'codec');
   fails(() => api.prepare({ lists: ['animal'], range: 0n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.prepare({ ...shape, range: 249418n }), 'INVALID_SHAPE', 'range');
   fails(() => api.prepare({ lists: ['animals'] }), 'UNKNOWN_LIST', 'shape', 0);
   const info = api.describeShape(shape);
   check(info.capacity.kind === 'exact' && info.capacity.value === 249417n && info.range === 249417n, 'Exact capacity/range');

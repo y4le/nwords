@@ -65,8 +65,8 @@ disposes a two-word codec; other prepared rows reuse a codec created before timi
 | niceware u32 encode | 105.1 [104.8–105.6] | 123.3 [123.1–123.6] |
 | niceware u32 decode | 525.7 [525.4–528.0] | 527.6 [525.3–528.1] |
 
-Using the warm medians, pair setup plus disposal amortizes over three encodes in
-both runtimes. This is a two-word estimate; four-word setup was not measured.
+Setup uses a two-word shape while the prepared u32 rows use four words; these
+measurements do not establish a break-even call count for one shape.
 
 The optimized package is not uniformly faster than the alternatives. Niceware
 encodes u32 faster with two words from a larger dictionary; prepared nwords decodes
