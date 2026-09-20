@@ -470,6 +470,11 @@ fn custom_help(args: &[String]) -> Result<Option<String>, CliError> {
     if command == "help" {
         return help(&args[1..]).map(Some);
     }
+    if (command == "bytes" || command == "text")
+        && args.get(1).is_some_and(|argument| argument == "help")
+    {
+        return help(&[command.to_owned()]).map(Some);
+    }
     let args_before_separator = args
         .iter()
         .skip(1)
@@ -620,7 +625,7 @@ fn lists() -> Result<String, CliError> {
 }
 
 fn plan(args: PlanArgs) -> Result<String, CliError> {
-    let parsed = ParsedArgs::from_shape_options(Vec::new(), args.shape, false)?;
+    let mut parsed = ParsedArgs::from_shape_options(Vec::new(), args.shape, false)?;
     if let Some(name) = parsed.preset.as_deref() {
         if parsed.range.is_some()
             || parsed.words.is_some()
@@ -667,6 +672,21 @@ fn plan(args: PlanArgs) -> Result<String, CliError> {
         return Err(CliError::usage("range must be greater than zero"));
     }
 
+    if parsed.words.is_none()
+        && parsed
+            .dictionary
+            .as_deref()
+            .is_some_and(is_bip39_legacy_dictionary)
+    {
+        parsed.words = Some(
+            match stats::required_words(PlanTarget::Range(range), English.len(0)) {
+                Ok(PlanSolution::RequiredWords { word_count, .. }) => word_count,
+                Ok(_) => return Err(CliError::runtime("unexpected stats planner result")),
+                Err(error) => return Err(runtime_error(error)),
+            },
+        );
+    }
+
     let resolved = resolve_custom_lists(&parsed, true, range)?;
     let report = Report::new(
         &resolved.lists,
@@ -687,6 +707,9 @@ fn bytes_command(args: NestedBytesArgs) -> Result<String, CliError> {
 
 fn bytes_encode(args: BytesEncodeArgs) -> Result<String, CliError> {
     let mode = byte_mode_from_flags(args.text, args.hex, "bytes encode")?;
+    if args.data.is_empty() {
+        return Err(CliError::usage(BYTES_ENCODE_HELP));
+    }
     let bytes = match mode {
         ByteMode::Text => join_positionals(&args.data).into_bytes(),
         ByteMode::Hex => {
@@ -735,6 +758,9 @@ fn text_command(args: NestedTextArgs) -> Result<String, CliError> {
 }
 
 fn text_encode(args: TextEncodeArgs) -> Result<String, CliError> {
+    if args.text.is_empty() {
+        return Err(CliError::usage(TEXT_ENCODE_HELP));
+    }
     let text = join_positionals(&args.text);
     let phrase = word_bytes_codec()
         .encode_text(&text)
@@ -1434,7 +1460,7 @@ fn resolve_legacy_dictionary_shape(
     words: Option<usize>,
 ) -> Result<Vec<NamedWordList>, CliError> {
     match dictionary {
-        DEFAULT_DICTIONARY | DEFAULT_LIST_NAME | "bip39-english" => {
+        dictionary if is_bip39_legacy_dictionary(dictionary) => {
             let words = words.ok_or_else(|| {
                 CliError::usage(format!("dictionary `{dictionary}` requires --words <N>"))
             })?;
@@ -1452,6 +1478,13 @@ fn resolve_legacy_dictionary_shape(
             "unknown dictionary `{dictionary}`"
         ))),
     }
+}
+
+fn is_bip39_legacy_dictionary(dictionary: &str) -> bool {
+    matches!(
+        dictionary,
+        DEFAULT_DICTIONARY | DEFAULT_LIST_NAME | "bip39-english"
+    )
 }
 
 fn repeat_list(list: NamedWordList, words: usize) -> Result<Vec<NamedWordList>, CliError> {
@@ -1817,7 +1850,8 @@ OPTIONS:
                         Files use one lowercase word per line; blank lines and
                         full-line # comments are ignored.
     --words <N>         Repeat the BIP-39 English positional list N times.
-    --dict <name>       Legacy alias; adjective-animal is accepted.
+    --dict <name>       Legacy alias. Adjective-animal has two words; BIP-39
+                        needs --words unless --range can select the count.
     --explain           Print phrase plus capacity/range metadata.
 
 EXAMPLES:
@@ -2097,7 +2131,22 @@ EXAMPLES:
 
 #[cfg(test)]
 mod tests {
-    use super::{run, BIP39_POSITIONAL_CAVEAT};
+    use super::{
+        run, word_list_aliases, NamedWordList, BIP39_POSITIONAL_CAVEAT, BUILTIN_WORD_LISTS,
+    };
+
+    #[test]
+    fn advertised_list_aliases_parse_to_their_list() {
+        for list in BUILTIN_WORD_LISTS {
+            assert_eq!(NamedWordList::parse(list.name()), Some(*list));
+            for alias in word_list_aliases(*list)
+                .split(',')
+                .filter(|alias| *alias != "-")
+            {
+                assert_eq!(NamedWordList::parse(alias), Some(*list));
+            }
+        }
+    }
 
     #[test]
     fn encode_and_decode_round_trip_u32() {

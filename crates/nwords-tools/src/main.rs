@@ -60,9 +60,9 @@ fn check_sha256(path: &Path) -> Result<String, ToolError> {
     if output.status.success() {
         Ok(String::from_utf8_lossy(&output.stdout).into_owned())
     } else {
-        Err(ToolError::Usage(
-            String::from_utf8_lossy(&output.stderr).into_owned(),
-        ))
+        let mut message = String::from_utf8_lossy(&output.stdout).into_owned();
+        message.push_str(&String::from_utf8_lossy(&output.stderr));
+        Err(ToolError::Usage(message))
     }
 }
 

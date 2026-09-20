@@ -141,6 +141,14 @@ fn help_supports_command_topics_and_examples() {
     assert!(text.contains("nwords bytes encode:"));
     assert!(text.contains("nwords bytes encode --hex deadbeef"));
 
+    let bytes_group = nwords(&["bytes", "help"]);
+    assert!(bytes_group.status.success());
+    assert!(stdout(&bytes_group).contains("nwords bytes:"));
+
+    let text_group = nwords(&["text", "help"]);
+    assert!(text_group.status.success());
+    assert!(stdout(&text_group).contains("nwords text:"));
+
     let unknown = nwords(&["help", "missing"]);
     assert_eq!(unknown.status.code(), Some(2));
     assert!(stderr(&unknown).contains("unknown help topic `missing`"));
@@ -308,6 +316,17 @@ fn plan_reports_capacity_and_unrepresentable_shapes() {
     let missing_words = nwords(&["plan", "--dict", "bip39-english"]);
     assert_eq!(missing_words.status.code(), Some(2));
     assert!(stderr(&missing_words).contains("dictionary `bip39-english` requires --words"));
+
+    let inferred_words = nwords(&[
+        "plan",
+        "--range",
+        "1000000",
+        "--dict",
+        "bip39-en-positional",
+    ]);
+    assert!(inferred_words.status.success());
+    assert!(stdout(&inferred_words).contains("words: 2\n"));
+    assert!(stdout(&inferred_words).contains("range: 1000000\n"));
 }
 
 #[test]
@@ -1057,6 +1076,14 @@ fn bytes_commands_round_trip_hex_and_text() {
 
 #[test]
 fn bytes_usage_and_decode_errors_are_sanitized() {
+    let missing_text = nwords(&["text", "encode"]);
+    assert_eq!(missing_text.status.code(), Some(2));
+    assert!(stderr(&missing_text).contains("nwords text encode:"));
+
+    let missing_bytes = nwords(&["bytes", "encode", "--text"]);
+    assert_eq!(missing_bytes.status.code(), Some(2));
+    assert!(stderr(&missing_bytes).contains("nwords bytes encode:"));
+
     let invalid_hex = nwords(&["bytes", "encode", "--hex", "abc"]);
     assert_eq!(invalid_hex.status.code(), Some(2));
     assert!(stderr(&invalid_hex).contains("even length"));
