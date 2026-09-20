@@ -81,6 +81,21 @@ instrumented load is 17.905 ms; prewarming Request/Response costs 16.916 ms and
 leaves 1.543 ms for load. These overlapping instrumented medians establish the
 source of the cost; they are not subtracted from the ordinary cold measurements.
 
+### 04-build-profiles: Measure compiler and optimizer configurations
+
+Implementation source: `adabff5`. Opus reviewed the build tooling in
+`req_review_diff_ef513851eaf215b3` and the comparison runner in
+`req_consult_e674b4e5a61bc0c0`.
+
+Five qualified artifacts were compared at one clean source revision with seven
+fresh-process rounds per warm cell and 30 cold observations per configuration.
+Thin/fat LTO did not establish a throughput improvement; size optimization was
+larger and slower. Binaryen reduced WASM bytes about 10% at a throughput cost.
+The default stays unchanged. See the [configuration comparison](../benchmarks/results/performance/04-build-profiles.md),
+including full raw observations, qualification evidence, reproduction prerequisites
+and the targeted experiment's host-load limitation. These measurements precede
+the lean/prepared changes; compiler interactions with those APIs are unmeasured.
+
 ### 05-lean-results: Return phrases and BigInts directly on success
 
 Implementation source: `18ce12c249394359f87b096c961824cebc7308a8`. Opus review: `req_review_diff_9992816c862a50df`.

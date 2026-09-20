@@ -82,7 +82,12 @@ and development mode are recorded. Run `npm test --prefix packages/nwords-js -- 
 to test that development artifact. Build output lives under `dist/`, separate
 from the static demo's `site/pkg/`. `dist/package-build.json` records packed
 size and integrity. The template enforces `private: true` and has no lifecycle
-scripts. Rust release optimization is enabled; unpinned wasm-opt is disabled.
+scripts. Rust release optimization remains the default. Optional experiments use
+`--profile baseline|thin|fat|size`; these custom profiles affect this package build,
+not ordinary workspace release builds. An absolute `--wasm-opt /path/to/wasm-opt`
+selects Binaryen 131 explicitly. The script checks its version and records its
+executable hash and flags; it never downloads an optimizer. The measured profiles
+did not establish a throughput win, so no optimizer is enabled by default.
 
 ## Repeated calls with one shape
 

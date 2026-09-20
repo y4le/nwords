@@ -1,0 +1,316 @@
+{
+  "baseline": {
+    "schema": "nwords.qualification.v1",
+    "sourceCommit": "adabff57ae81fe5d3b526b7c92ab13280d228916",
+    "dirty": false,
+    "development": false,
+    "tarballSha256": "1c2755ea76a44ce51abb564fb7b5b479f3c64dc20e547c507e7e27aaa6ae1ddc",
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-release; wasm-opt disabled",
+      "profile": "baseline",
+      "optimizer": null,
+      "bytes": 130663,
+      "sha256": "771976ee2e959cc17f0cf97166bcea2a6e7abfa6cf2262c9f81583f4068744b9"
+    },
+    "packedBytes": 96090,
+    "unpackedBytes": 727229,
+    "runtime": {
+      "node": "v24.14.1",
+      "platform": "linux",
+      "arch": "arm64",
+      "chromium": "153.0.8010.12"
+    },
+    "checks": [
+      "Node loader without lazy web globals",
+      "installed ESM",
+      "CJS dynamic import",
+      "tool-free consumers",
+      "direct WASM ABI",
+      "NodeNext and Bundler declarations",
+      "Chromium contract and loader recovery",
+      "existing demo"
+    ],
+    "coldNodeSamples": [
+      {
+        "importMs": 2.529690000000002,
+        "initializationMs": 1.3927340000000008,
+        "totalMs": 5.383111000000003
+      },
+      {
+        "importMs": 3.0968480000000014,
+        "initializationMs": 2.0111719999999984,
+        "totalMs": 5.874828000000001
+      },
+      {
+        "importMs": 2.2989829999999998,
+        "initializationMs": 1.4218389999999985,
+        "totalMs": 5.074195
+      },
+      {
+        "importMs": 2.4061999999999983,
+        "initializationMs": 1.379678000000002,
+        "totalMs": 5.2157160000000005
+      },
+      {
+        "importMs": 2.5491460000000004,
+        "initializationMs": 2.0025169999999974,
+        "totalMs": 5.313717999999998
+      }
+    ]
+  },
+  "thin": {
+    "schema": "nwords.qualification.v1",
+    "sourceCommit": "adabff57ae81fe5d3b526b7c92ab13280d228916",
+    "dirty": false,
+    "development": false,
+    "tarballSha256": "c08b970e1abb31d17fcf50abde5d1a67d78b1eb77db2992abc355be661d84eef",
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-wasm-thin; wasm-opt disabled",
+      "profile": "thin",
+      "optimizer": null,
+      "bytes": 128317,
+      "sha256": "1ebd4bff51c3d1ad554b51f8f2f606f2e85f2fca7e290285af0e2e1cae2db6bd"
+    },
+    "packedBytes": 95815,
+    "unpackedBytes": 724881,
+    "runtime": {
+      "node": "v24.14.1",
+      "platform": "linux",
+      "arch": "arm64",
+      "chromium": "153.0.8010.12"
+    },
+    "checks": [
+      "Node loader without lazy web globals",
+      "installed ESM",
+      "CJS dynamic import",
+      "tool-free consumers",
+      "direct WASM ABI",
+      "NodeNext and Bundler declarations",
+      "Chromium contract and loader recovery",
+      "existing demo"
+    ],
+    "coldNodeSamples": [
+      {
+        "importMs": 2.4578329999999973,
+        "initializationMs": 1.413806000000001,
+        "totalMs": 5.256805
+      },
+      {
+        "importMs": 2.995006,
+        "initializationMs": 1.4736629999999984,
+        "totalMs": 5.837211
+      },
+      {
+        "importMs": 2.605097999999998,
+        "initializationMs": 1.4223669999999977,
+        "totalMs": 5.499831999999998
+      },
+      {
+        "importMs": 2.578281999999998,
+        "initializationMs": 1.9083229999999993,
+        "totalMs": 5.535959999999999
+      },
+      {
+        "importMs": 3.0631190000000004,
+        "initializationMs": 1.3155169999999998,
+        "totalMs": 5.4418310000000005
+      }
+    ]
+  },
+  "fat": {
+    "schema": "nwords.qualification.v1",
+    "sourceCommit": "adabff57ae81fe5d3b526b7c92ab13280d228916",
+    "dirty": false,
+    "development": false,
+    "tarballSha256": "e782f420e1583bf007127b305b01b8d97ebe8fd907828aa768e1f1483ccaf3cf",
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-wasm-fat; wasm-opt disabled",
+      "profile": "fat",
+      "optimizer": null,
+      "bytes": 128317,
+      "sha256": "4a3ee17672d00ce8f0cfb1e13af3cfc26aeaabcf1ba341bf61f5147b3d3f456c"
+    },
+    "packedBytes": 95817,
+    "unpackedBytes": 724879,
+    "runtime": {
+      "node": "v24.14.1",
+      "platform": "linux",
+      "arch": "arm64",
+      "chromium": "153.0.8010.12"
+    },
+    "checks": [
+      "Node loader without lazy web globals",
+      "installed ESM",
+      "CJS dynamic import",
+      "tool-free consumers",
+      "direct WASM ABI",
+      "NodeNext and Bundler declarations",
+      "Chromium contract and loader recovery",
+      "existing demo"
+    ],
+    "coldNodeSamples": [
+      {
+        "importMs": 2.4816730000000007,
+        "initializationMs": 1.4475990000000003,
+        "totalMs": 5.464168000000001
+      },
+      {
+        "importMs": 2.6545549999999984,
+        "initializationMs": 1.430109999999999,
+        "totalMs": 5.720233999999998
+      },
+      {
+        "importMs": 2.9883029999999984,
+        "initializationMs": 1.980004000000001,
+        "totalMs": 5.817834999999999
+      },
+      {
+        "importMs": 2.496969,
+        "initializationMs": 1.5314560000000021,
+        "totalMs": 5.405399000000003
+      },
+      {
+        "importMs": 2.4890969999999975,
+        "initializationMs": 1.4167190000000005,
+        "totalMs": 5.283861999999999
+      }
+    ]
+  },
+  "size": {
+    "schema": "nwords.qualification.v1",
+    "sourceCommit": "adabff57ae81fe5d3b526b7c92ab13280d228916",
+    "dirty": false,
+    "development": false,
+    "tarballSha256": "450e1fb5b073def30cc6b206f76c21699de84e39f076c8f168ef6c96da78468e",
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-wasm-size; wasm-opt disabled",
+      "profile": "size",
+      "optimizer": null,
+      "bytes": 134070,
+      "sha256": "ca6a27dcdf155f89b74eccdaded7e0d7db8eafb2008ad78cf2b7b51ba2060fd4"
+    },
+    "packedBytes": 97606,
+    "unpackedBytes": 730634,
+    "runtime": {
+      "node": "v24.14.1",
+      "platform": "linux",
+      "arch": "arm64",
+      "chromium": "153.0.8010.12"
+    },
+    "checks": [
+      "Node loader without lazy web globals",
+      "installed ESM",
+      "CJS dynamic import",
+      "tool-free consumers",
+      "direct WASM ABI",
+      "NodeNext and Bundler declarations",
+      "Chromium contract and loader recovery",
+      "existing demo"
+    ],
+    "coldNodeSamples": [
+      {
+        "importMs": 2.484281000000003,
+        "initializationMs": 1.3864139999999985,
+        "totalMs": 5.284725000000002
+      },
+      {
+        "importMs": 2.9784940000000013,
+        "initializationMs": 1.407871,
+        "totalMs": 5.447016000000001
+      },
+      {
+        "importMs": 2.647947000000002,
+        "initializationMs": 1.414878999999999,
+        "totalMs": 5.371383000000002
+      },
+      {
+        "importMs": 2.466985000000001,
+        "initializationMs": 1.3254209999999986,
+        "totalMs": 5.243333
+      },
+      {
+        "importMs": 2.531960999999999,
+        "initializationMs": 1.5649440000000006,
+        "totalMs": 5.569896
+      }
+    ]
+  },
+  "fat-opt": {
+    "schema": "nwords.qualification.v1",
+    "sourceCommit": "adabff57ae81fe5d3b526b7c92ab13280d228916",
+    "dirty": false,
+    "development": false,
+    "tarballSha256": "e0c0e39571af8f6ba65fc6fe74e11b787fb2a19664c81b35779a5553747cfe04",
+    "wasm": {
+      "target": "web",
+      "optimization": "rustc-wasm-fat; wasm-opt version 131 (version_131) -O3",
+      "profile": "fat",
+      "optimizer": {
+        "version": "wasm-opt version 131 (version_131)",
+        "executableSha256": "573d9420ea76dbc1e17b5b7debc1de4182f541e59fa4238761b658d795ddb167",
+        "flags": [
+          "-O3",
+          "--enable-bulk-memory",
+          "--enable-mutable-globals",
+          "--enable-sign-ext",
+          "--enable-nontrapping-float-to-int",
+          "--enable-multivalue",
+          "--enable-reference-types",
+          "--enable-bulk-memory-opt",
+          "--enable-call-indirect-overlong"
+        ]
+      },
+      "bytes": 117500,
+      "sha256": "5f98a8fe2b3ef94157ffa041246df4966baaa78d821fe065b39f10848f9eda72"
+    },
+    "packedBytes": 92623,
+    "unpackedBytes": 714562,
+    "runtime": {
+      "node": "v24.14.1",
+      "platform": "linux",
+      "arch": "arm64",
+      "chromium": "153.0.8010.12"
+    },
+    "checks": [
+      "Node loader without lazy web globals",
+      "installed ESM",
+      "CJS dynamic import",
+      "tool-free consumers",
+      "direct WASM ABI",
+      "NodeNext and Bundler declarations",
+      "Chromium contract and loader recovery",
+      "existing demo"
+    ],
+    "coldNodeSamples": [
+      {
+        "importMs": 2.3831279999999992,
+        "initializationMs": 1.367566,
+        "totalMs": 5.268501999999998
+      },
+      {
+        "importMs": 2.5266020000000005,
+        "initializationMs": 1.4389590000000005,
+        "totalMs": 5.3910149999999994
+      },
+      {
+        "importMs": 2.795691999999999,
+        "initializationMs": 1.363821999999999,
+        "totalMs": 5.621768999999997
+      },
+      {
+        "importMs": 3.0181429999999985,
+        "initializationMs": 1.4953749999999992,
+        "totalMs": 5.591593
+      },
+      {
+        "importMs": 2.170501999999999,
+        "initializationMs": 1.320253000000001,
+        "totalMs": 5.260165000000001
+      }
+    ]
+  }
+}
