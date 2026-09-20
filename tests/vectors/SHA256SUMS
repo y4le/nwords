@@ -43,4 +43,6 @@ addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e  tests/vectors/
 614a0a26ad0e93324533bc351f474263929cf527d12d8ebffc6aad8f2d01b610  tests/vectors/eff-long/README.md
 6d557f0693958fb5e650b68b5bee585eb82cf4da32965505c789e924743bc522  tests/vectors/eff-long/words.txt
 d557539df68e771cc1eedcc91d13f70fca930e508d11eedcafa4b15db49e3744  tests/vectors/licenses/eff-CC-BY-4.0.LICENSE
+a47c5c85a51d8cd842f1d82424c099f9f601581e947039a2b59137edf7a5d7e8  tests/vectors/radix-bytes/eff-long.tsv
+2a52d273bd74c726346f50f59d2ee2d4faf7969ccbd79141295cc70364766464  tests/vectors/radix-bytes/README.md
 542d6d973afda92638e0dd804a4082c0810027c6dbd32826d29c279dea4ccb56  tests/vectors/variable/variable-v1.tsv

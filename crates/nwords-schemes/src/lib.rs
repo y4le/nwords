@@ -27,3 +27,7 @@ pub mod word_bytes;
 /// Variable-length leading-repeat integer encodings.
 #[cfg(feature = "positional")]
 pub mod variable;
+
+/// Framed byte blocks over arbitrary mixed wordlists.
+#[cfg(feature = "word-bytes")]
+pub mod radix_bytes;
