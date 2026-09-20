@@ -271,7 +271,9 @@ impl ByteCodec {
     }
     /// Encodes already validated UTF-8.
     pub fn encode_text(&self, text: &str) -> Result<String, String> {
-        self.encode_bytes(text.as_bytes())
+        self.codec
+            .encode_bytes(text.as_bytes())
+            .map_err(|e| exception(byte_error(e, "text")))
     }
     /// Decodes and checks UTF-8 in Rust.
     pub fn decode_text(&self, phrase: &str) -> Result<String, String> {
@@ -379,6 +381,10 @@ mod tests {
             assert_eq!(codec.decode_bytes(&phrase).unwrap(), payload);
         }
         assert!(codec.encode_bytes(&[0; 4097]).is_err());
+        assert!(codec
+            .encode_text(&"x".repeat(4097))
+            .unwrap_err()
+            .contains("\"field\":\"text\""));
         assert!(codec.decode_bytes(&"abacus ".repeat(4101)).is_err());
         assert!(codec
             .decode_text(&codec.encode_bytes(&[255]).unwrap())

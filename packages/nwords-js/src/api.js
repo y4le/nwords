@@ -61,18 +61,20 @@ function formatInput(format, bytes = false) {
     if (format.scheme !== 'radix-bytes-v1' || format.pattern !== undefined || format.range !== undefined || format.maxWords !== undefined) fail('INVALID_SHAPE', 'Byte formats require scheme radix-bytes-v1 and lists.', 'shape');
     return listInput(format.lists);
   }
-  const range = format.range === undefined ? undefined : decimal(format.range, 'range');
   if (format.scheme === 'variable-v1') {
     const pattern = format.pattern;
     if (format.lists !== undefined || !Array.isArray(pattern) || pattern.length < 2 || pattern.length > 32 || !object(pattern[0]) || !object(pattern[0].repeat) || ![0, 1].includes(pattern[0].repeat.min) || Object.keys(pattern[0].repeat).some(key => key !== 'min')) fail('INVALID_SHAPE', 'Expected one leading repeat and a nonempty fixed suffix.', 'shape');
     const max = format.maxWords;
     if (max !== undefined && (!Number.isInteger(max) || max < 1 || max > 32)) fail('INVALID_SHAPE', 'maxWords must be an integer from 1 to 32.', 'shape');
-    if (range === undefined && max === undefined) fail('INVALID_SHAPE', 'Variable formats require range or maxWords.', 'shape');
     const input = listInput([pattern[0].list, ...pattern.slice(1)]);
+    const range = format.range === undefined ? undefined : decimal(format.range, 'range');
+    if (range === undefined && max === undefined) fail('INVALID_SHAPE', 'Variable formats require range or maxWords.', 'shape');
     return { ...input, range, minimum: pattern[0].repeat.min, maxWords: max, pattern: Object.freeze([Object.freeze({ list: input.lists[0], repeat: Object.freeze({ min: pattern[0].repeat.min }) }), ...input.lists.slice(1)]) };
   }
   if ((format.scheme !== undefined && format.scheme !== 'positional-v1') || format.pattern !== undefined || format.maxWords !== undefined) fail('INVALID_SHAPE', 'Ambiguous or unsupported integer format.', 'shape');
-  return { ...listInput(format.lists), range };
+  const input = listInput(format.lists);
+  const range = format.range === undefined ? undefined : decimal(format.range, 'range');
+  return { ...input, range };
 }
 function result(json) {
   const envelope = JSON.parse(json);
@@ -111,6 +113,7 @@ function randomBytes(length) {
   return crypto.getRandomValues(new Uint8Array(length));
 }
 function randomBelow(range) {
+  if (range < 1n) fail('INVALID_SHAPE', 'Range must be positive.', 'range');
   if (range === 1n) return 0n;
   const bits = (range - 1n).toString(2).length;
   const length = Math.ceil(bits / 8), mask = 255 >>> (length * 8 - bits);

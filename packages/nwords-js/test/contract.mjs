@@ -135,6 +135,8 @@ export function verifyApi(api, NwordsError, vectors, variableVectors = []) {
   const saved = snapshotTokens.encodeId(0n); tokens.words.reverse();
   check(snapshotTokens.encodeId(0n) === saved, 'Fixed custom snapshot'); snapshotTokens.dispose();
   for (const words of [[], ['one'], ['one', 'one'], ['a b', 'c'], ['a\t', 'b'], ['\ufeff', 'b'], ['\u0000', 'b'], ['\ud800', 'b'], ['x'.repeat(65), 'b']]) fails(() => api.prepare({lists: [{name: 'bad', words}]}), 'INVALID_SHAPE');
+  fails(() => api.prepare({lists: [{name: 'animals', words: ['a', 'b']}]}), 'INVALID_SHAPE', 'shape');
+  fails(() => api.prepare({lists: [{name: 'bad', words: ['a']}], range: 'oops'}), 'INVALID_SHAPE', 'shape');
   fails(() => api.prepare({lists: [{name: 'pets', words: ['a','b']}, {name: 'pets', words: ['b','a']}]}), 'INVALID_SHAPE');
   for (const invalid of [
     {scheme:'variable-v1',pattern:[{list:'animal',repeat:{min:0}},'animal']},
@@ -179,6 +181,7 @@ export function verifyApi(api, NwordsError, vectors, variableVectors = []) {
   }
   const single = {lists:[{name:'tiny',words:['a','b','c']}],range:1n};
   check(api.generatePhrase(single)==='a','Singleton random domain');
+  fails(() => api.generatePhrase({...single, range:0n}), 'INVALID_SHAPE', 'range');
   for(let i=0;i<50;i++) {const format={...single,range:3n};check(api.decodePhrase(api.generatePhrase(format),format)<3n,'Random accepted IDs');}
 
   const enormous = {scheme:'variable-v1',pattern:[{list:'adjective',repeat:{min:0}},'animal'],range:max,maxWords:32};
