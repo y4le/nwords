@@ -251,3 +251,10 @@ embedded-list notices, committed source provenance, a declared initial list set,
 boundary vectors and a named browser harness; those are incorporated. Initialization retry and
 the decimal-string ABI are explicit as well. This was document review only: no implementation,
 WASM build or runtime qualification was performed.
+
+## Performance follow-up: lean success ABI
+
+The performance branch preserves the checked decimal input boundary, while adding
+raw phrase and u128/BigInt success returns. Structured errors, metadata and legacy
+`*_json` diagnostic exports keep their envelopes. The public API and its validation
+contract are unchanged; no unchecked primitive u128 input is introduced.

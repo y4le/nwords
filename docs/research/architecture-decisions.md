@@ -317,3 +317,57 @@ Node tests make Request/Response access fail to guard this invariant.
 
 Instantiation itself now runs synchronously inside the asynchronous promise chain.
 Compilation remains asynchronous and always precedes the `initSync` call.
+
+## JavaScript named-shape package (2026-09-19)
+
+The separate `nwords-js` binding crate enables only alloc, named lists, positional
+codecs and stats. Rust owns parsing and mixed-radix math. The JS boundary uses
+canonical decimal strings and converts exact results to bigint. Ordered shapes
+are bounded to 32 positions and input phrases to 4096 UTF-8 bytes. Metadata and
+calls expose only adjective, animal and color; repeated positions are supported.
+Beyond-u128 capacity requires an explicit range even for description, consistently
+with the plan's range resolution contract. Its capacity remains a tagged estimate,
+never the chosen range. This deliberately declines Fable's optional suggestion to
+return an unresolved/null range from description.
+
+One web-target binary serves explicit Node and browser ESM entries. Both entries
+share initialization: omitted sources reuse the pending/successful instance,
+explicit different sources fail, and failed attempts can retry. Byte sources use
+object identity and an immediate copy. Each attempt imports a fresh generated-glue
+module because wasm-bindgen can set its module state before finalization fails.
+The Node loader only reads the packaged asset; web accepts URLs or reusable bytes.
+There are no import-time network requests, sync loader or install hooks.
+
+The private tarball records committed source, lockfile hash, artifact hash and
+pinned builder versions. Development builds are explicitly marked. Conservative
+notices cover all compiled named lists, binding dependencies and Rust's libstd
+components, including platform components that may not survive this target's link.
+The root MIT/Apache texts make the workspace's existing dual-license declaration
+available in the redistributed artifact. Package tests install that artifact into
+a temporary consumer; they exercise Node, declarations and real Chromium.
+
+Murmur owns randomness, collision checks and persisted aliases. Its two-word shape
+uses the range returned by nwords, sampled with Node's unbiased randomInt. Loading
+precedes the registry lock; allocation retries occur inside it and avoid all retained
+names. Explicit aliases and canonical session IDs keep their existing semantics.
+Initialization failure or retry exhaustion returns an actionable error suggesting
+an explicit name. This declines the proposed silent legacy-name fallback: a broken
+artifact should be observable, while the explicit-name path remains available.
+
+Fable's diff review found no codec/loader correctness defects. Before clean
+qualification we adopted path remapping for workspace/Cargo-home source paths,
+source-commit and clean-tree checks around qualification, precise range-error
+fields, and read/compile before importing a fresh glue module. Missing or corrupt
+assets therefore do not accumulate module records; failures during finalization
+still require a fresh attempt. The loader retains sanitized messages rather than
+attaching native causes that can contain caller-selected asset paths or URLs.
+Murmur retains bounded reason codes for diagnosis without exposing those causes.
+
+### Performance: direct success results
+
+The public JavaScript API retains bigint/canonical-string input and bigint output.
+The binding keeps checked decimal parsing for IDs and ranges, including validation
+at the raw ABI. Successful encode calls now return the phrase directly and decode
+calls return a wasm-bindgen u128/BigInt. Only errors carry the structured JSON
+envelope; metadata and legacy diagnostic exports retain JSON. Primitive u128
+inputs remain excluded because their generated conversion wraps invalid values.

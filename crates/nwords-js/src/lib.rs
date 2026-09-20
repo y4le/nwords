@@ -1,4 +1,4 @@
-//! Internal decimal-string ABI for the JavaScript package. Codecs and word
+//! Internal checked-input ABI for the JavaScript package. Codecs and word
 //! ordering remain owned by nwords; this crate only validates and binds inputs.
 #![forbid(unsafe_code)]
 
@@ -238,43 +238,87 @@ pub fn describe_shape_json(lists: &str, range: Option<String>) -> String {
     })())
 }
 
-/// Encodes a canonical decimal ID. Integers never cross the ABI as primitive u128.
-#[wasm_bindgen]
-pub fn encode_id_json(id: &str, lists: &str, range: Option<String>) -> String {
-    envelope((|| {
-        let id = decimal(id, "id")?;
-        let shape = Shape::resolve(lists, range.as_deref())?;
-        let phrase = shape
-            .codec()?
-            .encode(id)
-            .map_err(|error| BindingError::codec(error, "id"))?;
-        Ok(format!("\"{phrase}\""))
-    })())
+fn encode(id: &str, lists: &str, range: Option<&str>) -> Result<String, BindingError> {
+    let id = decimal(id, "id")?;
+    let shape = Shape::resolve(lists, range)?;
+    shape
+        .codec()?
+        .encode(id)
+        .map_err(|error| BindingError::codec(error, "id"))
 }
 
-/// Decodes Rust whitespace-separated words with exact case-sensitive lookup.
+fn decode(phrase: &str, lists: &str, range: Option<&str>) -> Result<u128, BindingError> {
+    if phrase.len() > MAX_PHRASE_BYTES {
+        return Err(BindingError::new(Code::InvalidPhrase, "phrase"));
+    }
+    let shape = Shape::resolve(lists, range)?;
+    let words = phrase
+        .split_whitespace()
+        .take(MAX_POSITIONS + 1)
+        .collect::<Vec<_>>();
+    shape
+        .codec()?
+        .decode_words(&words)
+        .map_err(|error| BindingError::codec(error, "phrase"))
+}
+
+fn exception(error: BindingError) -> String {
+    envelope(Err(error))
+}
+
+/// Encodes a checked decimal ID, returning the phrase directly on success.
+/// Errors retain the machine-readable envelope used by the diagnostic ABI.
+#[wasm_bindgen]
+pub fn encode_id(id: &str, lists: &str, range: Option<String>) -> Result<String, String> {
+    encode(id, lists, range.as_deref()).map_err(exception)
+}
+
+/// Decodes to a lossless JavaScript bigint without decimal or JSON output.
+#[wasm_bindgen]
+pub fn decode_phrase(phrase: &str, lists: &str, range: Option<String>) -> Result<u128, String> {
+    decode(phrase, lists, range.as_deref()).map_err(exception)
+}
+
+/// Diagnostic decimal-string/JSON ABI retained for compatibility and benchmarks.
+#[wasm_bindgen]
+pub fn encode_id_json(id: &str, lists: &str, range: Option<String>) -> String {
+    envelope(encode(id, lists, range.as_deref()).map(|phrase| format!("\"{phrase}\"")))
+}
+
+/// Diagnostic decimal-string/JSON ABI retained for compatibility and benchmarks.
 #[wasm_bindgen]
 pub fn decode_phrase_json(phrase: &str, lists: &str, range: Option<String>) -> String {
-    envelope((|| {
-        if phrase.len() > MAX_PHRASE_BYTES {
-            return Err(BindingError::new(Code::InvalidPhrase, "phrase"));
-        }
-        let shape = Shape::resolve(lists, range.as_deref())?;
-        let words = phrase
-            .split_whitespace()
-            .take(MAX_POSITIONS + 1)
-            .collect::<Vec<_>>();
-        let id = shape
-            .codec()?
-            .decode_words(&words)
-            .map_err(|error| BindingError::codec(error, "phrase"))?;
-        Ok(format!("\"{id}\""))
-    })())
+    envelope(decode(phrase, lists, range.as_deref()).map(|id| format!("\"{id}\"")))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn direct_results_preserve_checked_input_and_exact_u128_output() {
+        assert_eq!(
+            encode_id("42", "adjective,animal", None).unwrap(),
+            "able cardinal"
+        );
+        assert_eq!(
+            decode_phrase("able cardinal", "adjective,animal", None).unwrap(),
+            42
+        );
+        for invalid in ["01", "-1", "340282366920938463463374607431768211456"] {
+            let error = encode_id(invalid, "animal", None).unwrap_err();
+            assert_eq!(error, encode_id_json(invalid, "animal", None));
+        }
+        let lists = vec!["animal"; 16].join(",");
+        let range = u128::MAX.to_string();
+        let id = u128::MAX - 1;
+        let phrase = encode_id(&id.to_string(), &lists, Some(range.clone())).unwrap();
+        assert_eq!(decode_phrase(&phrase, &lists, Some(range)).unwrap(), id);
+        assert_eq!(
+            decode_phrase("secret-token", "animal", None).unwrap_err(),
+            decode_phrase_json("secret-token", "animal", None)
+        );
+    }
 
     #[test]
     fn matches_committed_cli_vectors() {

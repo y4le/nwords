@@ -46,6 +46,12 @@ function result(json) {
   return envelope.value;
 }
 
+// Expected Rust failures throw the same structured envelope as the diagnostic ABI.
+function rethrow(error) {
+  if (typeof error === 'string') result(error);
+  throw error;
+}
+
 export function createApi(wasm) {
   return Object.freeze({
     lists() {
@@ -62,7 +68,8 @@ export function createApi(wasm) {
       };
     },
     encodeId(id, shape) {
-      return result(wasm.encode_id_json(decimal(id, 'id'), ...shapeInput(shape)));
+      try { return wasm.encode_id(decimal(id, 'id'), ...shapeInput(shape)); }
+      catch (error) { rethrow(error); }
     },
     decodePhrase(phrase, shape) {
       // At most three UTF-8 bytes per UTF-16 code unit, including lone surrogates.
@@ -71,7 +78,8 @@ export function createApi(wasm) {
           (phrase.length > 1365 && (utf8 ??= new TextEncoder()).encode(phrase).length > 4096)) {
         fail('INVALID_PHRASE', 'Phrase must be a string of at most 4096 UTF-8 bytes.', 'phrase');
       }
-      return BigInt(result(wasm.decode_phrase_json(phrase, ...shapeInput(shape))));
+      try { return wasm.decode_phrase(phrase, ...shapeInput(shape)); }
+      catch (error) { rethrow(error); }
     },
   });
 }

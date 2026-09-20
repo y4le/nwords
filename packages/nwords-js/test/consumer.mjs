@@ -66,6 +66,9 @@ if (mode === 'measure') {
   const raw = await import(new URL('./nwords_js.js', asset));
   await raw.default({ module_or_path: await readFile(asset) });
   for (const invalid of ['+1', '01', ' 1', '1 ', '1\n', '', '1e3', '-0', '-1', (1n << 128n).toString()]) {
+    for (const call of [() => raw.encode_id(invalid, 'animal'), () => raw.encode_id('0', 'animal', invalid), () => raw.decode_phrase('aardvark', 'animal', invalid)]) {
+      assert.throws(call, error => typeof error === 'string' && JSON.parse(error).error.code === 'INVALID_INPUT');
+    }
     for (const json of [raw.encode_id_json(invalid, 'animal'), raw.describe_shape_json('animal', invalid), raw.decode_phrase_json('aardvark', 'animal', invalid)]) {
       const result = JSON.parse(json);
       assert.equal(result.ok, false); assert.equal(result.error.code, 'INVALID_INPUT');
@@ -73,6 +76,8 @@ if (mode === 'measure') {
   }
   for (const [name, lists, range, id, phrase] of vectors) {
     assert.equal(JSON.parse(raw.encode_id_json(id, lists, range === '-' ? undefined : range)).value, phrase, name);
+    assert.equal(raw.encode_id(id, lists, range === '-' ? undefined : range), phrase, name);
+    assert.equal(raw.decode_phrase(phrase, lists, range === '-' ? undefined : range), BigInt(id), name);
   }
   assert.equal(JSON.parse(raw.describe_shape_json('animal,,color')).error.code, 'INVALID_SHAPE');
 } else {
