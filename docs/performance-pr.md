@@ -33,7 +33,8 @@ BIP-39 wallet mnemonic. Detailed reports contain IQRs and all diagnostic cells.
 
 | Stage | Native animal encode / decode | Node encode / decode | Chromium encode / decode | Native English-list decode |
 |---|---:|---:|---:|---:|
-| Baseline | 83.4 / 394.0 | 962.9 / 1,802.5 | 1,010.9 / 2,650.5 | 1,612.8 |
+| [00-baseline](../benchmarks/results/performance/00-baseline.md) | 83.4 / 394.0 | 962.9 / 1,802.5 | 1,010.9 / 2,650.5 | 1,612.8 |
+| [01-redundant-work](../benchmarks/results/performance/01-redundant-work.md) | 84.7 / 392.3 | 909.5 / 1,364.5 | 936.9 / 1,310.7 | 1,613.4 |
 
 ## Change log and review
 
@@ -42,6 +43,15 @@ checkout. Fable then checked the reusable-codec and ABI design against the origi
 package's ownership and validation contracts (`req_consult_0106d921ffcab5ee`).
 Every substantive implementation diff receives Opus review; mechanical result
 records follow measurements from committed source.
+
+### 01-redundant-work: Avoid redundant binding work
+
+Implementation source: `a5c76043a6f23a844a405ae968730102a877f360`. Opus review: `req_review_diff_f9c27f1dbcf28b0d`.
+
+The Rust binding constructs the codec once per call. Short phrases skip UTF-8 allocation using a proven length bound; longer phrases retain the byte check and its error precedence. Packed Unicode and range tests pass. Word lookup and the JSON success protocol are unchanged in this stage.
+
+Detailed [measurements](../benchmarks/results/performance/01-redundant-work.md) and
+[raw observations](../benchmarks/results/performance/01-redundant-work.json) include all rounds.
 
 ## Validation
 
