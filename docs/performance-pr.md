@@ -38,6 +38,7 @@ BIP-39 wallet mnemonic. Detailed reports contain IQRs and all diagnostic cells.
 | [02-sorted-lookup](../benchmarks/results/performance/02-sorted-lookup.md) | 82.9 / 252.4 | 904.8 / 1,180.9 | 945.3 / 1,197.8 | 213.2 |
 | [03-startup](../benchmarks/results/performance/03-startup.md) | 82.5 / 252.3 | 902.1 / 1,181.4 | 918.6 / 1,198.6 | 213.3 |
 | [05-lean-results](../benchmarks/results/performance/05-lean-results.md) | 83.5 / 251.7 | 603.4 / 699.1 | 698.5 / 669.9 | 213.3 |
+| [06-prepared](../benchmarks/results/performance/06-prepared.md) | 82.5 / 252.0 | 602.8 / 718.0 | 686.6 / 705.3 | 212.5 |
 
 ## Change log and review
 
@@ -88,6 +89,15 @@ Encode/decode success paths no longer serialize and parse JSON. Rust still valid
 
 Detailed [measurements](../benchmarks/results/performance/05-lean-results.md) and
 [raw observations](../benchmarks/results/performance/05-lean-results.json) include all rounds.
+
+### 06-prepared: Reuse a validated shape across calls
+
+Implementation source: `cdb5633b0b275f91d70a4a32342ba5fcf4cf4919`. Opus review: `req_review_diff_9992816c862a50df`.
+
+The optional prepare(shape) API snapshots a shape into a Rust-owned codec. Single-call validation and exact integers remain; the immutable facade supports explicit idempotent disposal and best-effort FinalizationRegistry cleanup. Five additional cells per JavaScript runtime measure prepared calls and constructor-plus-dispose cost. All 4096 four-word and pair outputs are checked before measurement; the stateless API remains available.
+
+Detailed [measurements](../benchmarks/results/performance/06-prepared.md) and
+[raw observations](../benchmarks/results/performance/06-prepared.json) include all rounds.
 
 ## Validation
 
