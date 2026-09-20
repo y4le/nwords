@@ -389,15 +389,15 @@ struct TextDecodeArgs {
 #[command(disable_help_flag = true)]
 struct ShapeOptions {
     #[arg(long)]
-    preset: Option<String>,
+    preset: Vec<String>,
     #[arg(long, value_name = "R")]
-    range: Option<String>,
+    range: Vec<String>,
     #[arg(long, value_name = "N")]
-    words: Option<String>,
+    words: Vec<String>,
     #[arg(long)]
-    shape: Option<String>,
+    shape: Vec<String>,
     #[arg(long = "dict")]
-    dictionary: Option<String>,
+    dictionary: Vec<String>,
     #[arg(long = "list", value_name = "NAME=PATH")]
     lists: Vec<String>,
 }
@@ -473,7 +473,9 @@ fn custom_help(args: &[String]) -> Result<Option<String>, CliError> {
     if (command == "bytes" || command == "text")
         && args.get(1).is_some_and(|argument| argument == "help")
     {
-        return help(&[command.to_owned()]).map(Some);
+        let mut topics = vec![command.to_owned()];
+        topics.extend(args.iter().skip(2).cloned());
+        return help(&topics).map(Some);
     }
     let args_before_separator = args
         .iter()
@@ -1162,27 +1164,39 @@ impl ParsedArgs {
         shape: ShapeOptions,
         explain: bool,
     ) -> Result<Self, CliError> {
-        let range = shape.range.as_deref().map(parse_range_u128).transpose()?;
-        let words = shape
-            .words
+        let preset = at_most_one(shape.preset, "--preset")?;
+        let range = at_most_one(shape.range, "--range")?
+            .as_deref()
+            .map(parse_range_u128)
+            .transpose()?;
+        let words = at_most_one(shape.words, "--words")?
             .as_deref()
             .map(|value| {
                 let words_u128 = parse_decimal_u128(value, "words")?;
                 usize::try_from(words_u128).map_err(|_| CliError::usage("words value is too large"))
             })
             .transpose()?;
+        let shape_name = at_most_one(shape.shape, "--shape")?;
+        let dictionary = at_most_one(shape.dictionary, "--dict")?;
 
         Ok(Self {
             positionals,
-            preset: shape.preset,
+            preset,
             range,
             words,
-            shape: shape.shape,
-            dictionary: shape.dictionary,
+            shape: shape_name,
+            dictionary,
             list_specs: shape.lists,
             explain,
         })
     }
+}
+
+fn at_most_one(mut values: Vec<String>, name: &str) -> Result<Option<String>, CliError> {
+    if values.len() > 1 {
+        return Err(CliError::usage(format!("duplicate {name}")));
+    }
+    Ok(values.pop())
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1730,7 +1744,28 @@ fn format_fingerprint(fingerprint: u64) -> String {
 }
 
 fn wordlist_error(error: WordListError) -> CliError {
-    CliError::usage(format!("invalid word list: {error:?}"))
+    match error {
+        WordListError::InvalidListName => CliError::usage("invalid word list name"),
+        WordListError::BuiltinNameCollision => {
+            CliError::usage("user list name collides with a built-in word list")
+        }
+        WordListError::TooFewWords { len } => CliError::usage(format!(
+            "word list must contain at least two words; found {len}"
+        )),
+        WordListError::InvalidWord { index } => {
+            CliError::usage(format!("invalid word at accepted index {index}"))
+        }
+        WordListError::DuplicateWord { first, duplicate } => CliError::usage(format!(
+            "duplicate word at accepted index {duplicate}; first seen at accepted index {first}"
+        )),
+        WordListError::EmptyShape => CliError::usage("shape must contain at least one word list"),
+        WordListError::DuplicateListName { first, duplicate } => CliError::usage(format!(
+            "duplicate user list at index {duplicate}; first seen at index {first}"
+        )),
+        WordListError::OwnedListIndexOutOfRange { index, len } => CliError::runtime(format!(
+            "user list index {index} is outside the {len} supplied lists"
+        )),
+    }
 }
 
 fn wordlist_construction_error(name: &str, error: WordListError) -> CliError {
@@ -1748,7 +1783,7 @@ fn wordlist_construction_error(name: &str, error: WordListError) -> CliError {
         WordListError::DuplicateWord { first, duplicate } => CliError::usage(format!(
             "duplicate word in list `{name}` at accepted index {duplicate}; first seen at accepted index {first}"
         )),
-        other => CliError::usage(format!("invalid user list `{name}`: {other:?}")),
+        other => wordlist_error(other),
     }
 }
 
@@ -1851,7 +1886,7 @@ OPTIONS:
                         full-line # comments are ignored.
     --words <N>         Repeat the BIP-39 English positional list N times.
     --dict <name>       Legacy alias. Adjective-animal has two words; BIP-39
-                        needs --words unless --range can select the count.
+                        requires --words for encoding and decoding.
     --explain           Print phrase plus capacity/range metadata.
 
 EXAMPLES:

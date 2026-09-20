@@ -44,6 +44,9 @@ pub enum ToolError {
         first: usize,
         duplicate: usize,
     },
+    UnknownBlockedWord {
+        index: usize,
+    },
     Overlap {
         artifact: &'static str,
         index: usize,
@@ -65,6 +68,9 @@ impl fmt::Display for ToolError {
                     f,
                     "duplicate word at index {duplicate}; first seen at {first}"
                 )
+            }
+            Self::UnknownBlockedWord { index } => {
+                write!(f, "blocklist word at index {index} is absent from upstream")
             }
             Self::Overlap { artifact, index } => {
                 write!(
@@ -153,6 +159,12 @@ pub fn derive_curated_list(
 ) -> Result<Vec<String>, ToolError> {
     validate_words(upstream, WordPolicy::any_len())?;
     validate_blocklist(blocklist)?;
+    let upstream_words = upstream.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    for (index, word) in blocklist.iter().enumerate() {
+        if !upstream_words.contains(word.as_str()) {
+            return Err(ToolError::UnknownBlockedWord { index });
+        }
+    }
 
     let blocked = blocklist
         .iter()
@@ -501,6 +513,16 @@ mod tests {
         assert_eq!(
             derive_curated_list(&upstream, &[], WordPolicy::any_len()).unwrap(),
             vec!["able".to_owned(), "calm".to_owned()]
+        );
+    }
+
+    #[test]
+    fn stale_blocklist_entry_is_rejected() {
+        let upstream = vec!["able".to_owned(), "calm".to_owned()];
+        let blocklist = vec!["absent".to_owned()];
+        assert_eq!(
+            derive_curated_list(&upstream, &blocklist, WordPolicy::any_len()),
+            Err(ToolError::UnknownBlockedWord { index: 0 })
         );
     }
 

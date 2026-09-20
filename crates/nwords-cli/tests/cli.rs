@@ -120,6 +120,41 @@ fn usage_errors_exit_two() {
 }
 
 #[test]
+fn duplicate_shape_flags_are_rejected() {
+    for (args, flag) in [
+        (
+            vec!["encode", "42", "--preset", "u32", "--preset", "dec6"],
+            "--preset",
+        ),
+        (
+            vec!["encode", "42", "--words", "3", "--words", "4"],
+            "--words",
+        ),
+        (
+            vec![
+                "encode", "42", "--words", "3", "--range", "100", "--range", "200",
+            ],
+            "--range",
+        ),
+        (
+            vec!["plan", "--shape", "animal", "--shape", "adjective"],
+            "--shape",
+        ),
+        (
+            vec!["plan", "--dict", "bip39-en", "--dict", "adjective-animal"],
+            "--dict",
+        ),
+    ] {
+        let output = nwords(&args);
+        assert_eq!(output.status.code(), Some(2), "{args:?}");
+        assert!(
+            stderr(&output).contains(&format!("duplicate {flag}")),
+            "{args:?}"
+        );
+    }
+}
+
+#[test]
 fn help_supports_command_topics_and_examples() {
     let encode = nwords(&["help", "encode"]);
     assert!(encode.status.success());
@@ -148,6 +183,14 @@ fn help_supports_command_topics_and_examples() {
     let text_group = nwords(&["text", "help"]);
     assert!(text_group.status.success());
     assert!(stdout(&text_group).contains("nwords text:"));
+
+    let bytes_topic = nwords(&["bytes", "help", "encode"]);
+    assert!(bytes_topic.status.success());
+    assert!(stdout(&bytes_topic).contains("nwords bytes encode:"));
+
+    let text_topic = nwords(&["text", "help", "decode"]);
+    assert!(text_topic.status.success());
+    assert!(stdout(&text_topic).contains("nwords text decode:"));
 
     let unknown = nwords(&["help", "missing"]);
     assert_eq!(unknown.status.code(), Some(2));
