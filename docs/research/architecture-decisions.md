@@ -305,3 +305,35 @@ assets therefore do not accumulate module records; failures during finalization
 still require a fresh attempt. The loader retains sanitized messages rather than
 attaching native causes that can contain caller-selected asset paths or URLs.
 Murmur retains bounded reason codes for diagnosis without exposing those causes.
+
+### Performance: initialize the already-compiled module directly
+
+The shared asynchronous loader still reads and compiles before importing a fresh
+WASM glue module. It then uses the glue's synchronous initializer on that compiled
+module, avoiding its generic URL/Request/Response path and Node's lazy web-global
+initialization. This does not expose a synchronous public loader or change source
+identity, concurrent initialization, sanitized errors, or retry behavior. Packed
+Node tests make Request/Response access fail to guard this invariant.
+
+Instantiation itself now runs synchronously inside the asynchronous promise chain.
+Compilation remains asynchronous and always precedes the `initSync` call.
+
+### Performance: direct success results
+
+The public JavaScript API retains bigint/canonical-string input and bigint output.
+The binding keeps checked decimal parsing for IDs and ranges, including validation
+at the raw ABI. Successful encode calls now return the phrase directly and decode
+calls return a wasm-bindgen u128/BigInt. Only errors carry the structured JSON
+envelope; metadata and legacy diagnostic exports retain JSON. Primitive u128
+inputs remain excluded because their generated conversion wraps invalid values.
+
+### Performance: prepared JavaScript codecs
+
+`prepare(shape)` snapshots validated list order and range into a private Rust-owned
+word map and MixedPositional codec. Existing stateless calls retain their current
+shape-mutation semantics. The frozen JS facade hides the generated WASM handle,
+uses its FinalizationRegistry cleanup on supported runtimes, and offers idempotent
+`dispose()` for prompt release. Use after disposal fails with DISPOSED/codec before
+entering WASM. No cache can evict a live prepared codec, and the object is neither
+cloneable nor transferable across instances/workers. Prepared methods retain all
+numeric, phrase, range and error contracts of the stateless methods.

@@ -26,9 +26,7 @@ impl WordMap for English {
     }
 
     fn index_of(&self, word: &str, _position: usize) -> Option<usize> {
-        bip39_english::ENGLISH_WORDS
-            .iter()
-            .position(|candidate| *candidate == word)
+        bip39_english::ENGLISH_WORDS.binary_search(&word).ok()
     }
 }
 
@@ -58,6 +56,19 @@ impl WordMap for Japanese {
 mod tests {
     use super::English;
     use nwords_core::WordMap;
+
+    #[test]
+    fn english_binary_search_preserves_every_frozen_index() {
+        let words = English;
+        let frozen = &super::bip39_english::ENGLISH_WORDS;
+        assert!(frozen.windows(2).all(|pair| pair[0] < pair[1]));
+        for (index, word) in frozen.iter().enumerate() {
+            assert_eq!(words.index_of(word, 0), Some(index));
+        }
+        for missing in ["", "Abandon", "abandon!", "zzzzzz"] {
+            assert_eq!(words.index_of(missing, 0), None);
+        }
+    }
 
     #[test]
     fn english_has_expected_boundary_words() {

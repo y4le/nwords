@@ -141,6 +141,12 @@ cache is warm. Native mnemonic's first decode separately records its lazy index
 construction. Browser cold start is not compared because browser startup, caching,
 network delivery and timer precision need a separate experiment.
 
+Runs also collect 30 separate instrumented Node startup probes.
+They observe the actual public loader's WebAssembly calls without touching Node's
+lazy web globals beforehand. An optional `prewarm-web` control times those globals
+separately. Phases overlap and contain observation overhead; uninstrumented cold
+measurements remain authoritative. The probes verify the first encoded phrase.
+
 Chromium serves nwords' installed ESM/WASM, UNG's published ESM and niceware's shipped
 browserify bundle (including its Buffer shim). Browser payload counts describe those
 actual files, not a minimal bundler build. npm installed package bytes include docs,

@@ -20,3 +20,20 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/y4le/nwords"
 homepage = "https://github.com/y4le/nwords"
 readme = "README.md"
+
+# Explicit package build experiments; ordinary release builds are unchanged.
+[profile.wasm-thin]
+inherits = "release"
+lto = "thin"
+codegen-units = 1
+
+[profile.wasm-fat]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+
+[profile.wasm-size]
+inherits = "release"
+opt-level = "s"
+lto = "fat"
+codegen-units = 1

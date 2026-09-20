@@ -29,6 +29,14 @@ def summarize(data):
         result[key] = summary(values)
     return result
 
+def startup_summary(records):
+    probes = [row for row in records if row['kind'] == 'startup-probe' and row['mode'] == 'normal']
+    if not probes: return None
+    if len(probes) != 30: raise ValueError('Expected 30 normal instrumented startup probes')
+    return {phase: statistics.median(row['phases'].get(phase, 0) for row in probes)
+            for phase in ['publicImport', 'load', 'compile', 'instantiate', 'Instance', 'firstOperation']}
+
+
 def host_description(meta):
     host = meta['host']
     return (f"{host['platform']} ({host['machine']}), CPU affinity {host['cpuAffinity']}, "
@@ -76,9 +84,9 @@ def main():
         lines.append(f'| {runtime} / {name} | {words} | {dictionary:,} | {cell(runtime, name + "/u32/encode")} | {cell(runtime, name + "/u32/decode")} |')
     lengths = next(row for row in data['records'] if row['kind'] == 'lengths')
     lines += ['', f"Mean phrase lengths in this fixture: nwords animal×4 {lengths['nwords4']:.2f}; nwords positional BIP-39 list {lengths['nwords3']:.2f}; mnemonic {lengths['mnemonic']:.2f}; niceware {browser['meanChars']['niceware']:.2f} characters, including separators.", '',
-              'mnemonic has 1,626 ordinary words plus seven remainder markers; four-byte IDs use the ordinary-word alphabet. nwords uses linear dictionary lookup and exact case-sensitive parsing. mnemonic uses a lazily built hash map and accepts non-alphabetic separators. niceware lowercases input and binary-searches its larger dictionary. Their error/validation behavior is not equivalent.', '',
+              f"mnemonic has 1,626 ordinary words plus seven remainder markers; four-byte IDs use the ordinary-word alphabet. nwords uses {meta.get('nwordsLookup', 'linear dictionary lookup')} and exact case-sensitive parsing. mnemonic uses a lazily built hash map and accepts non-alphabetic separators. niceware lowercases input and binary-searches its larger dictionary. Their error/validation behavior is not equivalent.", '',
               '## Binding diagnostics', '',
-              'The native JSON binding reparses the shape and constructs codecs per call, then creates JSON output. The public JS/WASM path adds validation, conversion, marshaling and parsing. The table localizes costs; ratios do **not** isolate pure WASM overhead.', '',
+              'The native JSON diagnostic includes shape resolution, codec construction and JSON output. The public JS/WASM API uses the binding shipped in the measured artifact; see the stage write-up for changes to preparation and result transport. Ratios do **not** isolate pure WASM overhead.', '',
               '| Layer (animal×4) | Encode ns/op [IQR] | Decode ns/op [IQR] |', '|---|---:|---:|',
               f'| Reused native Rust codec | {cell("rust", "nwords/u32/encode")} | {cell("rust", "nwords/u32/decode")} |',
               f'| Native Rust JSON ABI (JSON output) | {cell("rust", "nwords-abi/u32/encode")} | {cell("rust", "nwords-abi/u32/decode")} |',
@@ -104,6 +112,15 @@ def main():
         lines.append(f'| {label} | {sum(size for name, size in assets.items() if name.startswith(prefix)):,} |')
     lines += ['', f"The nwords tarball is {meta['artifact']['packedBytes']:,} compressed bytes, including licenses. Installed comparator package bytes (excluding transitives): " + ', '.join(f'{name} {size:,}' for name, size in meta['npmPackageBytes'].items()) + '. These package sizes are not comparable to the served-byte column.', '',
               '## All warm diagnostics and variability', '', '| Runtime / operation | Median ns/op | IQR | Min–max process median |', '|---|---:|---:|---:|']
+    probes = startup_summary(data['records'])
+    if probes:
+        diagnostic = ['## Instrumented Node loader phases', '',
+                      'A separate fresh-process probe observes the actual public loader. These timings include instrumentation overhead; the uninstrumented startup table remains the primary measurement. Load includes its component phases, so do not sum these medians. Zero means a path was not invoked.', '',
+                      '| Phase | Median ms |', '|---|---:|']
+        for phase, value in probes.items():
+            diagnostic.append(f'| {phase} | {value:.3f} |')
+        position = lines.index('## All warm diagnostics and variability')
+        lines[position:position] = diagnostic + ['']
     for (runtime, name), row in sorted(result.items()):
         lines.append(f"| {runtime} / {name} | {row['median']:,.1f} | {row['q1']:,.1f}–{row['q3']:,.1f} | {row['min']:,.1f}–{row['max']:,.1f} |")
     noisy = [f'{runtime}/{name}' for (runtime, name), row in sorted(result.items()) if (row['q3'] - row['q1']) > 0.25 * row['median']]

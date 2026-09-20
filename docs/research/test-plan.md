@@ -238,3 +238,13 @@ added behind an explicit feature or ignored by default:
 
 Do not use cross-check crates as the only test oracle. Vendored vectors remain
 the stable oracle; cross-checks are a drift detector.
+
+### Prepared JavaScript codec invariants
+
+Packed Node and Chromium checks cover frozen shape snapshots, later caller mutation,
+all committed vectors, full-u128 exact results, invalid numeric/range inputs,
+4096-byte Unicode boundaries, word-position errors, recovery after ordinary errors,
+facade structured-clone rejection, idempotent disposal and use-after-disposal guards.
+Benchmark processes validate all 4096 prepared four-word results against native phrases
+and prepared pair results against the stateless codec before
+timing; preparation/destruction has its own diagnostic cell.

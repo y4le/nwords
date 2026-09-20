@@ -161,14 +161,12 @@ impl NamedWordList {
     pub fn index_of(self, word: &str) -> Option<usize> {
         match self {
             Self::Adjective => adjective_animal_adjectives::ADJECTIVES
-                .iter()
-                .position(|candidate| *candidate == word),
-            Self::Animal => adjective_animal_animals::ANIMALS
-                .iter()
-                .position(|candidate| *candidate == word),
+                .binary_search(&word)
+                .ok(),
+            Self::Animal => adjective_animal_animals::ANIMALS.binary_search(&word).ok(),
             Self::Color => unique_names_generator_colors::COLORS
-                .iter()
-                .position(|candidate| *candidate == word),
+                .binary_search(&word)
+                .ok(),
             Self::Object => friendly_words_objects::OBJECTS
                 .iter()
                 .position(|candidate| *candidate == word),
@@ -632,6 +630,26 @@ mod tests {
         assert_eq!(NamedWordList::parse("plants"), Some(NamedWordList::Plant));
         assert_eq!(NamedWordList::parse("food"), Some(NamedWordList::Food));
         assert_eq!(NamedWordList::parse("foods"), Some(NamedWordList::Food));
+    }
+
+    #[test]
+    fn binary_searched_lists_are_strictly_sorted_in_encoding_order() {
+        for list in [
+            NamedWordList::Adjective,
+            NamedWordList::Animal,
+            NamedWordList::Color,
+        ] {
+            for index in 1..list.len() {
+                assert!(
+                    list.word(index - 1) < list.word(index),
+                    "{}[{index}]",
+                    list.name()
+                );
+            }
+            for missing in ["", "Aardvark", "aardvark!", "zzzzzz"] {
+                assert_eq!(list.index_of(missing), None, "{}: {missing}", list.name());
+            }
+        }
     }
 
     #[test]

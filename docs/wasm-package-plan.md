@@ -242,7 +242,7 @@ versioned-list rules and canonical output are sufficient for the first consumer.
 encodings retain package version, ordered lists and resolved range; optional drift metadata can
 follow a real need. The literal stored display alias needs none of that machinery to stay stable.
 
-We also defer a JS codec-object factory, sync loaders and inline base64 payloads. The stateless
+The initial package deferred a JS codec-object factory, sync loaders and inline base64 payloads. The stateless
 surface and external asset already satisfy the first use case, with less API and loader behavior
 to maintain. No claim about broad bundler compatibility from the consultation has been adopted.
 Murmur session `490efa68df715721e90f` recorded planning request `wasm_plan_consult`.
@@ -251,3 +251,11 @@ embedded-list notices, committed source provenance, a declared initial list set,
 boundary vectors and a named browser harness; those are incorporated. Initialization retry and
 the decimal-string ABI are explicit as well. This was document review only: no implementation,
 WASM build or runtime qualification was performed.
+
+## Performance follow-up: lean success ABI
+
+The performance branch preserves the checked decimal input boundary, while adding
+raw phrase and u128/BigInt success returns. Structured errors, metadata and legacy
+`*_json` diagnostic exports keep their envelopes. The stateless API and its validation contract are unchanged; no unchecked primitive
+u128 input is introduced. The optional `prepare(shape)` API adds a reusable shape
+snapshot with explicit disposal and a `DISPOSED` error for later calls.

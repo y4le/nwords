@@ -24,7 +24,35 @@ export function verifyApi(api, NwordsError, vectors) {
     check(api.encodeId(id, input) === phrase, `${name}: decimal ID parity`);
     check(api.encodeId(BigInt(id), input) === phrase, `${name}: bigint ID parity`);
     check(api.decodePhrase(phrase, input) === BigInt(id), `${name}: decode parity`);
+    const prepared = api.prepare(input);
+    check(Object.isFrozen(prepared), 'Prepared facade is immutable');
+    check(prepared.encodeId(id) === phrase && prepared.encodeId(BigInt(id)) === phrase, `${name}: prepared encode parity`);
+    check(prepared.decodePhrase(phrase) === BigInt(id), `${name}: prepared decode parity`);
+    prepared.dispose(); prepared.dispose();
+    fails(() => prepared.encodeId(id), 'DISPOSED', 'codec');
+    fails(() => prepared.decodePhrase(phrase), 'DISPOSED', 'codec');
   }
+  const mutable = { lists: ['adjective', 'animal'], range: 249417n };
+  const snapshot = api.prepare(mutable);
+  mutable.lists.reverse(); mutable.range = 1n;
+  check(snapshot.encodeId(42n) === 'able cardinal', 'Prepared codec snapshots caller shape');
+  fails(() => api.encodeId(42n, mutable), 'OUT_OF_RANGE', 'id');
+  fails(() => snapshot.encodeId('01'), 'INVALID_INPUT', 'id');
+  fails(() => snapshot.encodeId(1n << 128n), 'INVALID_INPUT', 'id');
+  fails(() => snapshot.encodeId(249417n), 'OUT_OF_RANGE', 'id');
+  fails(() => snapshot.decodePhrase('able secret-token'), 'INVALID_PHRASE', 'phrase', 1);
+  fails(() => snapshot.decodePhrase('\u2003'.repeat(1361) + 'able aardvark '), 'INVALID_PHRASE', 'phrase');
+  check(snapshot.decodePhrase('\t able\u2003aardvark\n') === 0n, 'Prepared Rust whitespace grammar');
+  check(snapshot.decodePhrase('\u2003'.repeat(1361) + 'able aardvark') === 0n, 'Prepared 4096 byte boundary');
+  check(snapshot.encodeId(42n) === 'able cardinal', 'Prepared errors do not poison codec');
+  let cloneFailed = false;
+  try { structuredClone(snapshot); } catch { cloneFailed = true; }
+  check(cloneFailed, 'Prepared facade is not structured-cloneable');
+  snapshot.dispose();
+  fails(() => snapshot.encodeId('invalid'), 'DISPOSED', 'codec');
+  fails(() => api.prepare({ lists: ['animal'], range: 0n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.prepare({ ...shape, range: 249418n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.prepare({ lists: ['animals'] }), 'UNKNOWN_LIST', 'shape', 0);
   const info = api.describeShape(shape);
   check(info.capacity.kind === 'exact' && info.capacity.value === 249417n && info.range === 249417n, 'Exact capacity/range');
   check(info.lists.join(',') === 'adjective,animal', 'Resolved order');
@@ -62,6 +90,13 @@ export function verifyApi(api, NwordsError, vectors) {
     fails(() => api.decodePhrase(phrase, shape), 'INVALID_PHRASE', 'phrase');
   }
   check(api.decodePhrase('\t able\u2003aardvark\n', shape) === 0n, 'Rust Unicode whitespace parsing');
+  check(api.decodePhrase('\u2003'.repeat(1352) + 'able aardvark', shape) === 0n, 'Short UTF-16 bound admits valid Unicode');
+  check(api.decodePhrase('\u2003'.repeat(1361) + 'able aardvark', shape) === 0n, 'Exactly 4096 UTF-8 bytes');
+  fails(() => api.decodePhrase('\u2003'.repeat(1361) + 'able aardvark ', shape), 'INVALID_PHRASE', 'phrase');
+  fails(() => api.decodePhrase('\u2003'.repeat(1361) + 'able aardvark ', null), 'INVALID_PHRASE', 'phrase');
+  fails(() => api.decodePhrase('able aardvark', { ...shape, range: 0n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.encodeId(0n, { ...shape, range: 0n }), 'INVALID_SHAPE', 'range');
+  fails(() => api.encodeId(0n, { ...shape, range: 249418n }), 'INVALID_SHAPE', 'range');
   const error = fails(() => api.decodePhrase('able secret-token', shape), 'INVALID_PHRASE', 'phrase', 1);
   check(!error.message.includes('secret-token') && !JSON.stringify(error).includes('secret-token'), 'Never echo raw input');
   check(api.encodeId(42n, shape) === 'able cardinal', 'Ordinary codec errors do not poison the instance');

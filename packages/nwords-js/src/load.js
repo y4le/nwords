@@ -47,7 +47,9 @@ export function initialize(input, read) {
     const module = new URL('../wasm/nwords_js.js', import.meta.url);
     module.searchParams.set('attempt', String(++attempt));
     const wasm = await import(module.href);
-    await wasm.default({ module_or_path: compiled });
+    // Compilation already finished. Avoid the generic URL/Response path (and
+    // Node's lazy web globals); the public loader remains asynchronous.
+    wasm.initSync({ module: compiled });
     return createApi(wasm);
   })().catch(() => {
     pending = undefined;

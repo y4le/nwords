@@ -1,9 +1,9 @@
-//! Internal decimal-string ABI for the JavaScript package. Codecs and word
+//! Internal checked-input ABI for the JavaScript package. Codecs and word
 //! ordering remain owned by nwords; this crate only validates and binds inputs.
 #![forbid(unsafe_code)]
 
 use nwords::{
-    core::Error,
+    core::{Error, WordMap},
     positional::MixedPositional,
     stats::{capacity_mixed, CapacityClass},
     wordlists::named::{NamedWordList, WordListRole, WordListSequence},
@@ -173,13 +173,11 @@ impl Shape {
                 }
             },
         };
-        let shape = Self {
+        Ok(Self {
             lists,
             range,
             capacity,
-        };
-        shape.codec()?; // Keep construction/range validation authoritative in the Rust codec.
-        Ok(shape)
+        })
     }
 
     fn codec(&self) -> Result<MixedPositional<WordListSequence<'_>>, BindingError> {
@@ -219,6 +217,7 @@ pub fn lists_json() -> String {
 pub fn describe_shape_json(lists: &str, range: Option<String>) -> String {
     envelope((|| {
         let shape = Shape::resolve(lists, range.as_deref())?;
+        shape.codec()?; // Description must validate the range without encoding an ID.
         let lists = shape
             .lists
             .iter()
@@ -239,43 +238,185 @@ pub fn describe_shape_json(lists: &str, range: Option<String>) -> String {
     })())
 }
 
-/// Encodes a canonical decimal ID. Integers never cross the ABI as primitive u128.
-#[wasm_bindgen]
-pub fn encode_id_json(id: &str, lists: &str, range: Option<String>) -> String {
-    envelope((|| {
-        let id = decimal(id, "id")?;
-        let shape = Shape::resolve(lists, range.as_deref())?;
-        let phrase = shape
-            .codec()?
-            .encode(id)
-            .map_err(|error| BindingError::codec(error, "id"))?;
-        Ok(format!("\"{phrase}\""))
-    })())
+// An owned map avoids borrowing a Vec held by the same prepared codec.
+struct OwnedShape(Vec<NamedWordList>);
+
+impl WordMap for OwnedShape {
+    fn len(&self, position: usize) -> usize {
+        self.0.get(position).map_or(0, |list| list.len())
+    }
+
+    fn word(&self, index: usize, position: usize) -> Option<&str> {
+        self.0.get(position).and_then(|list| list.word(index))
+    }
+
+    fn index_of(&self, word: &str, position: usize) -> Option<usize> {
+        self.0.get(position).and_then(|list| list.index_of(word))
+    }
 }
 
-/// Decodes Rust whitespace-separated words with exact case-sensitive lookup.
+/// Private package implementation of an immutable, owned prepared shape.
+/// The JavaScript facade provides best-effort cleanup and explicit disposal.
+#[wasm_bindgen]
+pub struct PreparedCodec {
+    codec: MixedPositional<OwnedShape>,
+}
+
+#[wasm_bindgen]
+impl PreparedCodec {
+    /// Validates and snapshots canonical list names and a checked decimal range.
+    #[wasm_bindgen(constructor)]
+    pub fn new(lists: &str, range: Option<String>) -> Result<PreparedCodec, String> {
+        (|| {
+            let shape = Shape::resolve(lists, range.as_deref())?;
+            let count = shape.lists.len();
+            let codec = MixedPositional::new(OwnedShape(shape.lists), count, shape.range)
+                .map_err(|error| BindingError::codec(error, "shape"))?;
+            Ok(Self { codec })
+        })()
+        .map_err(exception)
+    }
+
+    /// Encodes a checked decimal ID without rebuilding the shape.
+    pub fn encode_id(&self, id: &str) -> Result<String, String> {
+        (|| {
+            let id = decimal(id, "id")?;
+            self.codec
+                .encode(id)
+                .map_err(|error| BindingError::codec(error, "id"))
+        })()
+        .map_err(exception)
+    }
+
+    /// Decodes with the same bounded, exact-case Rust whitespace grammar.
+    pub fn decode_phrase(&self, phrase: &str) -> Result<u128, String> {
+        (|| {
+            if phrase.len() > MAX_PHRASE_BYTES {
+                return Err(BindingError::new(Code::InvalidPhrase, "phrase"));
+            }
+            let words = phrase
+                .split_whitespace()
+                .take(MAX_POSITIONS + 1)
+                .collect::<Vec<_>>();
+            self.codec
+                .decode_words(&words)
+                .map_err(|error| BindingError::codec(error, "phrase"))
+        })()
+        .map_err(exception)
+    }
+}
+
+fn encode(id: &str, lists: &str, range: Option<&str>) -> Result<String, BindingError> {
+    let id = decimal(id, "id")?;
+    let shape = Shape::resolve(lists, range)?;
+    shape
+        .codec()?
+        .encode(id)
+        .map_err(|error| BindingError::codec(error, "id"))
+}
+
+fn decode(phrase: &str, lists: &str, range: Option<&str>) -> Result<u128, BindingError> {
+    if phrase.len() > MAX_PHRASE_BYTES {
+        return Err(BindingError::new(Code::InvalidPhrase, "phrase"));
+    }
+    let shape = Shape::resolve(lists, range)?;
+    let words = phrase
+        .split_whitespace()
+        .take(MAX_POSITIONS + 1)
+        .collect::<Vec<_>>();
+    shape
+        .codec()?
+        .decode_words(&words)
+        .map_err(|error| BindingError::codec(error, "phrase"))
+}
+
+fn exception(error: BindingError) -> String {
+    envelope(Err(error))
+}
+
+/// Encodes a checked decimal ID, returning the phrase directly on success.
+/// Errors retain the machine-readable envelope used by the diagnostic ABI.
+#[wasm_bindgen]
+pub fn encode_id(id: &str, lists: &str, range: Option<String>) -> Result<String, String> {
+    encode(id, lists, range.as_deref()).map_err(exception)
+}
+
+/// Decodes to a lossless JavaScript bigint without decimal or JSON output.
+#[wasm_bindgen]
+pub fn decode_phrase(phrase: &str, lists: &str, range: Option<String>) -> Result<u128, String> {
+    decode(phrase, lists, range.as_deref()).map_err(exception)
+}
+
+/// Diagnostic decimal-string/JSON ABI retained for compatibility and benchmarks.
+#[wasm_bindgen]
+pub fn encode_id_json(id: &str, lists: &str, range: Option<String>) -> String {
+    envelope(encode(id, lists, range.as_deref()).map(|phrase| format!("\"{phrase}\"")))
+}
+
+/// Diagnostic decimal-string/JSON ABI retained for compatibility and benchmarks.
 #[wasm_bindgen]
 pub fn decode_phrase_json(phrase: &str, lists: &str, range: Option<String>) -> String {
-    envelope((|| {
-        if phrase.len() > MAX_PHRASE_BYTES {
-            return Err(BindingError::new(Code::InvalidPhrase, "phrase"));
-        }
-        let shape = Shape::resolve(lists, range.as_deref())?;
-        let words = phrase
-            .split_whitespace()
-            .take(MAX_POSITIONS + 1)
-            .collect::<Vec<_>>();
-        let id = shape
-            .codec()?
-            .decode_words(&words)
-            .map_err(|error| BindingError::codec(error, "phrase"))?;
-        Ok(format!("\"{id}\""))
-    })())
+    envelope(decode(phrase, lists, range.as_deref()).map(|id| format!("\"{id}\"")))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn prepared_codec_retains_checked_boundaries_and_recovery() {
+        let codec = PreparedCodec::new("adjective,animal", Some("100".into())).unwrap();
+        assert_eq!(codec.encode_id("42").unwrap(), "able cardinal");
+        assert_eq!(codec.decode_phrase("able cardinal").unwrap(), 42);
+        for invalid in ["01", "-1", "340282366920938463463374607431768211456"] {
+            assert!(codec
+                .encode_id(invalid)
+                .unwrap_err()
+                .contains("INVALID_INPUT"));
+        }
+        assert!(codec.encode_id("100").unwrap_err().contains("OUT_OF_RANGE"));
+        let slack = encode_id("100", "adjective,animal", None).unwrap();
+        assert!(codec
+            .decode_phrase(&slack)
+            .unwrap_err()
+            .contains("OUT_OF_RANGE"));
+        assert!(codec
+            .decode_phrase(&"a".repeat(4097))
+            .unwrap_err()
+            .contains("INVALID_PHRASE"));
+        assert_eq!(codec.decode_phrase("\t able\u{2003}aardvark\n").unwrap(), 0);
+        assert!(PreparedCodec::new("animal", Some("0".into())).is_err());
+        assert!(PreparedCodec::new("animal", Some("334".into())).is_err());
+        let large =
+            PreparedCodec::new(&vec!["animal"; 16].join(","), Some(u128::MAX.to_string())).unwrap();
+        let phrase = large.encode_id(&(u128::MAX - 1).to_string()).unwrap();
+        assert_eq!(large.decode_phrase(&phrase).unwrap(), u128::MAX - 1);
+    }
+
+    #[test]
+    fn direct_results_preserve_checked_input_and_exact_u128_output() {
+        assert_eq!(
+            encode_id("42", "adjective,animal", None).unwrap(),
+            "able cardinal"
+        );
+        assert_eq!(
+            decode_phrase("able cardinal", "adjective,animal", None).unwrap(),
+            42
+        );
+        for invalid in ["01", "-1", "340282366920938463463374607431768211456"] {
+            let error = encode_id(invalid, "animal", None).unwrap_err();
+            assert_eq!(error, encode_id_json(invalid, "animal", None));
+        }
+        let lists = vec!["animal"; 16].join(",");
+        let range = u128::MAX.to_string();
+        let id = u128::MAX - 1;
+        let phrase = encode_id(&id.to_string(), &lists, Some(range.clone())).unwrap();
+        assert_eq!(decode_phrase(&phrase, &lists, Some(range)).unwrap(), id);
+        assert_eq!(
+            decode_phrase("secret-token", "animal", None).unwrap_err(),
+            decode_phrase_json("secret-token", "animal", None)
+        );
+    }
 
     #[test]
     fn matches_committed_cli_vectors() {

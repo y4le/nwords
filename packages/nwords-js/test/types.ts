@@ -27,3 +27,14 @@ await loadNwords({ source: new Uint8Array(8) });
 // @ts-expect-error Single-use responses are not a supported retryable source.
 await loadWeb({ source: Promise.resolve(new Response()) });
 void [id, size, wrong];
+
+const prepared = (await loadNwords()).prepare({ lists: ['adjective', 'animal'] });
+const preparedPhrase: string = prepared.encodeId(42n);
+const preparedId: bigint = prepared.decodePhrase(preparedPhrase);
+// @ts-expect-error number inputs remain unsupported
+prepared.encodeId(42);
+// @ts-expect-error Exact prepared results are bigint, never number.
+const wrongPrepared: number = prepared.decodePhrase(preparedPhrase);
+void wrongPrepared;
+prepared.dispose();
+void preparedId;

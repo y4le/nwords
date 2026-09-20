@@ -2,6 +2,7 @@ import { NwordsError } from './errors.js';
 
 const MAX_U128 = (1n << 128n) - 1n;
 const names = new Set(['adjective', 'animal', 'color']);
+let utf8;
 
 function fail(code, message, field, position) {
   throw new NwordsError(code, message, { field, position });
@@ -45,8 +46,48 @@ function result(json) {
   return envelope.value;
 }
 
+function phraseInput(phrase) {
+  // At most three UTF-8 bytes per UTF-16 code unit, including lone surrogates.
+  if (typeof phrase !== 'string' || phrase.length > 4096 ||
+      (phrase.length > 1365 && (utf8 ??= new TextEncoder()).encode(phrase).length > 4096)) {
+    fail('INVALID_PHRASE', 'Phrase must be a string of at most 4096 UTF-8 bytes.', 'phrase');
+  }
+}
+
+function prepared(wasm, shape) {
+  let codec;
+  try { codec = new wasm.PreparedCodec(...shapeInput(shape)); }
+  catch (error) { rethrow(error); }
+  const alive = () => {
+    if (!codec) fail('DISPOSED', 'Prepared codec has been disposed.', 'codec');
+  };
+  return Object.freeze({
+    encodeId(id) {
+      alive();
+      try { return codec.encode_id(decimal(id, 'id')); }
+      catch (error) { rethrow(error); }
+    },
+    decodePhrase(phrase) {
+      alive();
+      phraseInput(phrase);
+      try { return codec.decode_phrase(phrase); }
+      catch (error) { rethrow(error); }
+    },
+    dispose() {
+      if (codec) { const previous = codec; codec = undefined; previous.free(); }
+    },
+  });
+}
+
+// Expected Rust failures throw the same structured envelope as the diagnostic ABI.
+function rethrow(error) {
+  if (typeof error === 'string') result(error);
+  throw error;
+}
+
 export function createApi(wasm) {
   return Object.freeze({
+    prepare(shape) { return prepared(wasm, shape); },
     lists() {
       return result(wasm.lists_json()).map(list => ({ ...list, size: BigInt(list.size) }));
     },
@@ -61,13 +102,13 @@ export function createApi(wasm) {
       };
     },
     encodeId(id, shape) {
-      return result(wasm.encode_id_json(decimal(id, 'id'), ...shapeInput(shape)));
+      try { return wasm.encode_id(decimal(id, 'id'), ...shapeInput(shape)); }
+      catch (error) { rethrow(error); }
     },
     decodePhrase(phrase, shape) {
-      if (typeof phrase !== 'string' || phrase.length > 4096 || new TextEncoder().encode(phrase).length > 4096) {
-        fail('INVALID_PHRASE', 'Phrase must be a string of at most 4096 UTF-8 bytes.', 'phrase');
-      }
-      return BigInt(result(wasm.decode_phrase_json(phrase, ...shapeInput(shape))));
+      phraseInput(phrase);
+      try { return wasm.decode_phrase(phrase, ...shapeInput(shape)); }
+      catch (error) { rethrow(error); }
     },
   });
 }

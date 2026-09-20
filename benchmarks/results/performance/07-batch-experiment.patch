@@ -1,0 +1,428 @@
+diff --git a/benchmarks/js/suite.mjs b/benchmarks/js/suite.mjs
+index d6570eb..ef8d935 100644
+--- a/benchmarks/js/suite.mjs
++++ b/benchmarks/js/suite.mjs
+@@ -43,6 +43,24 @@ export function workloads({ words, ung, niceware, Buffer, dictionaries, values,
+         throw new Error(`Prepared parity failed at ${i}`);
+       }
+     }
++    if (preparedFour.encodeMany) {
++      const consume = outputs => outputs.reduce((sum, value) => sum + (typeof value === 'string' ? value.length + value.charCodeAt(0) : Number(value)), 0);
++      for (const size of [1, 16, 256]) {
++        const ids = Array.from({ length: big.length / size }, (_, index) => big.slice(index * size, (index + 1) * size));
++        const texts = Array.from({ length: phrases.length / size }, (_, index) => phrases.slice(index * size, (index + 1) * size));
++        for (let index = 0; index < ids.length; index++) {
++          const encoded = preparedFour.encodeMany(ids[index]);
++          const decoded = preparedFour.decodeMany(texts[index]);
++          if (encoded.length !== size || decoded.length !== size || encoded.some((value, i) => value !== texts[index][i]) || decoded.some((value, i) => value !== ids[index][i])) throw new Error('Batch parity failure');
++        }
++        cases.push(
++          [`nwords-batch/batch-${size}/encode`, i => consume(preparedFour.encodeMany(ids[i % ids.length]))],
++          [`nwords-batch/batch-${size}/decode`, i => consume(preparedFour.decodeMany(texts[i % texts.length]))],
++          [`nwords-loop/batch-${size}/encode`, i => consume(ids[i % ids.length].map(value => preparedFour.encodeId(value)))],
++          [`nwords-loop/batch-${size}/decode`, i => consume(texts[i % texts.length].map(value => preparedFour.decodePhrase(value)))],
++        );
++      }
++    }
+     cases.push(
+       ['nwords-prepared/name/shared-math-random', () => preparedPair.encodeId(BigInt(Math.floor(Math.random() * 249417)))],
+       ['nwords-prepared/pair/encode', i => preparedPair.encodeId(pairIds[i])],
+diff --git a/crates/nwords-js/src/lib.rs b/crates/nwords-js/src/lib.rs
+index f496482..abda038 100644
+--- a/crates/nwords-js/src/lib.rs
++++ b/crates/nwords-js/src/lib.rs
+@@ -8,9 +8,10 @@ use nwords::{
+     stats::{capacity_mixed, CapacityClass},
+     wordlists::named::{NamedWordList, WordListRole, WordListSequence},
+ };
+-use wasm_bindgen::prelude::wasm_bindgen;
++use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+ 
+ const MAX_POSITIONS: usize = 32;
++const MAX_BATCH: usize = 4096;
+ const MAX_PHRASE_BYTES: usize = 4096;
+ const SUPPORTED: &[NamedWordList] = &[
+     NamedWordList::Adjective,
+@@ -21,6 +22,7 @@ const SUPPORTED: &[NamedWordList] = &[
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ enum Code {
+     InvalidInput,
++    InvalidBatch,
+     UnknownList,
+     InvalidShape,
+     CapacityOverflow,
+@@ -32,7 +34,7 @@ enum Code {
+ impl Code {
+     fn name(self) -> &'static str {
+         match self {
+-            Self::InvalidInput => "INVALID_INPUT",
++            Self::InvalidInput | Self::InvalidBatch => "INVALID_INPUT",
+             Self::UnknownList => "UNKNOWN_LIST",
+             Self::InvalidShape => "INVALID_SHAPE",
+             Self::CapacityOverflow => "CAPACITY_OVERFLOW",
+@@ -44,6 +46,7 @@ impl Code {
+ 
+     fn message(self) -> &'static str {
+         match self {
++            Self::InvalidBatch => "Batch must contain at most 4096 inputs.",
+             Self::InvalidInput => "Expected a canonical unsigned decimal integer within u128.",
+             Self::UnknownList => "Unsupported canonical word-list name.",
+             Self::InvalidShape => {
+@@ -62,6 +65,7 @@ struct BindingError {
+     code: Code,
+     field: &'static str,
+     position: Option<usize>,
++    batch_index: Option<usize>,
+ }
+ 
+ impl BindingError {
+@@ -70,6 +74,7 @@ impl BindingError {
+             code,
+             field,
+             position: None,
++            batch_index: None,
+         }
+     }
+ 
+@@ -78,6 +83,11 @@ impl BindingError {
+         self
+     }
+ 
++    fn batch(mut self, index: usize) -> Self {
++        self.batch_index = Some(index);
++        self
++    }
++
+     fn codec(error: Error, field: &'static str) -> Self {
+         match error {
+             Error::UnknownWord { position } => Self::new(Code::InvalidPhrase, field).at(position),
+@@ -116,8 +126,11 @@ fn envelope(result: Result<String, BindingError>) -> String {
+             let position = error
+                 .position
+                 .map_or(String::new(), |p| format!(r#", "position":{p}"#));
++            let batch_index = error
++                .batch_index
++                .map_or(String::new(), |i| format!(r#", "batchIndex":{i}"#));
+             format!(
+-                r#"{{"ok":false,"error":{{"code":"{}","message":"{}","field":"{}"{position}}}}}"#,
++                r#"{{"ok":false,"error":{{"code":"{}","message":"{}","field":"{}"{position}{batch_index}}}}}"#,
+                 error.code.name(),
+                 error.code.message(),
+                 error.field
+@@ -277,6 +290,40 @@ impl PreparedCodec {
+         .map_err(exception)
+     }
+ 
++    /// Bounded batch transport. The facade sends checked decimal strings or invalid markers.
++    pub fn encode_many(&self, ids: Box<[JsValue]>) -> Result<Box<[JsValue]>, String> {
++        batch_values(ids, "ids", |value| {
++            let text = value
++                .as_string()
++                .ok_or_else(|| BindingError::new(Code::InvalidInput, "id"))?;
++            let id = decimal(&text, "id")?;
++            self.codec
++                .encode(id)
++                .map(JsValue::from)
++                .map_err(|error| BindingError::codec(error, "id"))
++        })
++    }
++
++    /// Decodes in input order, preserving word position separately from batch index.
++    pub fn decode_many(&self, phrases: Box<[JsValue]>) -> Result<Box<[JsValue]>, String> {
++        batch_values(phrases, "phrases", |value| {
++            let phrase = value
++                .as_string()
++                .ok_or_else(|| BindingError::new(Code::InvalidPhrase, "phrase"))?;
++            if phrase.len() > MAX_PHRASE_BYTES {
++                return Err(BindingError::new(Code::InvalidPhrase, "phrase"));
++            }
++            let words = phrase
++                .split_whitespace()
++                .take(MAX_POSITIONS + 1)
++                .collect::<Vec<_>>();
++            self.codec
++                .decode_words(&words)
++                .map(JsValue::from)
++                .map_err(|error| BindingError::codec(error, "phrase"))
++        })
++    }
++
+     /// Encodes a checked decimal ID without rebuilding the shape.
+     pub fn encode_id(&self, id: &str) -> Result<String, String> {
+         (|| {
+@@ -306,6 +353,22 @@ impl PreparedCodec {
+     }
+ }
+ 
++fn batch_values(
++    values: Box<[JsValue]>,
++    field: &'static str,
++    mut operation: impl FnMut(JsValue) -> Result<JsValue, BindingError>,
++) -> Result<Box<[JsValue]>, String> {
++    if values.len() > MAX_BATCH {
++        return Err(exception(BindingError::new(Code::InvalidBatch, field)));
++    }
++    values
++        .into_vec()
++        .into_iter()
++        .enumerate()
++        .map(|(index, value)| operation(value).map_err(|error| exception(error.batch(index))))
++        .collect()
++}
++
+ fn encode(id: &str, lists: &str, range: Option<&str>) -> Result<String, BindingError> {
+     let id = decimal(id, "id")?;
+     let shape = Shape::resolve(lists, range)?;
+@@ -363,6 +426,17 @@ pub fn decode_phrase_json(phrase: &str, lists: &str, range: Option<String>) -> S
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn batch_error_preserves_independent_word_and_item_positions() {
++        let error = BindingError::new(Code::InvalidPhrase, "phrase")
++            .at(1)
++            .batch(2);
++        assert_eq!(
++            envelope(Err(error)),
++            r#"{"ok":false,"error":{"code":"INVALID_PHRASE","message":"Phrase is invalid for the selected shape.","field":"phrase", "position":1, "batchIndex":2}}"#
++        );
++    }
++
+     #[test]
+     fn prepared_codec_retains_checked_boundaries_and_recovery() {
+         let codec = PreparedCodec::new("adjective,animal", Some("100".into())).unwrap();
+diff --git a/docs/research/architecture-decisions.md b/docs/research/architecture-decisions.md
+index 56cf43d..3979cff 100644
+--- a/docs/research/architecture-decisions.md
++++ b/docs/research/architecture-decisions.md
+@@ -337,3 +337,11 @@ uses its FinalizationRegistry cleanup on supported runtimes, and offers idempote
+ entering WASM. No cache can evict a live prepared codec, and the object is neither
+ cloneable nor transferable across instances/workers. Prepared methods retain all
+ numeric, phrase, range and error contracts of the stateless methods.
++
++## Bounded prepared batches
++
++The prepared facade supports ordered, all-or-throw encode/decode arrays capped at
++4096 elements. Rust validates each item in order; JS invalid-input markers preserve
++precedence across syntax and range errors. A separate batchIndex identifies the
++item while position retains the unknown word index. The transport uses wasm-bindgen
++externref arrays, without custom delimiter framing or public raw handles.
+diff --git a/docs/research/test-plan.md b/docs/research/test-plan.md
+index fd0c2fb..a4f83de 100644
+--- a/docs/research/test-plan.md
++++ b/docs/research/test-plan.md
+@@ -248,3 +248,9 @@ facade structured-clone rejection, idempotent disposal and use-after-disposal gu
+ Benchmark processes validate all 4096 prepared four-word results against native phrases
+ and prepared pair results against the stateless codec before
+ timing; preparation/destruction has its own diagnostic cell.
++
++Batch checks cover empty arrays, 1/16/256/4096 entries, ordering and exact-u128
++vectors, size/type/hole errors, earliest invalid item across JS/Rust validation,
++Unicode bounds and word positions, raw ABI bounds, and disposal precedence.
++Benchmark batches validate every output before timing and consume every result;
++matched prepared loops include the same output arrays and consumption.
+diff --git a/packages/nwords-js/README.md b/packages/nwords-js/README.md
+index fe5d3a3..7632815 100644
+--- a/packages/nwords-js/README.md
++++ b/packages/nwords-js/README.md
+@@ -59,7 +59,7 @@ Display aliases can instead be persisted literally. Capacity is not security
+ entropy, and encoding does not allocate unique names or provide encryption.
+ 
+ `NwordsError` has a stable `code`, optional `field`, and zero-based `position`
+-where available. Codes are `INVALID_INPUT`, `UNKNOWN_LIST`, `INVALID_SHAPE`,
++and `batchIndex` where available. Codes are `INVALID_INPUT`, `UNKNOWN_LIST`, `INVALID_SHAPE`,
+ `CAPACITY_OVERFLOW`, `OUT_OF_RANGE`, `INVALID_PHRASE`, `DISPOSED`, and `INTERNAL_ERROR`.
+ Messages do not echo input phrases or words. `NwordsLoadError` separately uses
+ `LOAD_FAILED` or `ASSET_CONFLICT`. Error classes are exported from both entries.
+@@ -106,3 +106,16 @@ FinalizationRegistry; garbage collection and cleanup timing are not guaranteed.
+ idempotent. Runtimes without FinalizationRegistry require explicit disposal.
+ After disposal, encode/decode throw `NwordsError` with code `DISPOSED` and field
+ `codec`, before inspecting the operation's input. Ordinary codec errors leave it usable.
++
++## Bounded batches
++
++Prepared codecs also expose `encodeMany(ids)` and `decodeMany(phrases)`, returning
++arrays in input order. Inputs must be arrays of at most 4096 elements; empty arrays
++return empty arrays. Integer, phrase and range rules match the single-call methods.
++Calls return all results or throw for the first invalid item, with zero-based
++`batchIndex` separate from a phrase's `position`. Oversized/non-array inputs use
++`INVALID_INPUT` and field `ids` or `phrases`; item errors use `id` or `phrase`.
++Disposal is checked first. No partial results escape, and ordinary errors leave the
++codec usable. As with ordinary JavaScript access, unexpected exceptions from array
++getters propagate. Batch timings count one complete array per operation; divide by
++its size when comparing per-ID costs.
+diff --git a/packages/nwords-js/src/api.js b/packages/nwords-js/src/api.js
+index 3032573..77edbbe 100644
+--- a/packages/nwords-js/src/api.js
++++ b/packages/nwords-js/src/api.js
+@@ -40,8 +40,8 @@ function shapeInput(shape) {
+ function result(json) {
+   const envelope = JSON.parse(json);
+   if (!envelope.ok) {
+-    const { code, message, field, position } = envelope.error;
+-    throw new NwordsError(code, message, { field, position });
++    const { code, message, field, position, batchIndex } = envelope.error;
++    throw new NwordsError(code, message, { field, position, batchIndex });
+   }
+   return envelope.value;
+ }
+@@ -54,6 +54,18 @@ function phraseInput(phrase) {
+   }
+ }
+ 
++// Invalid markers let Rust report the earliest failing item, including range errors
++// before a later JS validation error. Unexpected exceptions still propagate.
++function batchInput(values, field, convert) {
++  if (!Array.isArray(values) || values.length > 4096) {
++    fail('INVALID_INPUT', 'Expected an array of at most 4096 inputs.', field);
++  }
++  return values.map(value => {
++    try { return convert(value); }
++    catch (error) { if (error instanceof NwordsError) return undefined; throw error; }
++  });
++}
++
+ function prepared(wasm, shape) {
+   let codec;
+   try { codec = new wasm.PreparedCodec(...shapeInput(shape)); }
+@@ -73,6 +85,20 @@ function prepared(wasm, shape) {
+       try { return codec.decode_phrase(phrase); }
+       catch (error) { rethrow(error); }
+     },
++    encodeMany(ids) {
++      alive();
++      const inputs = batchInput(ids, 'ids', value => decimal(value, 'id'));
++      alive();
++      try { return codec.encode_many(inputs); }
++      catch (error) { rethrow(error); }
++    },
++    decodeMany(phrases) {
++      alive();
++      const inputs = batchInput(phrases, 'phrases', value => { phraseInput(value); return value; });
++      alive();
++      try { return codec.decode_many(inputs); }
++      catch (error) { rethrow(error); }
++    },
+     dispose() {
+       if (codec) { const previous = codec; codec = undefined; previous.free(); }
+     },
+diff --git a/packages/nwords-js/src/errors.js b/packages/nwords-js/src/errors.js
+index 7ec420a..491a43a 100644
+--- a/packages/nwords-js/src/errors.js
++++ b/packages/nwords-js/src/errors.js
+@@ -6,6 +6,7 @@ export class NwordsError extends Error {
+     this.code = code;
+     if (details.field !== undefined) this.field = details.field;
+     if (details.position !== undefined) this.position = details.position;
++    if (details.batchIndex !== undefined) this.batchIndex = details.batchIndex;
+   }
+ }
+ 
+diff --git a/packages/nwords-js/src/index.d.ts b/packages/nwords-js/src/index.d.ts
+index f74d9f7..435de8f 100644
+--- a/packages/nwords-js/src/index.d.ts
++++ b/packages/nwords-js/src/index.d.ts
+@@ -22,6 +22,8 @@ export interface ShapeInfo {
+ export interface PreparedCodec {
+   encodeId(id: IntegerInput): string;
+   decodePhrase(phrase: string): bigint;
++  encodeMany(ids: readonly IntegerInput[]): string[];
++  decodeMany(phrases: readonly string[]): bigint[];
+   /** Idempotent. Subsequent encode/decode calls throw DISPOSED. */
+   dispose(): void;
+ }
+@@ -36,10 +38,11 @@ export type ErrorCode = 'INVALID_INPUT' | 'UNKNOWN_LIST' | 'INVALID_SHAPE' |
+   'CAPACITY_OVERFLOW' | 'OUT_OF_RANGE' | 'INVALID_PHRASE' | 'INTERNAL_ERROR' | 'DISPOSED';
+ export class NwordsError extends Error {
+   readonly code: ErrorCode;
+-  readonly field?: 'id' | 'range' | 'shape' | 'phrase' | 'codec';
++  readonly field?: 'id' | 'range' | 'shape' | 'phrase' | 'codec' | 'ids' | 'phrases';
+   readonly position?: number;
++  readonly batchIndex?: number;
+   constructor(code: ErrorCode, message: string, details?: {
+-    field?: 'id' | 'range' | 'shape' | 'phrase' | 'codec'; position?: number;
++    field?: 'id' | 'range' | 'shape' | 'phrase' | 'codec' | 'ids' | 'phrases'; position?: number; batchIndex?: number;
+   });
+ }
+ export class NwordsLoadError extends Error {
+diff --git a/packages/nwords-js/test/consumer.mjs b/packages/nwords-js/test/consumer.mjs
+index 8ab43b4..65ff677 100644
+--- a/packages/nwords-js/test/consumer.mjs
++++ b/packages/nwords-js/test/consumer.mjs
+@@ -80,6 +80,10 @@ if (mode === 'measure') {
+     assert.equal(raw.decode_phrase(phrase, lists, range === '-' ? undefined : range), BigInt(id), name);
+     const prepared = new raw.PreparedCodec(lists, range === '-' ? undefined : range);
+     try {
++      assert.deepEqual(prepared.encode_many([id]), [phrase]);
++      assert.deepEqual(prepared.decode_many([phrase]), [BigInt(id)]);
++      assert.throws(() => prepared.encode_many(['-1']), error => typeof error === 'string' && JSON.parse(error).error.batchIndex === 0);
++      assert.throws(() => prepared.encode_many(Array(4097).fill('0')), error => typeof error === 'string' && JSON.parse(error).error.field === 'ids');
+       assert.equal(prepared.encode_id(id), phrase, name);
+       assert.equal(prepared.decode_phrase(phrase), BigInt(id), name);
+       assert.throws(() => prepared.encode_id('-1'), error => typeof error === 'string' && JSON.parse(error).error.code === 'INVALID_INPUT');
+diff --git a/packages/nwords-js/test/contract.mjs b/packages/nwords-js/test/contract.mjs
+index 66d770c..68555ae 100644
+--- a/packages/nwords-js/test/contract.mjs
++++ b/packages/nwords-js/test/contract.mjs
+@@ -28,7 +28,11 @@ export function verifyApi(api, NwordsError, vectors) {
+     check(Object.isFrozen(prepared), 'Prepared facade is immutable');
+     check(prepared.encodeId(id) === phrase && prepared.encodeId(BigInt(id)) === phrase, `${name}: prepared encode parity`);
+     check(prepared.decodePhrase(phrase) === BigInt(id), `${name}: prepared decode parity`);
++    check(prepared.encodeMany([id, BigInt(id)]).every(value => value === phrase), `${name}: batch encode parity`);
++    check(prepared.decodeMany([phrase, phrase]).every(value => value === BigInt(id)), `${name}: batch decode parity`);
+     prepared.dispose(); prepared.dispose();
++    fails(() => prepared.encodeMany(null), 'DISPOSED', 'codec');
++    fails(() => prepared.decodeMany(null), 'DISPOSED', 'codec');
+     fails(() => prepared.encodeId(id), 'DISPOSED', 'codec');
+     fails(() => prepared.decodePhrase(phrase), 'DISPOSED', 'codec');
+   }
+@@ -44,6 +48,31 @@ export function verifyApi(api, NwordsError, vectors) {
+   fails(() => snapshot.decodePhrase('\u2003'.repeat(1361) + 'able aardvark '), 'INVALID_PHRASE', 'phrase');
+   check(snapshot.decodePhrase('\t able\u2003aardvark\n') === 0n, 'Prepared Rust whitespace grammar');
+   check(snapshot.decodePhrase('\u2003'.repeat(1361) + 'able aardvark') === 0n, 'Prepared 4096 byte boundary');
++  check(snapshot.encodeMany([]).length === 0 && snapshot.decodeMany([]).length === 0, 'Empty batches');
++  for (const size of [1, 16, 256, 4096]) {
++    const ids = Array.from({ length: size }, (_, index) => BigInt(index));
++    const phrases = snapshot.encodeMany(ids);
++    check(phrases.length === size && phrases.every((phrase, index) => phrase === snapshot.encodeId(ids[index])), 'Batch order and encode parity');
++    const decoded = snapshot.decodeMany(phrases);
++    check(decoded.length === size && decoded.every((id, index) => id === ids[index]), 'Batch decode parity');
++  }
++  fails(() => snapshot.encodeMany(null), 'INVALID_INPUT', 'ids');
++  fails(() => snapshot.decodeMany('able cardinal'), 'INVALID_INPUT', 'phrases');
++  fails(() => snapshot.encodeMany(Array(4097).fill(0n)), 'INVALID_INPUT', 'ids');
++  fails(() => snapshot.decodeMany(Array(4097).fill('able cardinal')), 'INVALID_INPUT', 'phrases');
++  for (const ids of [[249417n, 'invalid'], [0n, 249417n, 'invalid']]) {
++    const error = fails(() => snapshot.encodeMany(ids), 'OUT_OF_RANGE', 'id');
++    check(error.batchIndex === ids.length - 2 && error.position === undefined, 'Earliest batch range error wins over later syntax');
++  }
++  check(fails(() => snapshot.encodeMany([0n, '01']), 'INVALID_INPUT', 'id').batchIndex === 1, 'Batch syntax index');
++  check(fails(() => snapshot.encodeMany(Array(2)), 'INVALID_INPUT', 'id').batchIndex === 0, 'Sparse batch rejects first hole');
++  const batchError = fails(() => snapshot.decodeMany(['able cardinal', 'able cardinal', 'secret-token cardinal', null]), 'INVALID_PHRASE', 'phrase', 0);
++  check(batchError.batchIndex === 2 && !batchError.message.includes('secret-token'), 'Batch index is separate from word position');
++  check(fails(() => snapshot.decodeMany(['able cardinal', '\u2003'.repeat(1361) + 'able aardvark ']), 'INVALID_PHRASE', 'phrase').batchIndex === 1, 'Batch UTF8 bound');
++  check(snapshot.decodeMany(['\t able\u2003aardvark\n'])[0] === 0n, 'Batch Rust whitespace');
++  const reentrant = api.prepare({ lists: ['animal'] });
++  const getterInput = Object.defineProperty([0n], 0, { get() { reentrant.dispose(); return 0n; } });
++  fails(() => reentrant.encodeMany(getterInput), 'DISPOSED', 'codec');
+   check(snapshot.encodeId(42n) === 'able cardinal', 'Prepared errors do not poison codec');
+   let cloneFailed = false;
+   try { structuredClone(snapshot); } catch { cloneFailed = true; }
+diff --git a/packages/nwords-js/test/types.ts b/packages/nwords-js/test/types.ts
+index 870f301..29068d4 100644
+--- a/packages/nwords-js/test/types.ts
++++ b/packages/nwords-js/test/types.ts
+@@ -36,5 +36,13 @@ prepared.encodeId(42);
+ // @ts-expect-error Exact prepared results are bigint, never number.
+ const wrongPrepared: number = prepared.decodePhrase(preparedPhrase);
+ void wrongPrepared;
++const encodedBatch: string[] = prepared.encodeMany([0n, '42']);
++const decodedBatch: bigint[] = prepared.decodeMany(encodedBatch);
++// @ts-expect-error Batch number inputs are not supported.
++prepared.encodeMany([42]);
++// @ts-expect-error Batch results are exact bigint values.
++const wrongBatch: number[] = prepared.decodeMany(encodedBatch);
++new NwordsError('INVALID_INPUT', 'invalid batch', { field: 'ids', batchIndex: 1 });
++void [decodedBatch, wrongBatch];
+ prepared.dispose();
+ void preparedId;
