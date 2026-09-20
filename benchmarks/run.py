@@ -70,6 +70,7 @@ def main():
     metadata = {
         'schema': 'nwords.benchmark.v1', 'startedUtc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'sourceCommit': output(['git', 'rev-parse', 'HEAD']),
+        'nwordsLookup': 'binary search for sorted adjective/animal/color and English BIP-39 dictionaries',
         'sourceDirty': bool(output(['git', 'status', '--porcelain=v1', '--untracked-files=all'])),
         'sourceStatus': output(['git', 'status', '--porcelain=v1', '--untracked-files=all']),
         'artifact': { 'sourceCommit': build['sourceCommit'], 'sha256': digest(args.tarball), 'packedBytes': args.tarball.stat().st_size, 'wasm': build['wasm'] },

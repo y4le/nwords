@@ -76,9 +76,9 @@ def main():
         lines.append(f'| {runtime} / {name} | {words} | {dictionary:,} | {cell(runtime, name + "/u32/encode")} | {cell(runtime, name + "/u32/decode")} |')
     lengths = next(row for row in data['records'] if row['kind'] == 'lengths')
     lines += ['', f"Mean phrase lengths in this fixture: nwords animal×4 {lengths['nwords4']:.2f}; nwords positional BIP-39 list {lengths['nwords3']:.2f}; mnemonic {lengths['mnemonic']:.2f}; niceware {browser['meanChars']['niceware']:.2f} characters, including separators.", '',
-              'mnemonic has 1,626 ordinary words plus seven remainder markers; four-byte IDs use the ordinary-word alphabet. nwords uses linear dictionary lookup and exact case-sensitive parsing. mnemonic uses a lazily built hash map and accepts non-alphabetic separators. niceware lowercases input and binary-searches its larger dictionary. Their error/validation behavior is not equivalent.', '',
+              f"mnemonic has 1,626 ordinary words plus seven remainder markers; four-byte IDs use the ordinary-word alphabet. nwords uses {meta.get('nwordsLookup', 'linear dictionary lookup')} and exact case-sensitive parsing. mnemonic uses a lazily built hash map and accepts non-alphabetic separators. niceware lowercases input and binary-searches its larger dictionary. Their error/validation behavior is not equivalent.", '',
               '## Binding diagnostics', '',
-              'The native JSON binding reparses the shape and constructs codecs per call, then creates JSON output. The public JS/WASM path adds validation, conversion, marshaling and parsing. The table localizes costs; ratios do **not** isolate pure WASM overhead.', '',
+              'The native JSON diagnostic includes shape resolution, codec construction and JSON output. The public JS/WASM API uses the binding shipped in the measured artifact; see the stage write-up for changes to preparation and result transport. Ratios do **not** isolate pure WASM overhead.', '',
               '| Layer (animal×4) | Encode ns/op [IQR] | Decode ns/op [IQR] |', '|---|---:|---:|',
               f'| Reused native Rust codec | {cell("rust", "nwords/u32/encode")} | {cell("rust", "nwords/u32/decode")} |',
               f'| Native Rust JSON ABI (JSON output) | {cell("rust", "nwords-abi/u32/encode")} | {cell("rust", "nwords-abi/u32/decode")} |',

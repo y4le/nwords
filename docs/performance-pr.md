@@ -60,3 +60,13 @@ no-default-feature alloc build, and frozen vector checksums. Package qualificati
 installs the actual tarball and tests Node, CommonJS dynamic import, TypeScript
 NodeNext/Bundler declarations, Chromium, loader recovery and the existing demo.
 New tests accompany each changed contract or optimization invariant.
+
+## Reporting provenance
+
+The sorted-lookup stage adds a recorded lookup description and corrects report prose;
+measurement loops and aggregation stay unchanged. Old raw results default to their
+original linear-lookup description. The report script hash changes from
+`47f5500794bfec241648d0e289e5340fe07184d7033f414966eb401ae85eb860` to `2b913c6e3922af2a8116c0f99ec7647ea5f8fe4866d30a08c3aa6dd485242170`.
+Binary search is scoped to adjective, animal, color and English BIP-39; other named
+lists and the older AdjectiveAnimal adapter are separate paths, and Japanese remains
+linear because its frozen order is not byte-sorted.
