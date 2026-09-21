@@ -39,9 +39,9 @@ snippet. Explain that unique
 IDs map to unique phrases within the chosen range; random phrase generation
 still needs an application's collision policy.
 
-**Implementation:** The slim ESM `BigInt` codec uses the same variable-v1
-ordering and adds a bit view that accepts longer text and binary input. The
-existing Rust-backed binding remains bounded to `u128`.
+**Implementation:** The dictionary-free Names WASM uses Rust's wide
+`variable-v1` mapping and exact bit view. JS loads the codec and selected
+wordsets; the native CLI accepts the same wide values.
 
 **Format decisions:**
 
@@ -127,12 +127,12 @@ format/version badge should make it clear which decoder owns each phrase.
 | Experience | Rust core | JS package | Browser demo |
 | --- | --- | --- | --- |
 | `adjective+,animal` numeric IDs | Yes | Yes | Yes |
-| Arbitrary bytes/text ending in animal | Wide native path not implemented | Slim ESM codec | Yes |
-| Exact binary bit length in that grammar | Wide native path not implemented | Slim ESM codec | Yes |
+| Arbitrary bytes/text ending in animal | Yes | Slim Rust WASM binding | Yes |
+| Exact binary bit length in that grammar | Yes | Slim Rust WASM binding | Yes |
 | BIP-39 entropy ↔ mnemonic | Yes | Dedicated JS/WASM entry | Yes |
 | Arbitrary bytes/text with cyclic lists | Yes | Yes | No |
 | Custom and mixed wordsets | Yes | Yes | No |
-| Import only used codecs and dictionaries | Feature gates exist, but `named` groups lists | Explicit slim entries and wordset modules | Yes |
+| Import only used codecs and dictionaries | Feature gates exist; CLI embeds presets | Explicit slim WASM entries and wordset modules | Yes |
 
 This table records current reach, not a decision to add every row to the first
 release. Revisit it after the demo set and decoding semantics are agreed.
@@ -163,11 +163,10 @@ Record findings here as the implementation and Fable/Opus reviews continue.
 - **Fable, 2026-09-20:** Use the existing variable-v1 descriptor shape with
   explicit `min`, put the ID codec at `./variable`, and keep bit/byte/text
   helpers in a separate `./views` entry for smaller ID-only bundles.
-- **Later compatibility:** Rust and CLI cannot decode the slim page's IDs above
-  `u128` yet. Widen native variable-v1 if a cross-language use case needs it.
-- **Implementation, 2026-09-20:** Keep wordset modules independent and avoid a
-  root barrel. Production Vite Names-only emitted no WASM; BIP-39-only emitted
-  one WASM asset. Qualify webpack later.
+- **Implemented, 2026-09-20:** Rust and CLI now accept the page's wide IDs and
+  exact bit, byte, and text views. The Names-only Vite bundle emits one Names
+  WASM and only selected wordsets; BIP-39-only emits its separate WASM.
+  Qualify webpack later.
 - **Later UX:** Show a loaded-size readout per demo, with measured WASM and
   wordset transfer sizes. Include it only if it helps explain the package
   behavior without distracting from conversion.
@@ -182,12 +181,9 @@ Record findings here as the implementation and Fable/Opus reviews continue.
 - **Later packaging:** Measure the shared codec's unused algorithm cost; split
   further if material. Inspect the release WASM name section only after the
   initial bundle-size measurements.
-- **Rust-owned Names follow-up, 2026-09-20:** Build a dictionary-free
-  `variable-v1` WASM entry from the Rust codec, extend Rust and CLI to the
-  page's wide bit domain, and keep the BIP-39 WASM entry separate. The JS
-  entry should load the module and pass only imported wordsets into a prepared
-  codec. Measure first use and emitted bundles before replacing the duplicate
-  JS codec.
+- **Implemented Rust-owned Names, 2026-09-20:** The slim binding has no
+  named wordlists; JS passes imported lists once into a reusable Rust handle.
+  The duplicate JS codec was removed after packed bundle and first-use checks.
 - **Wordset distribution, 2026-09-20:** Keep browser wordsets as independent
   imports, with no built-in naming lists in the slim Names WASM artifact. The
   twelve naming snapshots total 108,633 bytes of UTF-8 (46,451 bytes when
@@ -202,12 +198,15 @@ Record findings here as the implementation and Fable/Opus reviews continue.
   boundaries, exact bit lengths, leading zeros, UTF-8, Unicode tokens, range
   and word limits through Rust, CLI, and WASM. Preserve the published phrase
   mapping as the JS codec is replaced.
-- **Fable measurement gate:** Build and measure the dictionary-free Names WASM
-  before removing the JS codec. Compare production bundle bytes, cold first-use
-  time on desktop and mobile, and throughput with the current JS entry. Also
-  measure a combined core-codecs artifact; split additional families only when
-  their actual consumer bundles benefit. Fable's estimated sizes and mobile
-  times are predictions, not measured budgets.
+- **Measured Names bundle, 2026-09-20:** The baseline dictionary-free WASM is
+  98,139 bytes (38,394 gzip). A Names-only Vite bundle is 20,606 JS bytes
+  (8,550 gzip) plus that WASM; the old JS-only bundle was 13,535 bytes
+  (6,546 gzip). Five local Chromium runs took 17.9–24.8 ms from dynamic
+  imports through a codec round trip, with about 3–4 ms spent loading and
+  initializing WASM. These are local arm64 desktop measurements. Later:
+  measure a throttled/mobile device and compare throughput; optimize the
+  artifact if this affects real visitors. Fable's earlier size estimates were
+  predictions, not measured budgets.
 - **Fable packaging and binding details:** Pass each selected wordset through
   one preparation call and reuse an opaque Rust codec handle. Keep BIP-39's
   fixed English list inside its separate artifact. Add per-list Cargo features

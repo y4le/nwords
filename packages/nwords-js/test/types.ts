@@ -2,16 +2,17 @@ import { loadNwords, NwordsError, NwordsLoadError, type Shape, type Capacity } f
 import { loadNwords as loadWeb } from '@y4le/nwords/web';
 import { loadBip39 } from '@y4le/nwords/bip39/node';
 import { loadBip39 as loadBip39Web } from '@y4le/nwords/bip39/web';
-import { defineVariable } from '@y4le/nwords/variable';
-import { encodeBits, decodeBits, encodeBytes, decodeBytes } from '@y4le/nwords/views';
+import { loadVariable } from '@y4le/nwords/variable/node';
+import { loadVariable as loadVariableWeb } from '@y4le/nwords/variable/web';
 import { adjective } from '@y4le/nwords/wordsets/adjective';
 import { animal } from '@y4le/nwords/wordsets/animal';
 
+const { defineVariable } = await loadVariable();
 const slim = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 32 });
-const slimPhrase: string = encodeBits(slim, '01011');
-const slimBits: string = decodeBits(slim, slimPhrase);
-const slimBytes: Uint8Array = decodeBytes(slim, encodeBytes(slim, new Uint8Array([42])));
-void [slimBits, slimBytes];
+const slimPhrase: string = slim.encodeBits('01011');
+const slimBits: string = slim.decodeBits(slimPhrase);
+const slimBytes: Uint8Array = slim.decodeBytes(slim.encodeBytes(new Uint8Array([42])));
+void [slimBits, slimBytes, loadVariableWeb];
 // @ts-expect-error The slim codec also rejects JS number IDs.
 slim.encodeId(42);
 

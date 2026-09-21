@@ -11,8 +11,8 @@ export class NwordsError extends Error {
 
 /** Asset loading is separate from ordinary codec failure. */
 export class NwordsLoadError extends Error {
-  constructor(code, message) {
-    super(message);
+  constructor(code, message, options = {}) {
+    super(message, options);
     this.name = 'NwordsLoadError';
     this.code = code;
   }

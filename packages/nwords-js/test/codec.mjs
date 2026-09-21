@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { defineVariable, NwordsError } from '@y4le/nwords/variable';
-import { encodeBits, decodeBits, encodeBytes, decodeBytes, encodeText, decodeText, bitsToId, idToBits, bytesToBits, bitsToText } from '@y4le/nwords/views';
+import { loadVariable, NwordsError } from '@y4le/nwords/variable/node';
 import { adjective } from '@y4le/nwords/wordsets/adjective';
 import { animal } from '@y4le/nwords/wordsets/animal';
 import { effLong } from '@y4le/nwords/wordsets/eff-long';
 import { loadNwords } from '@y4le/nwords/node';
 
+const { defineVariable } = await loadVariable();
 const slim = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 32 });
 assert.equal(slim.encodeId(42n), 'able cardinal');
 assert.equal(slim.encodeId(249417n), 'able able aardvark');
@@ -40,17 +40,19 @@ for (const [phrase, position] of [
   }
 }
 for (const bits of ['', '0', '00', '01011', '00000000', '1'.repeat(127), '0'.repeat(128), '1'.repeat(129), '1'.repeat(255)]) {
-  assert.equal(decodeBits(slim, encodeBits(slim, bits)), bits);
+  assert.equal(slim.decodeBits(slim.encodeBits(bits)), bits);
 }
-for (const text of ['', 'hello', 'café 🦊', '\uFEFFA']) assert.equal(decodeText(slim, encodeText(slim, text)), text);
+for (const text of ['', 'hello', 'café 🦊', '\uFEFFA']) assert.equal(slim.decodeText(slim.encodeText(text)), text);
 for (const bytes of [new Uint8Array(), new Uint8Array([0, 0, 42]), new Uint8Array([255, 0, 128])]) {
-  assert.deepEqual(decodeBytes(slim, encodeBytes(slim, bytes)), bytes);
+  assert.deepEqual(slim.decodeBytes(slim.encodeBytes(bytes)), bytes);
 }
-assert.throws(() => decodeBytes(slim, slim.encodeId(42n)), error => error instanceof NwordsError && error.code === 'NOT_BYTE_ALIGNED');
-assert.throws(() => bitsToText('11111111'), error => error instanceof NwordsError && error.code === 'INVALID_UTF8');
-assert.throws(() => bytesToBits(new Uint8Array(513)), error => error instanceof NwordsError && error.code === 'INVALID_INPUT');
-assert.throws(() => bitsToId('0'.repeat(4097)), error => error instanceof NwordsError && error.code === 'INVALID_INPUT');
+assert.throws(() => slim.decodeBytes(slim.encodeId(42n)), error => error instanceof NwordsError && error.code === 'NOT_BYTE_ALIGNED');
+assert.throws(() => slim.decodeText(slim.encodeBits('11111111')), error => error instanceof NwordsError && error.code === 'INVALID_UTF8');
+assert.throws(() => slim.encodeBytes(new Uint8Array(513)), error => error instanceof NwordsError && error.code === 'INVALID_INPUT');
+assert.throws(() => slim.encodeBits('0'.repeat(4097)), error => error instanceof NwordsError && error.code === 'INVALID_INPUT');
 assert.throws(() => slim.encodeId(42), error => error instanceof NwordsError && error.code === 'INVALID_INPUT');
+assert.throws(() => slim.decodePhrase('a'.repeat(5000)), error => error instanceof NwordsError && error.code === 'INVALID_PHRASE' && error.field === 'phrase');
+assert.throws(() => slim.decodeBytes('able unicorn'), error => error instanceof NwordsError && error.code === 'INVALID_PHRASE' && error.field === 'phrase' && error.position === 1);
 assert.throws(() => slim.encodeId('9'.repeat(100000)), error => error instanceof NwordsError && error.code === 'OUT_OF_RANGE');
 const restricted = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 32, range: 1000n });
 assert.equal(restricted.encodeId(999n), slim.encodeId(999n));
@@ -58,6 +60,10 @@ assert.throws(() => restricted.decodePhrase(slim.encodeId(1000n)), error => erro
 assert.equal(effLong.words.length, 7776);
 const twoWords = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 2 });
 assert.throws(() => twoWords.decodePhrase(slim.encodeId(249417n)), error => error instanceof NwordsError && error.code === 'INVALID_PHRASE');
+for (const range of [0n, '0', BigInt(adjective.words.length * animal.words.length + 1)]) {
+  assert.throws(() => defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 2, range }),
+    error => error instanceof NwordsError && error.code === 'INVALID_SHAPE' && error.field === 'range');
+}
 const longToken = word => ({ name: 'long', words: [word.repeat(64), 'y'.repeat(64)] });
 const long = defineVariable({ scheme: 'variable-v1', pattern: [{ list: longToken('a'), repeat: { min: 1 } }, { name: 'tail', words: ['c'.repeat(64), 'd'.repeat(64)] }], maxWords: 64 });
 const longestPhrase = long.encodeId(long.describe().range - 1n);
@@ -65,8 +71,11 @@ assert.equal(Buffer.byteLength(longestPhrase), 4159);
 assert.equal(long.decodePhrase(longestPhrase), long.describe().range - 1n);
 const toyShape = (list, changes = {}) => ({ scheme: 'variable-v1', pattern: [{ list, repeat: { min: 1 } }, { name: 'pet', words: ['cat', 'dog'] }], maxWords: 3, ...changes });
 const validModifier = { name: 'modifier', words: ['calm', 'wild'] };
+assert.throws(() => defineVariable(toyShape({ name: 'modifier', words: ['calm', 'bad word'] })),
+  error => error instanceof NwordsError && error.code === 'INVALID_SHAPE' && error.position === 0);
 for (const invalid of [
   toyShape({ name: 'Invalid', words: ['calm', 'wild'] }),
+  toyShape({ name: 'modifier', words: ['calm', 'wild'], role: 'wrong' }),
   toyShape({ name: 'modifier', words: ['calm'] }),
   toyShape({ name: 'modifier', words: ['calm', 'calm'] }),
   toyShape({ name: 'modifier', words: ['calm', 'bad word'] }),
@@ -96,7 +105,6 @@ for (const [minimum, column] of [[0, 1], [1, 2]]) {
   }
   for (let id = 0n; id < toy.describe().range; id++) {
     assert.equal(toy.decodePhrase(toy.encodeId(id)), id);
-    assert.equal(bitsToId(idToBits(id)), id);
   }
 }
 function independentRank(phrase) {

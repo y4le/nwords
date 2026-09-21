@@ -176,6 +176,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "nwords-js-variable"
+version = "0.1.0"
+dependencies = [
+ "nwords",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "nwords-schemes"
 version = "0.1.0"
 dependencies = [
