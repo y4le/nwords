@@ -199,10 +199,10 @@ Record findings here as the implementation and Fable/Opus reviews continue.
   and word limits through Rust, CLI, and WASM. Preserve the published phrase
   mapping as the JS codec is replaced.
 - **Measured Names bundle, 2026-09-20:** The baseline dictionary-free WASM is
-  98,012 bytes (38,333 gzip). A Names-only Vite bundle is 20,389 JS bytes
-  (8,464 gzip) plus that WASM; the old JS-only bundle was 13,535 bytes
-  (6,546 gzip). Five local Chromium runs took 16.5–25.8 ms from dynamic
-  imports through a codec round trip, with 2.9–4.4 ms spent loading and
+  98,139 bytes (38,394 gzip). A Names-only Vite bundle is 20,606 JS bytes
+  (8,550 gzip) plus that WASM; the old JS-only bundle was 13,535 bytes
+  (6,546 gzip). Five local Chromium runs took 17.9–24.8 ms from dynamic
+  imports through a codec round trip, with about 3–4 ms spent loading and
   initializing WASM. These are local arm64 desktop measurements. Later:
   measure a throttled/mobile device and compare throughput; optimize the
   artifact if this affects real visitors. Fable's earlier size estimates were

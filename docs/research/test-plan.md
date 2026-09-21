@@ -266,5 +266,5 @@ Names-only Vite build contains exactly one dictionary-free Names WASM and only
 imported wordsets; BIP-39-only contains its separate artifact; the combined
 site emits both and requests BIP-39 only after selection. Record raw and gzip
 asset sizes plus local browser first-use samples, and check NodeNext/Bundler
-declarations and descriptor errors. A future mobile device pass should test
+declarations and JS boundary error code, field, and position parity. A future mobile device pass should test
 the practical load impact before changing the split.

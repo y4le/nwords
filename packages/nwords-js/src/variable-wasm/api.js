@@ -4,12 +4,14 @@ const finalizer = typeof FinalizationRegistry === 'function'
   ? new FinalizationRegistry(handle => handle.free()) : undefined;
 const encoder = new TextEncoder();
 
-function fail(code, message, field) { throw new NwordsError(code, message, { field }); }
+function fail(code, message, field, position) { throw new NwordsError(code, message, { field, position }); }
 function invoke(fn) {
   try { return fn(); }
   catch (error) {
     if (typeof error === 'string') {
-      const detail = JSON.parse(error);
+      let detail;
+      try { detail = JSON.parse(error); } catch { throw error; }
+      if (!detail || typeof detail.code !== 'string') throw error;
       const messages = {
         INVALID_SHAPE: 'Invalid variable-v1 definition.', INVALID_INPUT: 'Invalid input.',
         INVALID_PHRASE: 'Invalid phrase.', OUT_OF_RANGE: 'Value exceeds the accepted range.',
@@ -49,10 +51,13 @@ function definitionParts(definition) {
   const unique = new Map();
   for (const [position, list] of lists.entries()) {
     if (!list || typeof list.name !== 'string' || !/^[a-z][a-z0-9_-]{0,63}$/u.test(list.name) ||
-        !Array.isArray(list.words)) fail('INVALID_SHAPE', 'Invalid wordset.', 'shape');
+        !Array.isArray(list.words) ||
+        (list.role !== undefined && !['modifier', 'head', 'either'].includes(list.role))) {
+      fail('INVALID_SHAPE', 'Invalid wordset.', 'shape', position);
+    }
     for (const word of list.words) {
       if (typeof word !== 'string' || !word.isWellFormed() || word.includes('\t') || word.includes('\n')) {
-        fail('INVALID_SHAPE', 'Invalid wordset token.', 'shape');
+        fail('INVALID_SHAPE', 'Invalid wordset token.', 'shape', position);
       }
     }
     const previous = unique.get(list.name);
@@ -64,8 +69,9 @@ function definitionParts(definition) {
   let range;
   if (definition.range !== undefined) {
     range = definition.range;
-    if (typeof range === 'bigint' && range > 0n) range = range.toString();
-    else if (typeof range !== 'string' || !/^[1-9][0-9]*$/u.test(range)) fail('INVALID_INPUT', 'Range must be a positive canonical integer.', 'range');
+    if (typeof range === 'bigint' && range >= 0n) range = range.toString();
+    else if (typeof range !== 'string' || !/^(0|[1-9][0-9]*)$/u.test(range)) fail('INVALID_INPUT', 'Range must be a canonical integer.', 'range');
+    if (range === '0') fail('INVALID_SHAPE', 'Range must be positive and within capacity.', 'range');
   }
   return {
     definitions: [...unique].map(([name, words]) => [name, ...words].join('\t')).join('\n'),
@@ -88,15 +94,16 @@ export function createVariable(wasm) {
         range: BigInt(info.range), capacity: Object.freeze({ kind: 'exact', value: BigInt(info.capacity) }),
         requiredWords: info.requiredWords, maxBits: info.maxBits, repeat: parts.repeat, suffix: Object.freeze(parts.suffix) });
       let disposed = false;
+      let codec;
       const maxPhraseBytes = Math.max(4096, parts.maxWords * 65 - 1);
-      const ready = () => { if (disposed) fail('DISPOSED', 'Codec has been disposed.', 'codec'); };
+      const ready = () => { if (!codec || disposed) fail('DISPOSED', 'Codec has been disposed.', 'codec'); };
       const checkPhrase = phrase => {
         if (typeof phrase !== 'string' || !phrase.isWellFormed()) fail('INVALID_PHRASE', 'Phrase must be well-formed text.', 'phrase');
         if (phrase.length > maxPhraseBytes || encoder.encode(phrase).length > maxPhraseBytes) {
           fail('INVALID_PHRASE', 'Phrase is too long.', 'phrase');
         }
       };
-      const codec = Object.freeze({
+      codec = Object.freeze({
         encodeId(value) { ready(); return invoke(() => rust.encode_id(idBytes(value, summary.range))); },
         decodePhrase(phrase) { ready(); checkPhrase(phrase); return bytesId(invoke(() => rust.decode_phrase(phrase))); },
         encodeBits(bits) { ready(); if (typeof bits !== 'string' || bits.length > 4096) fail('INVALID_INPUT', 'Bits must be a string within 4096 digits.', 'bits'); return invoke(() => rust.encode_bits(bits)); },

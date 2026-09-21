@@ -127,9 +127,15 @@ impl VariableCodec {
             .map(WideId::parse_decimal)
             .transpose()
             .map_err(|source| variable_error(source, "range"))?;
+        let has_range = range.is_some();
         let codec =
             WideVariablePositional::new(map, suffix, minimum as usize, range, max_words as usize)
-                .map_err(|source| variable_error(source, "shape"))?;
+                .map_err(|source| match source {
+                WideVariableError::InvalidBounds if has_range => {
+                    error("INVALID_SHAPE", "range", None)
+                }
+                other => variable_error(other, "shape"),
+            })?;
         Ok(Self {
             codec,
             max_phrase_bytes: 4096usize.max(max_words as usize * 65 - 1),

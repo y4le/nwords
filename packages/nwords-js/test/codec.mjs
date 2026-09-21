@@ -60,6 +60,10 @@ assert.throws(() => restricted.decodePhrase(slim.encodeId(1000n)), error => erro
 assert.equal(effLong.words.length, 7776);
 const twoWords = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 2 });
 assert.throws(() => twoWords.decodePhrase(slim.encodeId(249417n)), error => error instanceof NwordsError && error.code === 'INVALID_PHRASE');
+for (const range of [0n, '0', BigInt(adjective.words.length * animal.words.length + 1)]) {
+  assert.throws(() => defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 2, range }),
+    error => error instanceof NwordsError && error.code === 'INVALID_SHAPE' && error.field === 'range');
+}
 const longToken = word => ({ name: 'long', words: [word.repeat(64), 'y'.repeat(64)] });
 const long = defineVariable({ scheme: 'variable-v1', pattern: [{ list: longToken('a'), repeat: { min: 1 } }, { name: 'tail', words: ['c'.repeat(64), 'd'.repeat(64)] }], maxWords: 64 });
 const longestPhrase = long.encodeId(long.describe().range - 1n);
@@ -71,6 +75,7 @@ assert.throws(() => defineVariable(toyShape({ name: 'modifier', words: ['calm', 
   error => error instanceof NwordsError && error.code === 'INVALID_SHAPE' && error.position === 0);
 for (const invalid of [
   toyShape({ name: 'Invalid', words: ['calm', 'wild'] }),
+  toyShape({ name: 'modifier', words: ['calm', 'wild'], role: 'wrong' }),
   toyShape({ name: 'modifier', words: ['calm'] }),
   toyShape({ name: 'modifier', words: ['calm', 'calm'] }),
   toyShape({ name: 'modifier', words: ['calm', 'bad word'] }),
