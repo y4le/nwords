@@ -53,6 +53,8 @@ and `execution-plan.md` for sequencing.
      fixed 32-bit big-endian byte length prefix.
    - Variable IDs: use `VariablePositional`, with one leading repeat and fixed
      suffix. `range`/`maxWords` restrict acceptance and never change mapping.
+     Use `wide_variable::WideVariablePositional` when IDs or exact bit views
+     exceed `u128`; its word-bounded capacity and range are exact.
    - Arbitrary wordset bytes: use `RadixBytes` / `radix-bytes-v1`; preserve the
      eight-byte blocks, mandatory variable tail, and strict block/tail range checks. It is not Niceware wire format.
    - Niceware, Proquint, PGP, SLIP-39: post-V1 unless the plan explicitly says
@@ -130,6 +132,8 @@ of pretending there is one correct answer.
 - BigInt exact math, CLI reports, security recommendation policy, non-identity
   permutations, `phf`, SLIP-39, Niceware, Proquint, and PGP word lists are
   post-V1 unless the user explicitly changes scope.
+- The user brought wide `variable-v1` into scope after V1. Fixed positional
+  and stats helpers still stop at their existing `u128` boundary.
 - Keep the stats kernel small and dependency-light.
 - Do not use names such as "secure", "private", or "encrypted" for spread
   presets unless a real keyed format-preserving encryption scheme exists.

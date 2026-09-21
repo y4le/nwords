@@ -353,3 +353,19 @@ The user authorized `variable-v1`, `radix-bytes-v1`, and Node/browser custom
 wordsets. The mapping, framing, limits and descriptor contracts are recorded in
 [flexible-wordsets-plan.md](flexible-wordsets-plan.md). Fixed IDs and
 `word-bytes-v1` are unchanged. EFF long is an immutable optional dictionary.
+
+## Wide variable-v1 (2026-09-20)
+
+`nwords::wide_variable` adds an arbitrary-width natural-number path without
+changing the existing `u128` API or the `variable-v1` phrase mapping. The
+published browser codec from commit `37fec849` supplies frozen wide phrase
+vectors. Rust uses 32-bit limbs with small-radix arithmetic and owns exact
+bit, byte, and UTF-8 views; the bit view maps `b` to `int('1' + b) - 1`.
+This overrides the earlier post-V1 deferral of wide integer support for the
+variable codec. Stats and fixed positional codecs retain their existing
+`u128` boundaries.
+
+The CLI has a `names` command for this mapping and resolves built-in lists
+inside its single binary. A later dictionary-free Names WASM artifact will
+receive selected first-party wordsets through prepared owned maps. English
+BIP-39 remains a separate standard-specific WASM artifact.

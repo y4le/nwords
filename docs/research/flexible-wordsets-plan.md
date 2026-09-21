@@ -36,10 +36,17 @@ explicit range is required. Range-only metadata reports unbounded capacity;
 requiredWords reports the largest output in the accepted range. The supported
 exclusive range is at most `u128::MAX`; JS bigint does not extend that domain.
 
+The later `nwords::wide_variable` API extends this same mapping beyond `u128`
+with an exact word-bounded range. The original `VariablePositional` API and
+the full legacy JS binding retain the bounds described above.
+
 Rust caps total words at 1024; JS caps them at 32 and input phrase bytes at
 4096. The initial grammar has no fixed prefix, additional repeat group, spread
 permutation, implicit format detection, or duplicate suppression. CLI `--pattern`
 is not added in this scope; the proposal's CLI section remains a future adapter.
+
+The later `nwords names` CLI command adds `--pattern` for the wide API, with
+`+` or `*` on the leading list and a fixed comma-separated suffix.
 
 ## Arbitrary mixed byte encoding
 

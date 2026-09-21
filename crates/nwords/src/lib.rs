@@ -83,6 +83,10 @@ pub mod prelude {
 #[cfg(feature = "positional")]
 pub use nwords_schemes::variable;
 
+/// Arbitrary-width variable-v1 IDs and exact bit, byte, and text views.
+#[cfg(feature = "positional")]
+pub use nwords_schemes::wide_variable;
+
 /// Framed byte blocks over arbitrary mixed wordlists.
 #[cfg(feature = "word-bytes")]
 pub use nwords_schemes::radix_bytes;

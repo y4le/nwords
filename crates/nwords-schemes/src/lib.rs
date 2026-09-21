@@ -28,6 +28,10 @@ pub mod word_bytes;
 #[cfg(feature = "positional")]
 pub mod variable;
 
+/// Arbitrary-width variable-v1 IDs and exact bit, byte, and text views.
+#[cfg(feature = "positional")]
+pub mod wide_variable;
+
 /// Framed byte blocks over arbitrary mixed wordlists.
 #[cfg(feature = "word-bytes")]
 pub mod radix_bytes;
