@@ -55,7 +55,7 @@
 const entropy = crypto.getRandomValues(new Uint8Array(16));
 const bip39 = await loadBip39();
 const phrase = bip39.encodeEntropy(entropy);
-const original = bip39.decodeMnemonic(phrase);</code></pre><div class="code-foot">The English wordlist and checksum code load when this tab opens.</div></aside>
+const original = bip39.decodeMnemonic(phrase);</code></pre><div class="code-foot">The English wordlist and checksum code load when this demo needs them.</div></aside>
       </section>
       <footer>nwords · <a href="https://github.com/y4le/nwords">GitHub</a> · All conversion runs in this browser.</footer>
     </main>

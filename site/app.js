@@ -60,8 +60,7 @@ try {
   entropyValue.value = toHex(crypto.getRandomValues(new Uint8Array(16)));
 } catch {
   randomUnavailable = true;
-  bitcoinStatus.classList.add('error');
-  bitcoinStatus.textContent = 'Secure randomness unavailable; enter entropy manually.';
+  status(bitcoinStatus, { code: 'RANDOM_UNAVAILABLE', message: 'Secure randomness unavailable; enter entropy manually.' });
 }
 const examples = {
   number: "const phrase = codec.encodeId(42n);\nconst id = codec.decodePhrase(phrase);",

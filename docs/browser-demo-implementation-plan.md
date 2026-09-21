@@ -53,7 +53,7 @@ build toolchain. Test Node and Chromium, source and production bundles, a narrow
 viewport, and actual browser asset requests. Record uncompressed and gzip
 sizes for the relevant output assets.
 
-The page starts Names with public example `42`; the BIP-39 tab starts with fresh
+The Names tab starts with the public example `42`; the BIP-39 tab starts with fresh
 128-bit entropy from browser `crypto.getRandomValues` on each page load. The
 page does not create a wallet or derive a seed. BIP-39 input does not enter URLs,
 browser storage, analytics, or console output. Fields disable autocomplete,
