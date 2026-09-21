@@ -1,7 +1,7 @@
 # nwords for Node and browsers
 
 This private development package contains compiled Rust codecs, WebAssembly,
-JavaScript codecs and loaders, and TypeScript declarations. Consumers install the packed
+JavaScript loaders and wordset modules, and TypeScript declarations. Consumers install the packed
 tarball with npm; they do not need Rust, wasm-pack, or an install script.
 Node 24.14.1 and ordinary browser ESM in the tested Chromium are the initial
 qualification targets. Vite production builds are qualified; registry
@@ -9,14 +9,14 @@ publication and other bundlers are deferred.
 
 ## Selective imports
 
-Use the small ESM codec and only the wordsets your name format needs:
+Load the dictionary-free Rust Names codec and import only the wordsets your format needs:
 
 ```js
-import { defineVariable } from '@y4le/nwords/variable';
-import { decodeBits, encodeText, decodeText } from '@y4le/nwords/views';
+import { loadVariable } from '@y4le/nwords/variable/web'; // use /node in Node.js
 import { adjective } from '@y4le/nwords/wordsets/adjective';
 import { animal } from '@y4le/nwords/wordsets/animal';
 
+const { defineVariable } = await loadVariable();
 const codec = defineVariable({
   scheme: 'variable-v1',
   pattern: [{ list: adjective, repeat: { min: 1 } }, animal],
@@ -24,8 +24,8 @@ const codec = defineVariable({
 });
 codec.encodeId(42n);                // 'able cardinal'
 codec.decodePhrase('able cardinal'); // 42n
-decodeBits(codec, 'able cardinal');   // '01011'
-decodeText(codec, encodeText(codec, 'hello')); // 'hello'
+codec.decodeBits('able cardinal');   // '01011'
+codec.decodeText(codec.encodeText('hello')); // 'hello'
 ```
 
 The descriptor specifies one repeated list, a fixed suffix, and an explicit
@@ -46,8 +46,8 @@ the codec can emit remain decodable, including 64-word custom-list phrases.
 
 Wordset subpaths are independent ESM modules, including `color`, `object`,
 `descriptor`, `mood`, `material`, `shape`, `weather`, `plant`, `food`, and
-`eff-long`. A production Vite build importing only the example above emits no
-WASM and omits all unimported wordsets. The tarball carries every optional
+`eff-long`. A production Vite build importing only the example above emits one
+dictionary-free Names WASM and omits all unimported wordsets. The tarball carries every optional
 wordset and its notices. The existing `@y4le/nwords/{node,web}` entry below
 retains its full Rust-backed API.
 

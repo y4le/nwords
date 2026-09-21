@@ -134,6 +134,9 @@ of pretending there is one correct answer.
   post-V1 unless the user explicitly changes scope.
 - The user brought wide `variable-v1` into scope after V1. Fixed positional
   and stats helpers still stop at their existing `u128` boundary.
+- The browser's slim Names entry loads dictionary-free Rust WASM and supplies
+  only explicitly imported wordsets. Bit, byte, and text views live in Rust;
+  JS only marshals shapes and values. BIP-39 has a separate WASM artifact.
 - Keep the stats kernel small and dependency-light.
 - Do not use names such as "secure", "private", or "encrypted" for spread
   presets unless a real keyed format-preserving encryption scheme exists.

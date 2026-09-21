@@ -116,7 +116,7 @@ export class NwordsError extends Error {
 }
 export class NwordsLoadError extends Error {
   readonly code: 'LOAD_FAILED' | 'ASSET_CONFLICT';
-  constructor(code: 'LOAD_FAILED' | 'ASSET_CONFLICT', message: string);
+  constructor(code: 'LOAD_FAILED' | 'ASSET_CONFLICT', message: string, options?: ErrorOptions);
 }
 export interface LoadOptions {
   /** Relative URLs resolve against the packaged WASM URL. Only the web loader accepts options. */

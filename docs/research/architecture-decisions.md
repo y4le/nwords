@@ -366,6 +366,9 @@ variable codec. Stats and fixed positional codecs retain their existing
 `u128` boundaries.
 
 The CLI has a `names` command for this mapping and resolves built-in lists
-inside its single binary. A later dictionary-free Names WASM artifact will
-receive selected first-party wordsets through prepared owned maps. English
-BIP-39 remains a separate standard-specific WASM artifact.
+inside its single binary. A dictionary-free Names WASM artifact receives
+selected first-party or custom wordsets through an owned map on codec
+preparation. JS handles loading, shape marshalling, and BigInt/byte transport;
+Rust owns the mapping, bit/byte/text views, and wordset validation. English
+BIP-39 remains a separate standard-specific WASM artifact. The earlier pure
+JS Names codec and view helpers were removed to keep one mapping implementation.

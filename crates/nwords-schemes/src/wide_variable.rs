@@ -284,6 +284,144 @@ impl WideId {
     }
 }
 
+/// Validation failure for a dictionary-free owned word map.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OwnedWordMapError {
+    /// A list has fewer than two or more than 65,536 words.
+    InvalidLength {
+        /// Zero-based list index.
+        list: usize,
+    },
+    /// A token is empty, oversized, or contains phrase whitespace or controls.
+    InvalidToken {
+        /// Zero-based list index.
+        list: usize,
+        /// Zero-based word index.
+        word: usize,
+    },
+    /// A list repeats a token exactly.
+    DuplicateToken {
+        /// Zero-based list index.
+        list: usize,
+    },
+    /// A position refers to a list outside the supplied pool.
+    InvalidPosition {
+        /// Zero-based phrase-pattern position.
+        position: usize,
+    },
+    /// The unique list pool exceeds its word or byte budget.
+    TooLarge,
+}
+
+impl fmt::Display for OwnedWordMapError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidLength { list } => write!(f, "invalid word count in list {list}"),
+            Self::InvalidToken { list, word } => write!(f, "invalid token {word} in list {list}"),
+            Self::DuplicateToken { list } => write!(f, "duplicate token in list {list}"),
+            Self::InvalidPosition { position } => write!(f, "invalid list at position {position}"),
+            Self::TooLarge => f.write_str("wordset budget exceeded"),
+        }
+    }
+}
+
+impl core::error::Error for OwnedWordMapError {}
+
+/// Owned, exact-case ordered lists with reusable sorted lookup indexes.
+///
+/// The list pool contains unique definitions. `positions` may repeat a pool
+/// index; its first entry is the leading repeated list for variable-v1.
+#[derive(Debug, Clone)]
+pub struct OwnedWordMap {
+    lists: Vec<Vec<String>>,
+    lookup_order: Vec<Vec<usize>>,
+    positions: Vec<usize>,
+}
+
+impl OwnedWordMap {
+    /// Validates up to 65,536 unique words and 1 MiB of UTF-8 token bytes.
+    pub fn new(
+        lists: Vec<Vec<String>>,
+        positions: Vec<usize>,
+    ) -> core::result::Result<Self, OwnedWordMapError> {
+        let mut total_words = 0usize;
+        let mut total_bytes = 0usize;
+        let mut lookup_order = Vec::with_capacity(lists.len());
+        for (list_index, words) in lists.iter().enumerate() {
+            if !(2..=65_536).contains(&words.len()) {
+                return Err(OwnedWordMapError::InvalidLength { list: list_index });
+            }
+            total_words += words.len();
+            if total_words > 65_536 {
+                return Err(OwnedWordMapError::TooLarge);
+            }
+            for (word_index, word) in words.iter().enumerate() {
+                total_bytes += word.len();
+                if total_bytes > 1_048_576 {
+                    return Err(OwnedWordMapError::TooLarge);
+                }
+                if word.is_empty()
+                    || word.len() > 64
+                    || word
+                        .chars()
+                        .any(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{feff}')
+                {
+                    return Err(OwnedWordMapError::InvalidToken {
+                        list: list_index,
+                        word: word_index,
+                    });
+                }
+            }
+            let mut order = (0..words.len()).collect::<Vec<_>>();
+            order.sort_unstable_by(|a, b| words[*a].cmp(&words[*b]));
+            if order
+                .windows(2)
+                .any(|pair| words[pair[0]] == words[pair[1]])
+            {
+                return Err(OwnedWordMapError::DuplicateToken { list: list_index });
+            }
+            lookup_order.push(order);
+        }
+        for (position, index) in positions.iter().enumerate() {
+            if *index >= lists.len() {
+                return Err(OwnedWordMapError::InvalidPosition { position });
+            }
+        }
+        Ok(Self {
+            lists,
+            lookup_order,
+            positions,
+        })
+    }
+}
+
+impl WordMap for OwnedWordMap {
+    fn len(&self, position: usize) -> usize {
+        self.positions
+            .get(position)
+            .and_then(|index| self.lists.get(*index))
+            .map_or(0, Vec::len)
+    }
+
+    fn word(&self, index: usize, position: usize) -> Option<&str> {
+        self.positions
+            .get(position)
+            .and_then(|slot| self.lists.get(*slot))?
+            .get(index)
+            .map(String::as_str)
+    }
+
+    fn index_of(&self, word: &str, position: usize) -> Option<usize> {
+        let slot = *self.positions.get(position)?;
+        let words = self.lists.get(slot)?;
+        let order = self.lookup_order.get(slot)?;
+        order
+            .binary_search_by(|index| words[*index].as_str().cmp(word))
+            .ok()
+            .map(|sorted| order[sorted])
+    }
+}
+
 /// A prepared arbitrary-width `variable-v1` codec over an ordered word map.
 #[derive(Debug, Clone)]
 pub struct WideVariablePositional<W> {
@@ -361,6 +499,13 @@ impl<W: WordMap> WideVariablePositional<W> {
     /// Returns the maximum total phrase length.
     pub fn max_words(&self) -> usize {
         self.max_words
+    }
+
+    /// Returns the largest guaranteed exact bit-view length in the range.
+    pub fn max_bits(&self) -> usize {
+        let mut above = self.range.clone();
+        above.add_small(1);
+        above.bit_len().saturating_sub(2)
     }
 
     /// Returns the maximum words needed inside the accepted range.
@@ -558,6 +703,24 @@ mod tests {
                 .unwrap()
                 .to_bit_view(),
             Err(WideVariableError::InvalidBits)
+        );
+    }
+
+    #[test]
+    fn owned_map_keeps_unicode_order_and_repeated_positions() {
+        let map = OwnedWordMap::new(
+            vec![
+                vec![String::from("🦊"), String::from("👨‍👩‍👧")],
+                vec![String::from("cat"), String::from("dog")],
+            ],
+            vec![0, 1, 0],
+        )
+        .unwrap();
+        assert_eq!(map.index_of("🦊", 0), Some(0));
+        assert_eq!(map.index_of("👨‍👩‍👧", 2), Some(1));
+        assert_eq!(map.word(1, 1), Some("dog"));
+        assert!(
+            OwnedWordMap::new(vec![vec![String::from("a"), String::from("a")]], vec![0]).is_err()
         );
     }
 }

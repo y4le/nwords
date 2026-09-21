@@ -260,5 +260,11 @@ Wide `variable-v1` also uses `tests/vectors/variable/variable-v1-wide.tsv`,
 frozen from the shipped JS codec before the Rust extension. Rust and CLI must
 encode and decode the same phrases around 127/128/129-bit and tier boundaries;
 the views must preserve empty bits, leading-zero bytes, strict UTF-8, and
-range/word-limit rejection. The future slim WASM binding must run these same
-vectors and compare errors at the JS boundary.
+range/word-limit rejection. The slim Names WASM binding runs these same
+vectors in packed Node and Chromium. Package qualification checks that a
+Names-only Vite build contains exactly one dictionary-free Names WASM and only
+imported wordsets; BIP-39-only contains its separate artifact; the combined
+site emits both and requests BIP-39 only after selection. Record raw and gzip
+asset sizes plus local browser first-use samples, and check NodeNext/Bundler
+declarations and descriptor errors. A future mobile device pass should test
+the practical load impact before changing the split.

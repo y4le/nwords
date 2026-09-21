@@ -1,9 +1,9 @@
-import { defineVariable } from '@y4le/nwords/variable';
-import { encodeBits, decodeBits, encodeBytes, decodeBytes, encodeText, decodeText } from '@y4le/nwords/views';
+import { loadVariable } from '@y4le/nwords/variable/web';
 import { adjective } from '@y4le/nwords/wordsets/adjective';
 import { animal } from '@y4le/nwords/wordsets/animal';
 
-const names = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 32 });
+let names;
+let namesSource = 'value';
 const select = selector => document.querySelector(selector);
 const namesValue = select('#names-value');
 const namesPhrase = select('#names-phrase');
@@ -20,28 +20,30 @@ function status(target, error) {
   target.textContent = error ? `${error.code ?? 'INVALID_INPUT'}: ${error.message}` : 'Round trip ready';
 }
 function fromValue() {
+  if (!names) return;
   try {
     const value = namesValue.value;
     let phrase;
     switch (namesView.value) {
       case 'number': phrase = names.encodeId(value.trim()); break;
-      case 'bits': phrase = encodeBits(names, value.trim()); break;
-      case 'hex': phrase = encodeBytes(names, parseHex(value)); break;
-      case 'text': phrase = encodeText(names, value); break;
+      case 'bits': phrase = names.encodeBits(value.trim()); break;
+      case 'hex': phrase = names.encodeBytes(parseHex(value)); break;
+      case 'text': phrase = names.encodeText(value); break;
     }
     namesPhrase.value = phrase;
     status(namesStatus);
   } catch (error) { status(namesStatus, error); }
 }
 function fromPhrase() {
+  if (!names) return;
   try {
     const phrase = namesPhrase.value;
     let value;
     switch (namesView.value) {
       case 'number': value = names.decodePhrase(phrase).toString(); break;
-      case 'bits': value = decodeBits(names, phrase); break;
-      case 'hex': value = toHex(decodeBytes(names, phrase)); break;
-      case 'text': value = decodeText(names, phrase); break;
+      case 'bits': value = names.decodeBits(phrase); break;
+      case 'hex': value = toHex(names.decodeBytes(phrase)); break;
+      case 'text': value = names.decodeText(phrase); break;
     }
     namesValue.value = value;
     status(namesStatus);
@@ -55,14 +57,12 @@ function parseHex(text) {
 function toHex(bytes) { return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join(''); }
 const examples = {
   number: "const phrase = codec.encodeId(42n);\nconst id = codec.decodePhrase(phrase);",
-  bits: "const phrase = encodeBits(codec, '01011');\nconst bits = decodeBits(codec, phrase);",
-  hex: "const bytes = new Uint8Array([0, 42]);\nconst phrase = encodeBytes(codec, bytes);\nconst bytesAgain = decodeBytes(codec, phrase);",
-  text: "const phrase = encodeText(codec, 'hello');\nconst text = decodeText(codec, phrase);",
+  bits: "const phrase = codec.encodeBits('01011');\nconst bits = codec.decodeBits(phrase);",
+  hex: "const bytes = new Uint8Array([0, 42]);\nconst phrase = codec.encodeBytes(bytes);\nconst bytesAgain = codec.decodeBytes(phrase);",
+  text: "const phrase = codec.encodeText('hello');\nconst text = codec.decodeText(phrase);",
 };
 function codeExample() {
-  const methods = { bits: 'encodeBits, decodeBits', hex: 'encodeBytes, decodeBytes', text: 'encodeText, decodeText' };
-  const viewsImport = methods[namesView.value] ? `import { ${methods[namesView.value]} } from '@y4le/nwords/views';\n` : '';
-  const code = `import { defineVariable } from '@y4le/nwords/variable';\n${viewsImport}import { adjective } from '@y4le/nwords/wordsets/adjective';\nimport { animal } from '@y4le/nwords/wordsets/animal';\n\nconst codec = defineVariable({\n  scheme: 'variable-v1',\n  pattern: [{ list: adjective, repeat: { min: 1 } }, animal],\n  maxWords: 32,\n});\n\n${examples[namesView.value]}`;
+  const code = `import { loadVariable } from '@y4le/nwords/variable/web';\nimport { adjective } from '@y4le/nwords/wordsets/adjective';\nimport { animal } from '@y4le/nwords/wordsets/animal';\n\nconst { defineVariable } = await loadVariable();\nconst codec = defineVariable({\n  scheme: 'variable-v1',\n  pattern: [{ list: adjective, repeat: { min: 1 } }, animal],\n  maxWords: 32,\n});\n\n${examples[namesView.value]}`;
   select('#names-code').textContent = code;
   select('#names-value-label').textContent = namesView.selectedOptions[0].textContent;
 }
@@ -99,8 +99,8 @@ function fromMnemonic(codec) {
   } catch (error) { status(bitcoinStatus, error); }
 }
 
-namesValue.addEventListener('input', fromValue);
-namesPhrase.addEventListener('input', fromPhrase);
+namesValue.addEventListener('input', () => { namesSource = 'value'; fromValue(); });
+namesPhrase.addEventListener('input', () => { namesSource = 'phrase'; fromPhrase(); });
 namesView.addEventListener('change', () => { codeExample(); fromPhrase(); });
 select('#names-tab').addEventListener('click', () => showTab('names'));
 select('#bitcoin-tab').addEventListener('click', () => showTab('bitcoin'));
@@ -113,6 +113,11 @@ for (const [buttonSelector, codeSelector] of [['#copy-code', '#names-code'], ['#
 }
 entropyValue.addEventListener('input', () => { bitcoinSource = 'entropy'; if (bip39Promise) void loadBitcoin(); });
 mnemonicValue.addEventListener('input', () => { bitcoinSource = 'mnemonic'; if (bip39Promise) void loadBitcoin(); });
-select('#names-capacity').textContent = `Up to ${names.describe().maxWords} words · ${names.describe().maxBits} guaranteed bits.`;
 codeExample();
-fromValue();
+namesStatus.textContent = 'Loading Names codec…';
+loadVariable().then(({ defineVariable }) => {
+  names = defineVariable({ scheme: 'variable-v1', pattern: [{ list: adjective, repeat: { min: 1 } }, animal], maxWords: 32 });
+  select('#names-capacity').textContent = `Up to ${names.describe().maxWords} words · ${names.describe().maxBits} guaranteed bits.`;
+  if (namesSource === 'phrase') fromPhrase();
+  else fromValue();
+}).catch(error => status(namesStatus, error));

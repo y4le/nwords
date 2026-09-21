@@ -13,11 +13,19 @@ export interface VariableDefinition {
 export interface VariableCodec {
   encodeId(id: bigint | string): string;
   decodePhrase(phrase: string): bigint;
+  encodeBits(bits: string): string;
+  decodeBits(phrase: string): string;
+  encodeBytes(bytes: Uint8Array): string;
+  decodeBytes(phrase: string): Uint8Array;
+  encodeText(text: string): string;
+  decodeText(phrase: string): string;
   describe(): Readonly<{
     scheme: 'variable-v1'; minimum: 0 | 1; maxWords: number; range: bigint;
     requiredWords: number; capacity: Readonly<{ kind: 'exact'; value: bigint }>;
     maxBits: number; repeat: string; suffix: readonly string[];
   }>;
+  dispose(): void;
 }
-export function defineVariable(definition: VariableDefinition): VariableCodec;
-export { NwordsError } from './index.js';
+export interface VariableFactory {
+  defineVariable(definition: VariableDefinition): VariableCodec;
+}

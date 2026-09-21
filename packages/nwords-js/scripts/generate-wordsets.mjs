@@ -30,5 +30,5 @@ for (const [name, source] of Object.entries(sources)) {
     `export const ${identifier} = Object.freeze({\n  name: ${JSON.stringify(name)},\n  words: Object.freeze(${JSON.stringify(words)}),\n});\n`;
   await writeFile(join(output, `${name}.js`), body);
   await writeFile(join(output, `${name}.d.ts`),
-    `import type { Wordset } from '../variable.js';\nexport const ${identifier}: Wordset;\n`);
+    `import type { Wordset } from '../variable-wasm/types.js';\nexport const ${identifier}: Wordset;\n`);
 }

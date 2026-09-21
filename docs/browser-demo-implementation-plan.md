@@ -21,17 +21,14 @@ non-byte-aligned lengths round-trip. Hex bytes and strict UTF-8 text use this
 same bit view and require whole bytes on decode. The phrase carries an ID, not
 a type tag; the page has an explicit interpretation selector.
 
-The names API is a small ESM `BigInt` implementation of `variable-v1`,
-exported at `@y4le/nwords/variable`. It snapshots caller-supplied ordered lists,
-validates them, and requires an explicit word bound up to 64 words (32 in the
-page). It exposes
-`encodeId`/`decodePhrase`; separate tree-shakeable helpers at
-`@y4le/nwords/views` provide bit, byte, and text views. Tests compare outputs
-with the existing Rust binding through the `u128` domain and check wider bit
-seams. This was a deliberate simplification from the original additional
-Rust WASM codec proposal: the native JS implementation ships no naming WASM,
-and each optional dictionary has an independent ESM import. The full existing
-JS binding keeps its API and behavior.
+The Names API uses Rust's wide `variable-v1` implementation through a
+dictionary-free WASM artifact at `@y4le/nwords/variable/{web,node}`. A loader
+initializes the artifact once; `defineVariable` snapshots caller-supplied
+ordered wordsets and returns synchronous `encodeId`/`decodePhrase`, bit, byte,
+and text methods. It requires an explicit word bound up to 64 words (32 in the
+page). The earlier pure JS codec and view helpers were removed after measuring
+the Rust bundle and first use. Each optional dictionary remains an independent
+ESM import, and the full existing Rust binding keeps its API and behavior.
 
 English BIP-39 stays on the Rust codec in a dedicated WASM artifact, exported
 as `@y4le/nwords/bip39/{web,node}`. It accepts 16, 20, 24, 28, or 32 entropy
@@ -46,9 +43,9 @@ snapshots. Expose explicit subpaths such as `wordsets/adjective` and
 `wordsets/eff-long`; provide no eager barrel. Verify every generated list's
 order against the source snapshot and Rust boundary vectors. BIP-39-only
 production builds must emit only the BIP-39 WASM, with no naming words.
-Names-only builds must emit no WASM and only the chosen wordsets. The combined
-page can include both chunks but opens on Names and loads BIP-39 only when
-selected.
+Names-only builds must emit only the slim Names WASM and chosen wordsets.
+The combined page emits separate Names and BIP-39 WASM assets, opens on Names,
+and loads BIP-39 only when selected.
 
 Build the site through the assembled package's export map with Vite and deploy its
 production output on Pages. Pin Rust, wasm-pack, Node, and npm to the package

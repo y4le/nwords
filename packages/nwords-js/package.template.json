@@ -8,8 +8,9 @@
   "sideEffects": false,
   "engines": { "node": ">=24.14.1 <25" },
   "exports": {
-    "./variable": { "types": "./src/variable.d.ts", "import": "./src/variable.js" },
-    "./views": { "types": "./src/views.d.ts", "import": "./src/views.js" },
+    "./variable/web": { "types": "./src/variable-wasm/web.d.ts", "import": "./src/variable-wasm/web.js" },
+    "./variable/node": { "types": "./src/variable-wasm/node.d.ts", "import": "./src/variable-wasm/node.js" },
+    "./variable/wasm": "./wasm/variable/nwords_js_variable_bg.wasm",
     "./wordsets/adjective": { "types": "./src/wordsets/adjective.d.ts", "import": "./src/wordsets/adjective.js" },
     "./wordsets/animal": { "types": "./src/wordsets/animal.d.ts", "import": "./src/wordsets/animal.js" },
     "./wordsets/color": { "types": "./src/wordsets/color.d.ts", "import": "./src/wordsets/color.js" },

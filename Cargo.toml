@@ -5,6 +5,7 @@ members = [
     "crates/nwords-cli",
     "crates/nwords-core",
     "crates/nwords-js",
+    "crates/nwords-js-variable",
     "crates/nwords-js-bip39",
     "crates/nwords-schemes",
     "crates/nwords-tools",
