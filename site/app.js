@@ -14,6 +14,7 @@ const mnemonicValue = select('#mnemonic-value');
 const bitcoinStatus = select('#bitcoin-status');
 let bitcoinSource = 'entropy';
 let bip39Promise;
+let randomUnavailable = false;
 
 function status(target, error) {
   target.classList.toggle('error', Boolean(error));
@@ -55,6 +56,12 @@ function parseHex(text) {
   return Uint8Array.from(hex.match(/../g) ?? [], pair => parseInt(pair, 16));
 }
 function toHex(bytes) { return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join(''); }
+try {
+  entropyValue.value = toHex(crypto.getRandomValues(new Uint8Array(16)));
+} catch {
+  randomUnavailable = true;
+  status(bitcoinStatus, { code: 'RANDOM_UNAVAILABLE', message: 'Secure randomness unavailable; enter entropy manually.' });
+}
 const examples = {
   number: "const phrase = codec.encodeId(42n);\nconst id = codec.decodePhrase(phrase);",
   bits: "const phrase = codec.encodeBits('01011');\nconst bits = codec.decodeBits(phrase);",
@@ -73,7 +80,7 @@ function showTab(which) {
     select(`#${name}-tab`).classList.toggle('active', selected);
     select(`#${name}-tab`).setAttribute('aria-selected', String(selected));
   }
-  if (bitcoin) loadBitcoin();
+  if (bitcoin && !randomUnavailable) loadBitcoin();
 }
 async function loadBitcoin() {
   if (!bip39Promise) bip39Promise = import('@y4le/nwords/bip39/web').then(module => module.loadBip39());
@@ -111,8 +118,16 @@ for (const [buttonSelector, codeSelector] of [['#copy-code', '#names-code'], ['#
     catch { button.textContent = 'Copy failed'; }
   });
 }
-entropyValue.addEventListener('input', () => { bitcoinSource = 'entropy'; if (bip39Promise) void loadBitcoin(); });
-mnemonicValue.addEventListener('input', () => { bitcoinSource = 'mnemonic'; if (bip39Promise) void loadBitcoin(); });
+entropyValue.addEventListener('input', () => {
+  randomUnavailable = false;
+  bitcoinSource = 'entropy';
+  if (bip39Promise || !select('#bitcoin-panel').hidden) void loadBitcoin();
+});
+mnemonicValue.addEventListener('input', () => {
+  randomUnavailable = false;
+  bitcoinSource = 'mnemonic';
+  if (bip39Promise || !select('#bitcoin-panel').hidden) void loadBitcoin();
+});
 codeExample();
 namesStatus.textContent = 'Loading Names codec…';
 loadVariable().then(({ defineVariable }) => {

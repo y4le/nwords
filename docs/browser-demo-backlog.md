@@ -58,7 +58,7 @@ wordsets; the native CLI accepts the same wide values.
 
 ### 2. BIP-39: entropy ↔ mnemonic
 
-**Moment to show:** edit a 128-bit hex entropy value and see the corresponding
+**Moment to show:** open a fresh 128-bit hex entropy value and see the corresponding
 12-word English mnemonic; edit a word and see checksum validation or the
 recovered entropy. Offer the other legal entropy sizes (160, 192, 224, 256
 bits) without making the first screen dense. An expandable strip can show the
@@ -67,8 +67,9 @@ entropy bits, checksum bits, and 11-bit word indexes. This is the actual
 
 **Definition shown:** a JS mnemonic API call using the same Rust codec
 as the live result, plus its language and version. Start with public test
-vectors. Label the page as an educational converter and ask visitors not to
-enter real wallet recovery phrases. Keep random wallet generation and seed
+vectors in tests. The live page starts with browser-generated entropy and labels
+it as an educational converter. Ask visitors not to enter real wallet recovery
+phrases or use demo phrases to protect funds. Keep wallet setup and seed
 derivation out of the initial browser demo; those deserve a separate security
 review and product decision.
 
