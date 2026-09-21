@@ -29,6 +29,9 @@ cargo run -p nwords-cli -- encode 42 --preset dec6-spread
 cargo run -p nwords-cli -- encode 5 --range 12 --shape project,animal --list project=words.txt
 cargo run -p nwords-cli -- text encode "hello"
 cargo run -p nwords-cli -- bytes encode --hex deadbeef
+cargo run -p nwords-cli -- names encode 42
+cargo run -p nwords-cli -- names encode 01011 --view bits
+cargo run -p nwords-cli -- names decode "able cardinal"
 cargo run -p nwords-cli -- presets
 cargo run -p nwords-cli -- lists
 cargo run -p nwords-cli -- plan --preset u32
@@ -53,6 +56,15 @@ whose full capacity exceeds `u128` require an explicit `--range`.
 `text` and `bytes` commands use `word-bytes-v1`: a 32-bit big-endian byte
 length, payload bytes, and zero padding to an 11-bit word boundary. Text is
 encoded as byte-exact UTF-8 with no default Unicode normalization.
+
+`names` uses the wide `variable-v1` codec and defaults to the
+`adjective+,animal` pattern with a 32-word limit. `--view number|bits|hex|text`
+selects how to interpret the phrase; the phrase does not record that type.
+Use `--pattern adjective*,animal` for zero-or-more adjectives, `--max-words`
+for an acceptance bound up to 64, and `--range` for an optional exclusive
+decimal ID bound. Built-in lists resolve by name within the binary. The Rust
+library exposes the same wide mapping as `nwords::wide_variable` while keeping
+the existing `u128` API intact.
 
 The CLI includes BIP-39 English positional presets and named word-list shapes
 such as `adjective,animal`, `descriptor,object`, and

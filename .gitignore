@@ -13,6 +13,7 @@
 
 # Local agent/runtime state
 /.parley/
+/.convoke/
 
 # JavaScript package tooling and assembled artifacts
 /packages/nwords-js/node_modules/

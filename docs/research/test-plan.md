@@ -255,3 +255,10 @@ Require the coverage enumerated in [flexible-wordsets-plan.md](flexible-wordsets
 including independent tier ranking, numerical/resource bounds, byte canonicality,
 custom Unicode ordering, and packed Node/browser parity. Existing fixed vectors
 and legacy byte vectors remain regression gates.
+
+Wide `variable-v1` also uses `tests/vectors/variable/variable-v1-wide.tsv`,
+frozen from the shipped JS codec before the Rust extension. Rust and CLI must
+encode and decode the same phrases around 127/128/129-bit and tier boundaries;
+the views must preserve empty bits, leading-zero bytes, strict UTF-8, and
+range/word-limit rejection. The future slim WASM binding must run these same
+vectors and compare errors at the JS boundary.

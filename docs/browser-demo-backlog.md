@@ -182,6 +182,39 @@ Record findings here as the implementation and Fable/Opus reviews continue.
 - **Later packaging:** Measure the shared codec's unused algorithm cost; split
   further if material. Inspect the release WASM name section only after the
   initial bundle-size measurements.
+- **Rust-owned Names follow-up, 2026-09-20:** Build a dictionary-free
+  `variable-v1` WASM entry from the Rust codec, extend Rust and CLI to the
+  page's wide bit domain, and keep the BIP-39 WASM entry separate. The JS
+  entry should load the module and pass only imported wordsets into a prepared
+  codec. Measure first use and emitted bundles before replacing the duplicate
+  JS codec.
+- **Wordset distribution, 2026-09-20:** Keep browser wordsets as independent
+  imports, with no built-in naming lists in the slim Names WASM artifact. The
+  twelve naming snapshots total 108,633 bytes of UTF-8 (46,451 bytes when
+  gzipped separately); EFF long accounts for 62,144 and 24,761 bytes. Their
+  current JS modules total 138,634 bytes (50,316 bytes when gzipped
+  separately). Keep the native CLI self-contained for presets and `cargo
+  install`; revisit external sidecar files only if an actual distribution-size
+  benchmark justifies the install and lookup complexity.
+- **Fable consultation, 2026-09-20 (`wrq_5c2a5ef245994259b966bb376bdbca5b`):**
+  Treat the shipped JS wide mapping as a compatibility reference and freeze
+  cross-language success and error fixtures before widening Rust. Test tier
+  boundaries, exact bit lengths, leading zeros, UTF-8, Unicode tokens, range
+  and word limits through Rust, CLI, and WASM. Preserve the published phrase
+  mapping as the JS codec is replaced.
+- **Fable measurement gate:** Build and measure the dictionary-free Names WASM
+  before removing the JS codec. Compare production bundle bytes, cold first-use
+  time on desktop and mobile, and throughput with the current JS entry. Also
+  measure a combined core-codecs artifact; split additional families only when
+  their actual consumer bundles benefit. Fable's estimated sizes and mobile
+  times are predictions, not measured budgets.
+- **Fable packaging and binding details:** Pass each selected wordset through
+  one preparation call and reuse an opaque Rust codec handle. Keep BIP-39's
+  fixed English list inside its separate artifact. Add per-list Cargo features
+  without silently changing existing default-feature behavior; retain the
+  single npm package with independent wordset exports and the self-contained
+  CLI. Review API parity for Unicode validation, limits, error codes, disposal,
+  and bigint/byte return types.
 - **Opus, 2026-09-20:** A 64-word custom format can produce a 4,159-byte
   phrase, so the decoder's byte bound must follow the encoder's allowed token
   and word limits. The site must catch a BIP-39 asset failure while a visitor

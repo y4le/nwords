@@ -8,6 +8,7 @@ use nwords::{
     positional::MixedPositional,
     schemes::AsciiSpace,
     stats::{self, CapacityClass, PlanSolution, PlanTarget},
+    wide_variable::{WideId, WideVariablePositional},
     word_bytes::WordBytes,
     wordlists::{
         bip39::English,
@@ -288,6 +289,56 @@ enum Command {
     Bytes(NestedBytesArgs),
     /// Encode or decode UTF-8 text with word-bytes-v1.
     Text(NestedTextArgs),
+    /// Encode or decode wide variable-v1 names, bits, bytes, or text.
+    Names(NestedNamesArgs),
+}
+
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true, disable_help_subcommand = true)]
+struct NestedNamesArgs {
+    #[command(subcommand)]
+    command: Option<NamesCommand>,
+}
+
+#[derive(Debug, Subcommand)]
+#[command(disable_help_flag = true)]
+enum NamesCommand {
+    /// Encode a value with a leading-repeat word pattern.
+    Encode(NamesEncodeArgs),
+    /// Decode a phrase with a leading-repeat word pattern.
+    Decode(NamesDecodeArgs),
+}
+
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
+struct NamesEncodeArgs {
+    input: String,
+    #[command(flatten)]
+    options: NamesOptions,
+}
+
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
+struct NamesDecodeArgs {
+    #[arg(id = "phrase_words", num_args = 1..)]
+    words: Vec<String>,
+    #[command(flatten)]
+    options: NamesOptions,
+}
+
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
+struct NamesOptions {
+    #[arg(long, default_value = "adjective+,animal")]
+    pattern: String,
+    #[arg(long, default_value_t = 32)]
+    max_words: usize,
+    #[arg(long)]
+    range: Option<String>,
+    #[arg(long, default_value = "number", value_parser = ["number", "bits", "hex", "text"])]
+    view: String,
+    #[arg(long = "list", value_name = "NAME=PATH")]
+    lists: Vec<String>,
 }
 
 #[derive(Debug, Args)]
@@ -456,8 +507,99 @@ fn dispatch(cli: Cli) -> Result<String, CliError> {
         Some(Command::Plan(args)) => plan(args),
         Some(Command::Bytes(args)) => bytes_command(args),
         Some(Command::Text(args)) => text_command(args),
+        Some(Command::Names(args)) => names_command(args),
         None => Err(CliError::usage(HELP)),
     }
+}
+
+fn names_command(args: NestedNamesArgs) -> Result<String, CliError> {
+    match args.command {
+        Some(NamesCommand::Encode(args)) => {
+            let codec = resolve_names(&args.options)?;
+            let phrase = match args.options.view.as_str() {
+                "number" => {
+                    let id = WideId::parse_decimal(&args.input)
+                        .map_err(|error| CliError::usage(error.to_string()))?;
+                    codec.encode(&id)
+                }
+                "bits" => codec.encode_bits(&args.input),
+                "hex" => codec.encode_bytes(&parse_hex(&args.input)?),
+                "text" => codec.encode_text(&args.input),
+                _ => return Err(CliError::usage("unknown names view")),
+            }
+            .map_err(|error| CliError::runtime(error.to_string()))?;
+            Ok(format!("{phrase}\n"))
+        }
+        Some(NamesCommand::Decode(args)) => {
+            let codec = resolve_names(&args.options)?;
+            let phrase = args.words.join(" ");
+            let value = match args.options.view.as_str() {
+                "number" => codec
+                    .decode_phrase(&phrase)
+                    .map(|id| id.to_decimal_string()),
+                "bits" => codec.decode_bits(&phrase),
+                "hex" => codec.decode_bytes(&phrase).map(|bytes| format_hex(&bytes)),
+                "text" => codec.decode_text(&phrase),
+                _ => return Err(CliError::usage("unknown names view")),
+            }
+            .map_err(|error| CliError::runtime(error.to_string()))?;
+            Ok(format!("{value}\n"))
+        }
+        None => Err(CliError::usage(NAMES_HELP)),
+    }
+}
+
+fn resolve_names(
+    options: &NamesOptions,
+) -> Result<WideVariablePositional<DynamicWordListSequence>, CliError> {
+    if options.max_words == 0 || options.max_words > 64 {
+        return Err(CliError::usage("--max-words must be between 1 and 64"));
+    }
+    let mut names = options
+        .pattern
+        .split(',')
+        .map(str::trim)
+        .collect::<Vec<_>>();
+    if names.len() < 2 {
+        return Err(CliError::usage(
+            "--pattern needs one repeat and at least one suffix list",
+        ));
+    }
+    if names.len() > 32 {
+        return Err(CliError::usage("--pattern supports at most 32 lists"));
+    }
+    let first = names[0];
+    let minimum = if let Some(name) = first.strip_suffix('+') {
+        names[0] = name;
+        1
+    } else if let Some(name) = first.strip_suffix('*') {
+        names[0] = name;
+        0
+    } else {
+        return Err(CliError::usage("the first --pattern list needs + or *"));
+    };
+    if names
+        .iter()
+        .any(|name| name.is_empty() || name.contains(['+', '*']))
+    {
+        return Err(CliError::usage("invalid --pattern list name"));
+    }
+    let shape = names.join(",");
+    let resolved = parse_shape(&shape, load_user_lists(&options.lists)?)?;
+    let range = options
+        .range
+        .as_deref()
+        .map(WideId::parse_decimal)
+        .transpose()
+        .map_err(|error| CliError::usage(format!("invalid --range: {error}")))?;
+    WideVariablePositional::new(
+        resolved.sequence,
+        names.len() - 1,
+        minimum,
+        range,
+        options.max_words,
+    )
+    .map_err(|error| CliError::usage(format!("invalid names format: {error}")))
 }
 
 fn custom_help(args: &[String]) -> Result<Option<String>, CliError> {
@@ -471,7 +613,7 @@ fn custom_help(args: &[String]) -> Result<Option<String>, CliError> {
     if command == "help" {
         return help(&args[1..]).map(Some);
     }
-    if (command == "bytes" || command == "text")
+    if (command == "bytes" || command == "text" || command == "names")
         && args.get(1).is_some_and(|argument| argument == "help")
     {
         let mut topics = vec![command.to_owned()];
@@ -487,19 +629,20 @@ fn custom_help(args: &[String]) -> Result<Option<String>, CliError> {
         .iter()
         .any(|arg| arg.as_str() == "-h" || arg.as_str() == "--help")
     {
-        let help_args = if (command == "bytes" || command == "text") && args.len() > 1 {
-            let subcommand = args_before_separator
-                .iter()
-                .find(|arg| !arg.starts_with('-'))
-                .map(|arg| arg.as_str());
-            if let Some(subcommand) = subcommand {
-                vec![command.to_owned(), subcommand.to_owned()]
+        let help_args =
+            if (command == "bytes" || command == "text" || command == "names") && args.len() > 1 {
+                let subcommand = args_before_separator
+                    .iter()
+                    .find(|arg| !arg.starts_with('-'))
+                    .map(|arg| arg.as_str());
+                if let Some(subcommand) = subcommand {
+                    vec![command.to_owned(), subcommand.to_owned()]
+                } else {
+                    vec![command.to_owned()]
+                }
             } else {
                 vec![command.to_owned()]
-            }
-        } else {
-            vec![command.to_owned()]
-        };
+            };
         return help(&help_args).map(Some);
     }
 
@@ -517,6 +660,7 @@ fn help(args: &[String]) -> Result<String, CliError> {
             "plan" => Ok(PLAN_HELP.to_owned()),
             "bytes" => Ok(BYTES_HELP.to_owned()),
             "text" => Ok(TEXT_HELP.to_owned()),
+            "names" => Ok(NAMES_HELP.to_owned()),
             _ => Err(CliError::usage(format!(
                 "unknown help topic `{command}`\n\n{HELP}"
             ))),
@@ -526,6 +670,12 @@ fn help(args: &[String]) -> Result<String, CliError> {
             "decode" => Ok(BYTES_DECODE_HELP.to_owned()),
             _ => Err(CliError::usage(format!(
                 "unknown help topic `bytes {command}`\n\n{BYTES_HELP}"
+            ))),
+        },
+        [group, command] if group == "names" => match command.as_str() {
+            "encode" | "decode" => Ok(NAMES_HELP.to_owned()),
+            _ => Err(CliError::usage(format!(
+                "unknown help topic `names {command}`\n\n{NAMES_HELP}"
             ))),
         },
         [group, command] if group == "text" => match command.as_str() {
@@ -1816,6 +1966,8 @@ USAGE:
     nwords bytes decode (--text | --hex) <words...>
     nwords text encode <text>
     nwords text decode <words...>
+    nwords names encode <value> [--view number|bits|hex|text] [--pattern adjective+,animal] [--max-words 32]
+    nwords names decode <words...> [--view number|bits|hex|text] [--pattern adjective+,animal] [--max-words 32]
 
 Shapes are comma-separated ordered word-list names such as adjective,animal,
 descriptor,object, weather,descriptor,plant, or mood,descriptor,food. Add
@@ -1830,6 +1982,7 @@ COMMANDS:
     plan        Show capacity and range statistics for a preset or shape.
     bytes       Encode or decode arbitrary bytes with word-bytes-v1.
     text        Encode or decode UTF-8 text with word-bytes-v1.
+    names       Encode or decode wide variable-v1 names and exact views.
 
 EXAMPLES:
     nwords encode 42 --preset u32
@@ -1859,7 +2012,36 @@ EXAMPLES:
     nwords plan --shape color,adjective,animal
         Show per-position list sizes and total shape capacity.
 
+    nwords names encode 42
+        Encode a wide ID with adjective+,animal.
+
 Run `nwords help <command>` for detailed help.
+";
+
+const NAMES_HELP: &str = "\
+nwords names: wide variable-v1 phrase conversion
+
+USAGE:
+    nwords names encode <value> [--view number|bits|hex|text] [--pattern adjective+,animal] [--max-words N] [--range R] [--list NAME=PATH]...
+    nwords names decode <words...> [--view number|bits|hex|text] [--pattern adjective+,animal] [--max-words N] [--range R] [--list NAME=PATH]...
+
+DESCRIPTION:
+    The first pattern list repeats one or more times with +, or zero or more
+    times with *. The remaining comma-separated lists are a fixed suffix.
+    Defaults: adjective+,animal; 32 maximum words; number view. The view is
+    selected explicitly because a phrase does not record the input type.
+    Bits preserve their exact length; hex and text preserve all UTF-8 bytes.
+    The maximum accepted phrase length is 64 words. Optional --range is an
+    exclusive canonical decimal bound. A pattern supports at most 32 lists.
+    Built-in lists load automatically;
+    --list NAME=PATH supplies lowercase custom wordlists used in --pattern.
+
+EXAMPLES:
+    nwords names encode 42
+    nwords names decode able cardinal
+    nwords names encode 01011 --view bits
+    nwords names encode hello --view text
+    nwords names decode able cardinal --view bits
 ";
 
 const ENCODE_HELP: &str = "\
@@ -2196,6 +2378,42 @@ mod tests {
         let decoded = run(["decode", encoded.stdout.trim(), "--preset", "u32"]);
         assert_eq!(decoded.exit_code, 0);
         assert_eq!(decoded.stdout, "42\n");
+    }
+
+    #[test]
+    fn names_decode_published_wide_phrase_and_exact_views() {
+        for row in include_str!("../../../tests/vectors/variable/variable-v1-wide.tsv")
+            .lines()
+            .filter(|row| !row.starts_with('#'))
+        {
+            let (id, phrase) = row.split_once('\t').unwrap();
+            let encoded = run(["names", "encode", id]);
+            assert_eq!(encoded.stdout.trim(), phrase, "ID {id}");
+            let decoded = run(["names", "decode", phrase]);
+            assert_eq!(decoded.stdout.trim(), id, "ID {id}");
+        }
+        let wide = "340282366920938463463374607431768211456";
+        let encoded = run(["names", "encode", wide]);
+        assert_eq!(encoded.exit_code, 0, "{}", encoded.stderr);
+        let decoded = run(["names", "decode", encoded.stdout.trim()]);
+        assert_eq!(decoded.stdout, format!("{wide}\n"));
+        let bits = run(["names", "encode", "00001011", "--view", "bits"]);
+        assert_eq!(bits.exit_code, 0, "{}", bits.stderr);
+        assert_eq!(
+            run(["names", "decode", bits.stdout.trim(), "--view", "bits"]).stdout,
+            "00001011\n"
+        );
+        let text = run(["names", "encode", "café 🦊", "--view", "text"]);
+        assert_eq!(text.exit_code, 0, "{}", text.stderr);
+        assert_eq!(
+            run(["names", "decode", text.stdout.trim(), "--view", "text"]).stdout,
+            "café 🦊\n"
+        );
+        assert_ne!(run(["names", "encode", "01"]).exit_code, 0);
+        assert_ne!(
+            run(["names", "encode", "1000", "--range", "1000"]).exit_code,
+            0
+        );
     }
 
     #[test]

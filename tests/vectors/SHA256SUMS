@@ -45,4 +45,6 @@ addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e  crates/nwords-
 d557539df68e771cc1eedcc91d13f70fca930e508d11eedcafa4b15db49e3744  tests/vectors/licenses/eff-CC-BY-4.0.LICENSE
 a47c5c85a51d8cd842f1d82424c099f9f601581e947039a2b59137edf7a5d7e8  tests/vectors/radix-bytes/eff-long.tsv
 2a52d273bd74c726346f50f59d2ee2d4faf7969ccbd79141295cc70364766464  tests/vectors/radix-bytes/README.md
+8e85fb21b5100d26b3ede8c50d1930c1e07b81ebd45d96350c666647b38ed2ec  tests/vectors/variable/README.md
 542d6d973afda92638e0dd804a4082c0810027c6dbd32826d29c279dea4ccb56  tests/vectors/variable/variable-v1.tsv
+419fcb84d8d51dd17413f925df17d68ee3f61fc818e59c5c61da0e830e23dc38  tests/vectors/variable/variable-v1-wide.tsv
