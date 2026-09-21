@@ -33,8 +33,8 @@ ESM import, and the full existing Rust binding keeps its API and behavior.
 English BIP-39 stays on the Rust codec in a dedicated WASM artifact, exported
 as `@y4le/nwords/bip39/{web,node}`. It accepts 16, 20, 24, 28, or 32 entropy
 bytes and 12, 15, 18, 21, or 24 words, verifies checksums, and reports stable
-errors without echoing input. Seed derivation and random wallet generation
-are outside the page.
+errors without echoing input. The page generates example entropy with Web
+Crypto; wallet setup and seed derivation are outside the page.
 
 ## Selective package and site
 
@@ -53,7 +53,9 @@ build toolchain. Test Node and Chromium, source and production bundles, a narrow
 viewport, and actual browser asset requests. Record uncompressed and gzip
 sizes for the relevant output assets.
 
-The page starts with public examples. BIP-39 input does not enter URLs,
+The page starts Names with public example `42`; the BIP-39 tab starts with fresh
+128-bit entropy from browser `crypto.getRandomValues` on each page load. The
+page does not create a wallet or derive a seed. BIP-39 input does not enter URLs,
 browser storage, analytics, or console output. Fields disable autocomplete,
 spellcheck, and autocapitalization. There are no third-party page assets.
 The prior site's plan, spread, and `word-bytes-v1` panels move out of the
