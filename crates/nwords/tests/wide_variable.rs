@@ -1,3 +1,5 @@
+#![cfg(all(feature = "positional", feature = "adjective-animal"))]
+
 use nwords::{
     variable::VariablePositional,
     wide_variable::{WideId, WideVariableError, WideVariablePositional},
